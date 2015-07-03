@@ -8,6 +8,9 @@ var gameState = {
 
 	create: function() {
 		this.DrawField();
+
+		var player = new Player(game, null);
+		player.setPosition(100, 100);
 	},
 
 	update: function() {
@@ -38,14 +41,15 @@ var gameState = {
 	    graphics.lineTo(homePlateX - infieldRadius, homePlateY - infieldRadius);
 	    graphics.lineTo(homePlateX + infieldRadius, homePlateY - infieldRadius);
 	    graphics.lineTo(homePlateX, homePlateY);
-	    graphics.arc(homePlateX, homePlateY, Math.sqrt(infieldRadius * infieldRadius + infieldRadius * infieldRadius), game.math.degToRad(225), game.math.degToRad(315));
+	    graphics.arc(homePlateX, homePlateY, 
+	    			Math.sqrt(infieldRadius * infieldRadius + infieldRadius * infieldRadius), game.math.degToRad(225), game.math.degToRad(315));
 	    graphics.endFill();
 	    
 	    // Bases
-	    this.DrawBase(homePlateX, homePlateY, graphics);
-	    this.DrawBase(homePlateX + basesRadius, homePlateY - basesRadius, graphics);
-	    this.DrawBase(homePlateX, homePlateY - basesRadius * 2, graphics);
-	    this.DrawBase(homePlateX - basesRadius, homePlateY - basesRadius, graphics);
+	    this.DrawBase(homePlateX, homePlateY - 10, graphics);								// Home
+	    this.DrawBase(homePlateX + basesRadius - 10, homePlateY - basesRadius, graphics); 	// First
+	    this.DrawBase(homePlateX, homePlateY - basesRadius * 2, graphics);					// Second
+	    this.DrawBase(homePlateX - basesRadius + 10, homePlateY - basesRadius, graphics);	// Third
 	    
 	    // Foul lines
 	    graphics.lineStyle(2, 0xffffff, 1);
@@ -55,13 +59,21 @@ var gameState = {
 	    graphics.lineTo(homePlateX + fieldWidth * 0.5, homePlateY - fieldWidth * 0.5);
 	    
 	    // Back wall
-	    graphics.arc(homePlateX, homePlateY, Math.sqrt((fieldWidth * 0.5) * (fieldWidth * 0.5) + (fieldWidth * 0.5) * (fieldWidth * 0.5)), 0, 360);
+	    graphics.arc(homePlateX, homePlateY, 
+	    			Math.sqrt((fieldWidth * 0.5) * (fieldWidth * 0.5) + (fieldWidth * 0.5) * (fieldWidth * 0.5)), 0, 360);
 	},
 
 	DrawBase: function(cx, cy, graphics) {
 	    graphics.lineStyle(0, 0xffffff, 1);
 	    graphics.beginFill(0xffffff, 1);
-	    graphics.drawRect(cx - 7, cy - 7, 14, 14);
+	    //graphics.drawRect(cx - 7, cy - 7, 14, 14);
+
+	    graphics.moveTo(cx - 10, cy);
+	    graphics.lineTo(cx, 	cy + 10);
+	    graphics.lineTo(cx + 10, cy);
+	    graphics.lineTo(cx, 	cy - 10);
+	    graphics.lineTo(cx - 10, cy);
+
 	    graphics.endFill();
 	}
 };
