@@ -53,7 +53,7 @@ var gameState = {
 	    graphics.endFill();
 	    
 	    // Bases
-	    this.DrawBase(homePlateX, homePlateY - 10, graphics);								// Home
+	    this.DrawBase(homePlateX, homePlateY - 10, graphics, true);								// Home
 	    this.DrawBase(homePlateX + basesRadius - 10, homePlateY - basesRadius, graphics); 	// First
 	    this.DrawBase(homePlateX, homePlateY - basesRadius * 2, graphics);					// Second
 	    this.DrawBase(homePlateX - basesRadius + 10, homePlateY - basesRadius, graphics);	// Third
@@ -70,7 +70,7 @@ var gameState = {
 	    			Math.sqrt((fieldWidth * 0.5) * (fieldWidth * 0.5) + (fieldWidth * 0.5) * (fieldWidth * 0.5)), 0, 360);
 	},
 
-	DrawBase: function(cx, cy, graphics) {
+	DrawBase: function(cx, cy, graphics, bHome) {
 	    graphics.lineStyle(0, 0xffffff, 1);
 	    graphics.beginFill(0xffffff, 1);
 	    //graphics.drawRect(cx - 7, cy - 7, 14, 14);
@@ -80,6 +80,10 @@ var gameState = {
 	    graphics.lineTo(cx + 10, cy);
 	    graphics.lineTo(cx, 	cy - 10);
 	    graphics.lineTo(cx - 10, cy);
+
+	    if (bHome == true) {
+	    	graphics.drawRect(cx - 10, cy - 10, 20, 10);
+	    }
 
 	    graphics.endFill();
 	}
