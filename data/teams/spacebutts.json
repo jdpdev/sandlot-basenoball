@@ -1,0 +1,106 @@
+{
+	"name": "Space Butts",
+	"battingOrder": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+	"pitchingOrder": [8],
+	"players": [
+		{ 
+			"id": 0,
+			"name": "Big",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 1,
+			"name": "Blast",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 2,
+			"name": "Fridge",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 3,
+			"name": "Gristle",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 4,
+			"name": "Punt",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 5,
+			"name": "Smoke",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 6,
+			"name": "Trunk",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 7,
+			"name": "Splint",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		},
+		{ 
+			"id": 8,
+			"name": "Punt",
+			"power": 5,
+			"batting": 5,
+			"pitching": 5,
+			"speed": 5,
+			"fielding": 5,
+			"imagination": 5,
+			"arguing": 5  
+		}
+	]
+}

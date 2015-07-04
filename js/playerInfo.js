@@ -1,4 +1,5 @@
 function PlayerInfo(json) {
+	this.name = json.name;
 	this.power = json.power;
 	this.batting = json.batting;
 	this.pitching = json.pitching;

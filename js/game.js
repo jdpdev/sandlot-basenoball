@@ -2,15 +2,22 @@ var gameStateName = "Game";
 
 var gameState = {
 
-	preload: function() {
+	homeTeam: new Team(),
+	awayTeam: new Team(),
 
+	preload: function() {
+		game.load.json('mutineers', './data/teams/mutineers.json');
+		game.load.json('spacebutts', './data/teams/spacebutts.json');
 	},
 
 	create: function() {
 		this.DrawField();
 
-		var player = new Player(game, null);
-		player.setPosition(100, 100);
+		//var player = new Player(game, null);
+		//player.setPosition(100, 100);
+
+		this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
+		this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));
 	},
 
 	update: function() {
