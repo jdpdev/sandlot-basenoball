@@ -15,6 +15,8 @@ var gameState = {
 
 		this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
 		this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));
+
+		this.homeTeam.fieldTeam();
 	},
 
 	update: function() {

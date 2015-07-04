@@ -20,6 +20,7 @@ var gameField = {
 	    graphics.drawRect(0, 0, 800, 800);
 	    graphics.endFill();
 
+	    // Infield
 	    graphics.lineStyle(1, 0x8B4513, 1);
 	    graphics.beginFill(0x8B4513, 1);
 	    
@@ -30,18 +31,26 @@ var gameField = {
 	    graphics.arc(this.homePlateX, this.homePlateY, new Phaser.Point(this.infieldRadius, this.infieldRadius).getMagnitude(),
 	    		 		game.math.degToRad(225), game.math.degToRad(315));
 	    graphics.endFill();
+
+	    // Batter's box
+	    graphics.beginFill(0x8B4513, 1);
+	    graphics.drawRect(this.homePlateX - 40, this.homePlateY - 40, 80, 80);
+	    graphics.endFill();
 	    
 	    // Bases
 	    this.DrawBase(this.GetHomePlatePos(), graphics, true);		// Home
 	    this.DrawBase(this.GetFirstBasePos(), graphics); 	// First
 	    this.DrawBase(this.GetSecondBasePos(), graphics);	// Second
 	    this.DrawBase(this.GetThirdBasePos(), graphics);	// Third
+
+	    // Mound
+	    this.DrawMound();
 	    
 	    // Foul lines
 	    graphics.lineStyle(2, 0xffffff, 1);
-	    graphics.moveTo(this.homePlateX, this.homePlateY);
+	    graphics.moveTo(this.homePlateX - 40, this.homePlateY - 40);
 	    graphics.lineTo(this.homePlateX - this.fieldWidth * 0.5, this.homePlateY - this.fieldWidth * 0.5);
-	    graphics.moveTo(this.homePlateX, this.homePlateY);
+	    graphics.moveTo(this.homePlateX + 40, this.homePlateY - 40);
 	    graphics.lineTo(this.homePlateX + this.fieldWidth * 0.5, this.homePlateY - this.fieldWidth * 0.5);
 	    
 	    // Back wall
@@ -68,6 +77,18 @@ var gameField = {
 	    graphics.endFill();
 	},
 
+	DrawMound: function() {
+		var pos = this.GetMoundPos();
+
+		this.fieldGraphics.beginFill(0xffffff, 1);
+	    this.fieldGraphics.drawRect(pos.x - 10, pos.y - 3, 20, 6);
+	    this.fieldGraphics.endFill();
+	},
+
+	GetMoundPos: function() {
+		return new Phaser.Point(this.homePlateX, this.homePlateY - this.basesRadius);
+	},
+
 	GetHomePlatePos: function() {
 		return new Phaser.Point(this.homePlateX, this.homePlateY - 10);
 	},
@@ -78,6 +99,14 @@ var gameField = {
 
 	GetSecondBasePos: function() {
 		return new Phaser.Point(this.homePlateX, this.homePlateY - this.basesRadius * 2);
+	},
+
+	GetWideSecondBasePos: function() {
+		return new Phaser.Point(this.homePlateX + this.basesRadius * 0.5 + 20, this.homePlateY - this.basesRadius * 2 + 20);
+	},
+
+	GetShortstopPos: function() {
+		return new Phaser.Point(this.homePlateX - this.basesRadius * 0.5 - 20, this.homePlateY - this.basesRadius * 2 + 20);
 	},
 
 	GetThirdBasePos: function() {
