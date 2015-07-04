@@ -1,19 +1,19 @@
-function Field() {
+var gameField = {
 
-	this.fieldWidth = 800;
-	this.fieldHeight = 800;
-	this.backWallLength = 400;
-	this.infieldRadius = 250;
-    this.basesRadius = 150;
+	fieldWidth: 800,
+	fieldHeight: 800,
+	backWallLength: 400,
+	infieldRadius: 250,
+    basesRadius: 150,
     
-    this.homePlateX = 400;
-    this.homePlateY = this.fieldHeight - 50;
+    homePlateX: 400,
+    homePlateY: 750,
 
-    this.fieldGraphics;
+    fieldGraphics: null,
 
-	this.DrawField = function(game) {
+	DrawField: function(game) {
 		this.fieldGraphics = game.add.graphics(0, 0);
-		graphics = this.fieldGraphics;
+		var graphics = this.fieldGraphics;
 
 		// Grass
 	    graphics.beginFill(0x00aa00, 1);
@@ -46,10 +46,10 @@ function Field() {
 	    
 	    // Back wall
 	    graphics.arc(this.homePlateX, this.homePlateY, new Phaser.Point(this.backWallLength, this.backWallLength).getMagnitude(), 0, 360);
-	}
+	},
 
-	this.DrawBase = function(point, graphics, bHome) {
-		//graphics = this.fieldGraphics;
+	DrawBase: function(point, graphics, bHome) {
+		var graphics = this.fieldGraphics;
 
 	    graphics.lineStyle(0, 0xffffff, 1);
 	    graphics.beginFill(0xffffff, 1);
@@ -66,21 +66,21 @@ function Field() {
 	    }
 
 	    graphics.endFill();
-	}
+	},
 
-	this.GetHomePlatePos = function() {
+	GetHomePlatePos: function() {
 		return new Phaser.Point(this.homePlateX, this.homePlateY - 10);
-	}
+	},
 
-	this.GetFirstBasePos = function() {
+	GetFirstBasePos: function() {
 		return new Phaser.Point(this.homePlateX + this.basesRadius - 10, this.homePlateY - this.basesRadius);
-	}
+	},
 
-	this.GetSecondBasePos = function() {
+	GetSecondBasePos: function() {
 		return new Phaser.Point(this.homePlateX, this.homePlateY - this.basesRadius * 2);
-	}
+	},
 
-	this.GetThirdBasePos = function() {
+	GetThirdBasePos: function() {
 		return new Phaser.Point(this.homePlateX - this.basesRadius + 10, this.homePlateY - this.basesRadius);
 	}
-}
+};
