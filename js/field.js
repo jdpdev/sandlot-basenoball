@@ -5,7 +5,7 @@ var gameField = {
 	backWallLength: 400,
 	infieldRadius: 250,
     basesRadius: 150,
-    outfieldRadius: 325,
+    outfieldRadius: 450,
     
     homePlateX: 400,
     homePlateY: 750,
@@ -116,16 +116,27 @@ var gameField = {
 	},
 
 	GetLeftFieldPos: function() {
-		return Phaser.Point.rotate(new Phaser.Point(this.outfieldRadius), 0, 0, true, 250);
-		//return new Phaser.Point(this.homePlateX - this.outfieldRadius, this.homePlateY - this.outfieldRadius);
+		var point = Phaser.Point.rotate(new Phaser.Point(this.outfieldRadius, 0), 0, 0, 235, true);
+		point.x += this.homePlateX;
+		point.y += this.homePlateY;
+
+		return point;
 	},
 
 	GetCenterFieldPos: function() {
-		return new Phaser.Point(this.homePlateX, this.homePlateY - this.outfieldRadius);
+		var point = Phaser.Point.rotate(new Phaser.Point(this.outfieldRadius, 0), 0, 0, 270, true);
+		point.x += this.homePlateX;
+		point.y += this.homePlateY;
+
+		return point;
 	},
 
 	GetRightFieldPos: function() {
-		return new Phaser.Point(this.homePlateX + this.outfieldRadius, this.homePlateY - this.outfieldRadius);
+		var point = Phaser.Point.rotate(new Phaser.Point(this.outfieldRadius, 0), 0, 0, 305, true);
+		point.x += this.homePlateX;
+		point.y += this.homePlateY;
+
+		return point;
 	},
 
 	GetHomeDugoutPos: function() {

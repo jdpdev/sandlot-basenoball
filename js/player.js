@@ -8,7 +8,7 @@ var LEFT_FIELD = 6;
 var CENTER_FIELD = 7;
 var RIGHT_FIELD = 8;
 
-function Player(id, playerInfo) {
+function Player(id, playerInfo, teamColor) {
 	this.id = id;
 	this.playerInfo = playerInfo;
 	this.icon = null;
@@ -18,6 +18,8 @@ function Player(id, playerInfo) {
 	this.playerWidth = 0;
 	this.playerHeight = 0;
 
+	this.teamColor = parseInt(teamColor);
+
 	// ** Methods ******************************************************
 	this.setPosition = function (position) {
 		this.icon.x = position.x;
@@ -26,11 +28,12 @@ function Player(id, playerInfo) {
 
 	// ** Methods ******************************************************
 	this.setAsFielder = function(position) {
+		this.fieldingPosition = position;
+
 		if (this.icon == null) {
 			this.drawFielder();
 		}
 
-		this.fieldingPosition = position;
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
@@ -116,7 +119,7 @@ function Player(id, playerInfo) {
 
 		// Create icon via graphics
 		this.icon = game.add.graphics(0, 0);
-		this.icon.beginFill(0xff00ff, 1);
+		this.icon.beginFill(this.teamColor, 1);
 		this.icon.drawRect(0, 0, this.playerWidth, this.playerHeight);
 		this.icon.endFill();
 	}
