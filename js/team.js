@@ -37,6 +37,8 @@ function Team() {
 
 	// Begin the batting half-innning
 	this.batTeam = function() {
-
+		for (var i = 0; i < fieldingPositions.length; i++) {
+			players[fieldingPositions[i]].returnToDugout(gameField.GetHomeDugoutPos(), true);
+		}
 	}
 }

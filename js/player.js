@@ -24,12 +24,31 @@ function Player(id, playerInfo) {
 		this.icon.y = position.y;
 	}
 
+	// ** Methods ******************************************************
 	this.setAsFielder = function(position) {
+		if (this.icon == null) {
+			this.drawFielder();
+		}
+
 		this.fieldingPosition = position;
-		this.drawFielder();
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
+	this.setAsBatter = function() {
+
+	}
+
+	this.returnToDugout = function(position, bRun) {
+		if (this.icon == null) {
+			this.drawFielder();
+		}
+
+		//if (!bRun) {
+			this.setPosition(position);
+		//}
+	}
+
+	// ** Fielding ******************************************************
 	this.getFieldingPosition = function(position) {
 		var point;
 
@@ -67,17 +86,17 @@ function Player(id, playerInfo) {
 				
 			// Left field
 			case LEFT_FIELD:
-				point = new Phaser.Point(0,0);
+				point = gameField.GetLeftFieldPos();
 				break;
 				
 			// Center field
 			case CENTER_FIELD:
-				point = new Phaser.Point(0,0);
+				point = gameField.GetCenterFieldPos();
 				break;
 				
 			// Right field
 			case RIGHT_FIELD:
-				point = new Phaser.Point(0,0);
+				point = gameField.GetRightFieldPos();
 				break;
 		}
 
@@ -101,4 +120,6 @@ function Player(id, playerInfo) {
 		this.icon.drawRect(0, 0, this.playerWidth, this.playerHeight);
 		this.icon.endFill();
 	}
+
+	// ** Batting ******************************************************
 }

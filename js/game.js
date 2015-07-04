@@ -17,6 +17,7 @@ var gameState = {
 		this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));
 
 		this.homeTeam.fieldTeam();
+		this.awayTeam.batTeam();
 	},
 
 	update: function() {
