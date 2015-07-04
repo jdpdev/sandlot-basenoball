@@ -4,6 +4,7 @@ var gameState = {
 
 	homeTeam: new Team(),
 	awayTeam: new Team(),
+	field: new Field(),
 
 	preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
@@ -11,7 +12,8 @@ var gameState = {
 	},
 
 	create: function() {
-		this.DrawField();
+		//this.DrawField();
+		this.field.DrawField(game);
 
 		//var player = new Player(game, null);
 		//player.setPosition(100, 100);
@@ -24,7 +26,8 @@ var gameState = {
 
 	},
 
-	DrawField: function() {
+	// Deleting these causes stuff to not compile????
+	/*DrawField: function() {
 		var fieldWidth = 800;
 	    var fieldHeight = 800;
 	    var infieldRadius = 250;
@@ -70,7 +73,7 @@ var gameState = {
 	    			Math.sqrt((fieldWidth * 0.5) * (fieldWidth * 0.5) + (fieldWidth * 0.5) * (fieldWidth * 0.5)), 0, 360);
 	},
 
-	DrawBase: function(cx, cy, graphics, bHome) {
+	/*DrawBase: function(cx, cy, graphics, bHome) {
 	    graphics.lineStyle(0, 0xffffff, 1);
 	    graphics.beginFill(0xffffff, 1);
 	    //graphics.drawRect(cx - 7, cy - 7, 14, 14);
@@ -86,5 +89,5 @@ var gameState = {
 	    }
 
 	    graphics.endFill();
-	}
+	}*/
 };
