@@ -6,6 +6,7 @@
 		{ 
 			"id": 0,
 			"name": "Crunch",
+			"hand": true,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -17,6 +18,7 @@
 		{ 
 			"id": 1,
 			"name": "Stump",
+			"hand": true,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -28,6 +30,7 @@
 		{ 
 			"id": 2,
 			"name": "Roll",
+			"hand": false,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -39,6 +42,7 @@
 		{ 
 			"id": 3,
 			"name": "Dirk",
+			"hand": true,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -50,6 +54,7 @@
 		{ 
 			"id": 4,
 			"name": "Thick",
+			"hand": true,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -61,6 +66,7 @@
 		{ 
 			"id": 5,
 			"name": "Bob",
+			"hand": true,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -72,6 +78,7 @@
 		{ 
 			"id": 6,
 			"name": "Bold",
+			"hand": false,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -83,6 +90,7 @@
 		{ 
 			"id": 7,
 			"name": "Flint",
+			"hand": true,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
@@ -94,6 +102,7 @@
 		{ 
 			"id": 8,
 			"name": "Punch",
+			"hand": false,
 			"power": 5,
 			"batting": 5,
 			"pitching": 5,
