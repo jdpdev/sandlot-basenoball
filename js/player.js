@@ -20,10 +20,20 @@ function Player(id, playerInfo, teamColor) {
 
 	this.teamColor = parseInt(teamColor);
 
+	this.currentAP = 50;
+
 	// ** Methods ******************************************************
 	this.setPosition = function (position) {
 		this.icon.x = position.x;
 		this.icon.y = position.y;
+	}
+
+	this.getName = function() {
+		return this.playerInfo.name;
+	}
+
+	this.getAP = function() {
+		return this.currentAP;
 	}
 
 	// ** Methods ******************************************************

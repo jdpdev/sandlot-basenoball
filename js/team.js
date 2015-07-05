@@ -53,5 +53,9 @@ function Team() {
 	this.presentNextBatter = function() {
 		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
 		return players[battingOrder[iCurrentBatterIndex]];
+	},
+
+	this.getPitcher = function() {
+		return players[fieldingPositions[fieldingPositions[PITCHER]]];
 	}
 }

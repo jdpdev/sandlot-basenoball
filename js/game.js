@@ -10,7 +10,9 @@ var gameState = {
 	// The teams
 	homeTeam: new Team(),
 	awayTeam: new Team(),
+
 	battingTeam: null,
+	fieldingTeam: null,
 
 	// Game state
 	iCurrentInning: 0,
@@ -53,10 +55,14 @@ var gameState = {
 		if (this.bIsTopOfInning) {
 			this.homeTeam.fieldTeam();
 			this.awayTeam.batTeam();	
+
+			this.fieldingTeam = this.homeTeam;
 			this.battingTeam = this.awayTeam;
 		} else {
 			this.homeTeam.batTeam();
 			this.awayTeam.fieldTeam();
+
+			this.fieldingTeam = this.awayTeam;
 			this.battingTeam = this.homeTeam;
 		}
 
@@ -87,5 +93,25 @@ var gameState = {
 
 	callNewBatter: function() {
 		this.aRunners[HOME] = this.battingTeam.presentNextBatter();
+
+		this.beginAtBat(this.aRunners[HOME], this.fieldingTeam.getPitcher());
+	},
+
+	/* *** Game Logic *****************************************************************
+		- Begin at-bat
+			1) Players make AP bets in secret
+			2) Highest bid choses first
+			3) Resolve base on stats and argument mods, have umpire announce
+			...and so on
+		- Ball in play
+			1) Umpire decides where ball is going and how
+
+	*/	
+
+	// Begin an at bat between a batter and a pitcher
+	beginAtBat: function(batter, pitcher) {
+		openWagerDialog(pitcher.getName(), "Pitcher", pitcher.getAP(), function(wagerAmount) {
+			console.log("Wager amount: " + wagerAmount);
+		});
 	}
 };

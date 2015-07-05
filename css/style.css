@@ -1,0 +1,15 @@
+.gameDialog {
+	position: absolute;
+	z-index: 10;
+}
+
+.wagerAPDialog {
+	position: absolute;
+
+	left: 250;
+	top: 200;
+	width: 300;
+	height: 300;
+
+	background-color: BurlyWood;
+}
