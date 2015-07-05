@@ -37,8 +37,18 @@ function Player(id, playerInfo, teamColor) {
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
+	// Step the batter up to the plate
 	this.setAsBatter = function() {
+		var pos;
 
+		if (this.playerInfo.handedness) {
+			pos = gameField.GetLeftBattingBoxPos();
+		} else {
+			pos = gameField.GetRightBattingBoxPos();
+		}
+
+		pos.y -= this.playerHeight;
+		this.setPosition(pos);
 	}
 
 	this.returnToDugout = function(position, bRun) {

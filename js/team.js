@@ -12,6 +12,9 @@ function Team() {
 
 	var teamColor;
 
+	// Index of the batter currently at the plate
+	var iCurrentBatterIndex = 0;
+
 	// Load information about the team from a json object
 	this.loadTeam = function(json) {
 		name = json["name"];
@@ -43,5 +46,12 @@ function Team() {
 		for (var i = 0; i < fieldingPositions.length; i++) {
 			players[fieldingPositions[i]].returnToDugout(gameField.GetHomeDugoutPos(), true);
 		}
+	}
+
+	// Present the next batter in the lineup to the plate
+	// Returns the player object
+	this.presentNextBatter = function() {
+		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
+		return players[battingOrder[iCurrentBatterIndex]];
 	}
 }

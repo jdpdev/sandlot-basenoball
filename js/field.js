@@ -147,5 +147,19 @@ var gameField = {
 	GetAwayDugoutPos: function() {
 		var point = this.GetThirdBasePos();
 		return new Phaser.Point(point.x - 60, point.y + 60);
-	}	
+	},	
+
+	GetLeftBattingBoxPos: function() {
+		var point = this.GetHomePlatePos();
+		point.x -= 32;
+
+		return point;
+	},
+
+	GetRightBattingBoxPos: function() {
+		var point = this.GetHomePlatePos();
+		point.x += 32;
+
+		return point;
+	}
 };
