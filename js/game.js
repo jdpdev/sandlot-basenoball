@@ -125,5 +125,92 @@ var gameState = {
 
 	handleAtBatWagers: function(batterWager, pitcherWager) {
 		console.log("Batter Wager: " + batterWager + ", Pitcher Wager: " + pitcherWager);
+	},
+	
+	
+	iconTest: function() {
+		//
+		var icon = iconGenerator.generateIcon("00.00.00.00.00.00.00.00");
+		icon.x = 0;
+		icon.y = 0;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.01.00.00.01");
+		icon.x = 150;
+		icon.y = 0;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.02.00.00.02");
+		icon.x = 300;
+		icon.y = 0;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.03.00.00.03");
+		icon.x = 450;
+		icon.y = 0;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.04.00.00.04");
+		icon.x = 600;
+		icon.y = 0;
+		
+		//
+		icon = iconGenerator.generateIcon("01.00.00.00.05.00.00.05");
+		icon.x = 0;
+		icon.y = 150;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.06.00.00.06");
+		icon.x = 150;
+		icon.y = 150;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.07.00.00.07");
+		icon.x = 300;
+		icon.y = 150;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.08.00.00.08");
+		icon.x = 450;
+		icon.y = 150;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.09.00.00.09");
+		icon.x = 600;
+		icon.y = 150;
+		
+		//
+		icon = iconGenerator.generateIcon("00.00.00.00.00.00.00.0A");
+		icon.x = 0;
+		icon.y = 300;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.01.00.00.0B");
+		icon.x = 150;
+		icon.y = 300;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.02.00.00.0C");
+		icon.x = 300;
+		icon.y = 300;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.03.00.00.0D");
+		icon.x = 450;
+		icon.y = 300;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.04.00.00.0E");
+		icon.x = 600;
+		icon.y = 300;
+		
+		//
+		icon = iconGenerator.generateIcon("01.00.00.00.05.00.00.0F");
+		icon.x = 0;
+		icon.y = 450;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.06.00.00.10");
+		icon.x = 150;
+		icon.y = 450;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.07.00.00.11");
+		icon.x = 300;
+		icon.y = 450;
+		
+		icon = iconGenerator.generateIcon("00.00.00.00.08.00.00.12");
+		icon.x = 450;
+		icon.y = 450;
+		
+		icon = iconGenerator.generateIcon("01.00.00.00.09.00.00.13");
+		icon.x = 600;
+		icon.y = 450;
 	}
 };
