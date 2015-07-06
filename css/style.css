@@ -1,15 +1,27 @@
 .gameDialog {
 	position: absolute;
 	z-index: 10;
+	text-align: center;
+}
+
+.gameDialog a {
+	border: 2px solid #333;
+	border-radius: 10px;
+	padding: 10px;
+	margin: 10px;
+	cursor: pointer;
 }
 
 .wagerAPDialog {
-	position: absolute;
-
-	left: 250;
-	top: 200;
-	width: 300;
-	height: 300;
+	left: 250px;
+	top: 200px;
+	width: 300px;
+	height: 300px;
 
 	background-color: BurlyWood;
+}
+
+.wagerAPDialog input {
+	width: 50px;
+	font-size: 24px;
 }

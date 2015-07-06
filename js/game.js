@@ -111,7 +111,15 @@ var gameState = {
 	// Begin an at bat between a batter and a pitcher
 	beginAtBat: function(batter, pitcher) {
 		openWagerDialog(pitcher.getName(), "Pitcher", pitcher.getAP(), function(wagerAmount) {
-			console.log("Wager amount: " + wagerAmount);
+			var pitcherWager = wagerAmount;
+
+			openWagerDialog(batter.getName(), "Batter", batter.getAP(), function(wagerAmount) {
+				gameState.handleAtBatWagers(wagerAmount, pitcherWager);
+			});
 		});
+	},
+
+	handleAtBatWagers: function(batterWager, pitcherWager) {
+		console.log("Batter Wager: " + batterWager + ", Pitcher Wager: " + pitcherWager);
 	}
 };
