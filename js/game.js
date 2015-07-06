@@ -32,9 +32,13 @@ var gameState = {
 	preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
 		game.load.json('spacebutts', './data/teams/spacebutts.json');
+
+		actionManager.loadActions();
 	},
 
 	create: function() {
+		actionManager.parseActions();
+
 		gameField.DrawField(game);
 
 		this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
