@@ -34,6 +34,7 @@ var iconGenerator = {
         
         this.drawShirt(icon, parseInt(codes[SHIRT], 16), parseInt(codes[SHIRT_COLOR], 16));
         this.drawHead(icon, parseInt(codes[FACE_SHAPE], 16), parseInt(codes[SKIN_COLOR], 16));
+        this.drawHeadDeco(icon, parseInt(codes[HEAD_DECO], 16), parseInt(codes[HEAD_COLOR], 16));
         
         return icon;
     },
@@ -57,6 +58,8 @@ var iconGenerator = {
         
         switch (type) {
             default:
+
+            // Standard squares *********
             case 0x00:
                 icon.drawRect(30, 30, 60, 60);
                 
@@ -68,7 +71,53 @@ var iconGenerator = {
                 break;
                 
             case 0x01:
-                icon.drawRect(30, 30, 60, 60);
+                //icon.drawRect(30, 30, 60, 60);
+                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(90, 30), new Phaser.Point(90, 80), new Phaser.Point(80, 90), new Phaser.Point(35, 90), new Phaser.Point(30, 85));
+                
+                // Eyes
+                icon.beginFill(0xffffff, 1);
+                icon.drawRect(50, 50, 10, 20);
+                icon.drawRect(70, 50, 10, 20);
+                icon.endFill();
+                break;
+
+            // Skinny heads ************
+            case 0x02:
+                icon.drawRect(40, 30, 40, 60);
+                
+                // Eyes
+                icon.beginFill(0xffffff, 1);
+                icon.drawRect(55, 50, 5, 20);
+                icon.drawRect(70, 50, 5, 20);
+                icon.endFill();
+                break;
+                
+            case 0x03:
+                //icon.drawRect(40, 30, 40, 60);
+                icon.drawPolygon(new Phaser.Point(40, 30), new Phaser.Point(80, 30), new Phaser.Point(80, 70), new Phaser.Point(70, 90), new Phaser.Point(45, 90), new Phaser.Point(40, 85), new Phaser.Point(40, 90));
+                
+                // Eyes
+                icon.beginFill(0xffffff, 1);
+                icon.drawRect(50, 50, 10, 20);
+                icon.drawRect(70, 50, 10, 20);
+                icon.endFill();
+                break;
+
+            // Fat heads ****************
+            case 0x04:
+                //icon.drawRect(30, 30, 60, 60);
+                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(80, 30), new Phaser.Point(90, 70), new Phaser.Point(90, 90), new Phaser.Point(80, 100), new Phaser.Point(30, 100), new Phaser.Point(20, 90), new Phaser.Point(20, 70));
+                
+                // Eyes
+                icon.beginFill(0xffffff, 1);
+                icon.drawRect(55, 50, 5, 20);
+                icon.drawRect(70, 50, 5, 20);
+                icon.endFill();
+                break;
+                
+            case 0x05:
+                //icon.drawRect(40, 30, 40, 60);
+                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(80, 30), new Phaser.Point(90, 70), new Phaser.Point(90, 90), new Phaser.Point(80, 100), new Phaser.Point(30, 100), new Phaser.Point(20, 90), new Phaser.Point(20, 70));
                 
                 // Eyes
                 icon.beginFill(0xffffff, 1);
@@ -181,5 +230,97 @@ var iconGenerator = {
             case 0x12:  return 0x000099;
             case 0x13:  return 0x0000bb;
         }  
+    },
+
+    // ******************************************************************************
+    //  Hats/hair
+    // ******************************************************************************
+
+    drawHeadDeco: function(icon, type, color) {
+        var primaryColor = this.getHeadDecoPrimaryColor(color);
+        var secondaryColor = 0x000000;
+
+        icon.lineStyle(0, 0, 0);
+        icon.beginFill(primaryColor, 1);
+
+        switch (type) {
+            // Bald
+            default:
+            case 0x00:
+                break;
+
+            // Buzz cut
+            case 0x01:
+                icon.drawRect(30, 30, 60, 10);
+                break;
+
+            // Plain trimmed
+            case 0x02:
+                icon.drawRect(30, 30, 60, 10);
+                icon.drawRect(30, 30, 20, 30);
+                break;
+
+            // Pompidor
+            case 0x03:
+                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(40, 20), new Phaser.Point(80, 20), new Phaser.Point(90, 20), new Phaser.Point(90, 40), new Phaser.Point(30, 40));
+                break;
+
+            // Pony tail
+            case 0x04:
+                icon.drawRect(30, 30, 60, 10);
+                icon.drawRect(30, 30, 15, 30);
+                icon.drawRect(10, 50, 20, 30);
+                break;
+
+            // Bob
+            case 0x05:
+
+            // Emo
+            case 0x06:
+                break;
+
+            // Afro
+            case 0x07:
+                break;
+
+            // Mohawk
+            case 0x08:
+                break;
+
+            // Baseball hat, bald
+            case 0x20:
+                break;
+
+            // Baseball hat, trimmed
+            case 0x21:
+                break;
+
+            // Baseball hat, pony tail
+            case 0x22:
+                break;
+        }
+
+        icon.endFill();
+    },
+
+    getHeadDecoPrimaryColor: function(code) {
+        switch (code) {
+            default:
+            case 0x00:  return 0xffffff;    // White
+            case 0x01:  return 0xffff00;    // Yellow
+            case 0x02:  return 0xffbb00;    // Deep yellow
+            case 0x03:  return 0x977961;    // Light brown
+            case 0x04:  return 0x91553d;    // Med brown
+            case 0x05:  return 0x504444;    // Dark brown
+            case 0x06:  return 0x000000;    // Black
+            case 0x07:  return 0xffb889;    // Light red
+            case 0x08:  return 0xb55239;    // Dark red
+            case 0x09:  return 0xff00ff;    // Magenta
+            case 0x0A:  return 0xff1100;    // Red
+            case 0x0B:  return 0xff9911;    // Orange
+            case 0x0C:  return 0x11ff11;    // Green
+            case 0x0D:  return 0x0033ff;    // Blue
+            case 0x0E:  return 0x9900ff;    // Purple
+        }
     }
 };
