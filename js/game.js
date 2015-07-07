@@ -182,7 +182,7 @@ var gameState = {
 		icon.x = 150;
 		icon.y = 300;
 		
-		icon = iconGenerator.generateIcon("00.00.00.00.02.00.07.0C");
+		icon = iconGenerator.generateIcon("00.00.09.00.02.00.07.0C");
 		icon.x = 300;
 		icon.y = 300;
 		
@@ -203,7 +203,7 @@ var gameState = {
 		icon.x = 150;
 		icon.y = 450;
 		
-		icon = iconGenerator.generateIcon("05.00.00.00.07.00.02.11");
+		icon = iconGenerator.generateIcon("05.00.20.00.07.00.02.11");
 		icon.x = 300;
 		icon.y = 450;
 		
@@ -216,7 +216,7 @@ var gameState = {
 		icon.y = 450;
 
 		// 
-		icon = iconGenerator.generateIcon("FFF.FF.FF.FF.AA0.FF.FF.FF");
+		icon = iconGenerator.generateIcon("FFF.FF.20.FF.AA0.FF.0F.FF");
 		icon.x = 0;
 		icon.y = 600;
 	}
