@@ -214,5 +214,10 @@ var gameState = {
 		icon = iconGenerator.generateIcon("01.00.00.00.09.00.00.13");
 		icon.x = 600;
 		icon.y = 450;
+
+		// 
+		icon = iconGenerator.generateIcon("FFF.FF.FF.FF.AA0.FF.FF.FF");
+		icon.x = 0;
+		icon.y = 600;
 	}
 };

@@ -43,14 +43,15 @@ var iconGenerator = {
     //  Head
     // ******************************************************************************
     
-    drawHead: function(icon, type, color) {
-        var color = this.getSkinColor(color);
+    drawHead: function(icon, type, colorCode) {
+        var color = this.getSkinColor(colorCode);
         icon.lineStyle(0, 0, 0);
         
         // Neck
         var iNeckHeight = 60;
         icon.beginFill(color, 1);
         icon.drawRect(45, this.iconHeight - 15 - iNeckHeight, 10, iNeckHeight);
+        icon.drawRect(35, this.iconHeight - 20, 30, 5);
         icon.endFill();
         
         // Face
@@ -106,8 +107,10 @@ var iconGenerator = {
             // Fat heads ****************
             case 0x04:
                 //icon.drawRect(30, 30, 60, 60);
-                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(80, 30), new Phaser.Point(90, 70), new Phaser.Point(90, 90), new Phaser.Point(80, 100), new Phaser.Point(30, 100), new Phaser.Point(20, 90), new Phaser.Point(20, 70));
-                
+                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(90, 30), new Phaser.Point(90, 60), new Phaser.Point(100, 80), 
+                                 new Phaser.Point(100, 90), new Phaser.Point(90, 100), new Phaser.Point(30, 100), new Phaser.Point(30, 90));
+                icon.drawRect(35, this.iconHeight - 15 - iNeckHeight, 30, iNeckHeight);
+
                 // Eyes
                 icon.beginFill(0xffffff, 1);
                 icon.drawRect(55, 50, 5, 20);
@@ -117,13 +120,61 @@ var iconGenerator = {
                 
             case 0x05:
                 //icon.drawRect(40, 30, 40, 60);
-                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(80, 30), new Phaser.Point(90, 70), new Phaser.Point(90, 90), new Phaser.Point(80, 100), new Phaser.Point(30, 100), new Phaser.Point(20, 90), new Phaser.Point(20, 70));
-                
+                icon.drawPolygon(new Phaser.Point(30, 30), new Phaser.Point(90, 30), new Phaser.Point(90, 60), new Phaser.Point(100, 80), 
+                                 new Phaser.Point(100, 90), new Phaser.Point(90, 100), new Phaser.Point(30, 100), new Phaser.Point(30, 90));
+                icon.drawRect(35, this.iconHeight - 15 - iNeckHeight, 30, iNeckHeight);
+
                 // Eyes
                 icon.beginFill(0xffffff, 1);
                 icon.drawRect(50, 50, 10, 20);
                 icon.drawRect(70, 50, 10, 20);
                 icon.endFill();
+                break;
+
+            // Cat head *****************
+            case 0xfff:
+                // Ears
+                icon.beginFill(this.getSkinSecondaryColor(colorCode), 1);
+
+                // Face
+                icon.beginFill(color, 1);
+                icon.drawPolygon(new Phaser.Point(40, 30), new Phaser.Point(90, 30), new Phaser.Point(90, 60), 
+                                 new Phaser.Point(100, 60), new Phaser.Point(100, 80), new Phaser.Point(90, 80), new Phaser.Point(90, 90),
+                                 new Phaser.Point(40, 90), new Phaser.Point(40, 80), new Phaser.Point(30, 80), 
+                                 new Phaser.Point(30, 40), new Phaser.Point(40, 40));
+
+                // Eyes
+                icon.beginFill(0xffffff, 1);
+                icon.drawRect(55, 45, 5, 20);
+                icon.drawRect(70, 45, 5, 20);
+                icon.endFill();
+
+                // Nose
+                icon.beginFill(0xffcccc, 1);
+                icon.drawPolygon(new Phaser.Point(60, 70), new Phaser.Point(70, 70), new Phaser.Point(65, 75));
+                icon.endFill();
+
+                icon.lineStyle(2, 0xffcccc, 1);
+                icon.moveTo(65, 75);
+                icon.lineTo(60, 80);
+                icon.lineTo(55, 75);
+
+                icon.moveTo(65, 75);
+                icon.lineTo(70, 80);
+                icon.lineTo(75, 75);
+
+                // Whiskers
+                icon.lineStyle(2, 0xffffff, 1);
+                icon.moveTo(55, 70);
+                icon.lineTo(25, 70);
+                icon.moveTo(50, 75);
+                icon.lineTo(35, 80);
+
+                icon.moveTo(75, 70);
+                icon.lineTo(105, 65);
+                icon.moveTo(80, 75);
+                icon.lineTo(95, 80);
+
                 break;
         }
         
@@ -143,6 +194,19 @@ var iconGenerator = {
             case 0x06:  return 0xCB8442;
             case 0x07:  return 0x704139;
             case 0x08:  return 0x5C3836;
+
+            // Special cat
+            case 0xAA0: return 0xaaaaaa;
+        }
+    },
+
+    getSkinSecondaryColor: function(code) {
+        switch (code) {
+            default:
+                return this.getSkinColor(code);
+
+            case 0xAA0:
+                return 0x555555;
         }
     },
     
@@ -163,7 +227,7 @@ var iconGenerator = {
         switch (type) {
             default:
             case 0x00:
-                icon.drawRect(35, this.iconHeight - 20, 30, 10);
+                icon.drawRect(30, this.iconHeight - 20, 40, 10);
                 break;
         }
         
@@ -198,6 +262,9 @@ var iconGenerator = {
             case 0x11:  return 0x000099;
             case 0x12:  return 0x0000bb;
             case 0x13:  return 0x0000ff;
+
+            // Umpire color
+            case 0xFF:  return 0x6CA5BC;
         }  
     },
     
@@ -229,6 +296,9 @@ var iconGenerator = {
             case 0x11:  return 0x000066;
             case 0x12:  return 0x000099;
             case 0x13:  return 0x0000bb;
+
+            // Umpire color
+            case 0xFF:  return 0x888888;
         }  
     },
 
@@ -257,7 +327,7 @@ var iconGenerator = {
             // Plain trimmed
             case 0x02:
                 icon.drawRect(30, 30, 60, 10);
-                icon.drawRect(30, 30, 20, 30);
+                icon.drawRect(30, 30, 10, 30);
                 break;
 
             // Pompidor
