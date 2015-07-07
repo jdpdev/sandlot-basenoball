@@ -14,7 +14,7 @@ var iconGenerator = {
     //  G: head color
     //  H: shirt color
     // Returns an object containing the icon
-    generateIcon: function(iconString) {
+    generateIcon: function(iconString, teamColor) {
         var FACE_SHAPE = 0;
         var FACE_DECO = 1;
         var HEAD_DECO = 2;
@@ -32,9 +32,9 @@ var iconGenerator = {
         icon.drawRect(0, 0, this.iconWidth, this.iconHeight);
         icon.endFill();
         
-        this.drawShirt(icon, parseInt(codes[SHIRT], 16), parseInt(codes[SHIRT_COLOR], 16));
-        this.drawHead(icon, parseInt(codes[FACE_SHAPE], 16), parseInt(codes[SKIN_COLOR], 16));
-        this.drawHeadDeco(icon, parseInt(codes[HEAD_DECO], 16), parseInt(codes[HEAD_COLOR], 16));
+        this.drawShirt(icon, parseInt(codes[SHIRT], 16), parseInt(codes[SHIRT_COLOR], 16), teamColor);
+        this.drawHead(icon, parseInt(codes[FACE_SHAPE], 16), parseInt(codes[SKIN_COLOR], 16), teamColor);
+        this.drawHeadDeco(icon, parseInt(codes[HEAD_DECO], 16), parseInt(codes[HEAD_COLOR], 16), teamColor);
         
         return icon;
     },
@@ -43,7 +43,7 @@ var iconGenerator = {
     //  Head
     // ******************************************************************************
     
-    drawHead: function(icon, type, colorCode) {
+    drawHead: function(icon, type, colorCode, teamColor) {
         var color = this.getSkinColor(colorCode);
         icon.lineStyle(0, 0, 0);
         
@@ -225,7 +225,7 @@ var iconGenerator = {
     // ******************************************************************************
     
     // Draw the shirt component
-    drawShirt: function(icon, type, color) {
+    drawShirt: function(icon, type, color, teamColor) {
         icon.lineStyle(0, 0, 0);
         icon.beginFill(this.getShirtPrimaryColor(color), 1);
         icon.drawRect(10, this.iconHeight - 20, 80, 20);
@@ -316,7 +316,7 @@ var iconGenerator = {
     //  Hats/hair
     // ******************************************************************************
 
-    drawHeadDeco: function(icon, type, color) {
+    drawHeadDeco: function(icon, type, color, teamColor) {
         var primaryColor = this.getHeadDecoPrimaryColor(color);
         var secondaryColor = 0x000000;
 
@@ -336,8 +336,7 @@ var iconGenerator = {
 
             // Plain trimmed
             case 0x02:
-                icon.drawRect(30, 30, 60, 10);
-                icon.drawRect(30, 30, 10, 30);
+                this.drawTrimmedHair(icon, primaryColor, secondaryColor);
                 break;
 
             // Pompidor
@@ -347,9 +346,7 @@ var iconGenerator = {
 
             // Pony tail
             case 0x04:
-                icon.drawRect(30, 30, 60, 10);
-                icon.drawRect(30, 30, 15, 30);
-                icon.drawRect(10, 50, 20, 30);
+                this.drawPonytail(icon, primaryColor, secondaryColor);
                 break;
 
             // Bob
@@ -360,40 +357,76 @@ var iconGenerator = {
                 break;
             // Emo
             case 0x06:
+                icon.drawRect(30, 30, 60, 10);
+                icon.drawRect(30, 30, 10, 30);
+                icon.drawPolygon(new Phaser.Point(65, 30), new Phaser.Point(105, 65), new Phaser.Point(95, 25), new Phaser.Point(65, 25), new Phaser.Point(55, 35));
                 break;
 
             // Afro
             case 0x07:
+                icon.drawPolygon(new Phaser.Point(50, 40), new Phaser.Point(90, 40), new Phaser.Point(100, 30), 
+                                 new Phaser.Point(100, 0), new Phaser.Point(20, 0),
+                                 new Phaser.Point(20, 50), new Phaser.Point(30, 60));
                 break;
 
             // Mohawk
             case 0x08:
+                icon.drawPolygon(new Phaser.Point(65, 40), new Phaser.Point(75, 40), new Phaser.Point(75, 25), new Phaser.Point(70, 20), new Phaser.Point(55, 20), 
+                                 new Phaser.Point(45, 30), new Phaser.Point(55, 30));
                 break;
                 
             // Pigtails
             case 0x09:
+                icon.drawRect(30, 30, 60, 10);
+                icon.drawRect(30, 30, 15, 30);
+                icon.drawRect(10, 50, 20, 30);
+                icon.drawRect(90, 50, 10, 30);
                 break;
 
             // Baseball hat, bald
             case 0x20:
-                //icon.drawRect(25, 20, 65, 20);
-                icon.drawPolygon(new Phaser.Point(25, 20), new Phaser.Point(30, 15), new Phaser.Point(85, 15), new Phaser.Point(90, 20),
-                                 new Phaser.Point(90, 40), new Phaser.Point(25, 40));
-                icon.endFill();
-                
-                icon.beginFill(secondaryColor, 1);
-                icon.drawRect(40, 30, 70, 10);
+                this.drawHat(icon, teamColor, secondaryColor);
                 break;
 
             // Baseball hat, trimmed
             case 0x21:
+                this.drawTrimmedHair(icon, primaryColor, secondaryColor);
+                this.drawHat(icon, teamColor, secondaryColor);
                 break;
 
             // Baseball hat, pony tail
             case 0x22:
+                this.drawPonytail(icon, primaryColor, secondaryColor);
+                this.drawHat(icon, teamColor, secondaryColor);
                 break;
         }
 
+        icon.endFill();
+    },
+    
+    drawHat: function(icon, primaryColor, secondaryColor) {
+        icon.beginFill(primaryColor, 1);
+        icon.drawPolygon(new Phaser.Point(25, 20), new Phaser.Point(30, 15), new Phaser.Point(85, 15), new Phaser.Point(90, 20),
+                         new Phaser.Point(90, 40), new Phaser.Point(25, 40));
+        icon.endFill();
+        
+        icon.beginFill(secondaryColor, 1);
+        icon.drawRect(40, 30, 70, 10);
+        icon.endFill();
+    },
+    
+    drawTrimmedHair: function(icon, primaryColor, secondaryColor) {
+        icon.beginFill(primaryColor, 1);
+        icon.drawRect(30, 30, 60, 10);
+        icon.drawRect(30, 30, 10, 30);  
+        icon.endFill();
+    },
+    
+    drawPonytail: function(icon, primaryColor, secondaryColor) {
+        icon.beginFill(primaryColor, 1);
+        icon.drawRect(30, 30, 60, 10);
+        icon.drawRect(30, 30, 15, 30);
+        icon.drawRect(10, 50, 20, 30);
         icon.endFill();
     },
 

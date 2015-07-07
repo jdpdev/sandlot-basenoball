@@ -131,92 +131,95 @@ var gameState = {
 	
 	
 	iconTest: function() {
+		var teamA = 0xff0000;
+		var teamB = 0x0000ff;
+		
 		//
-		var icon = iconGenerator.generateIcon("00.00.00.00.00.00.00.00");
+		var icon = iconGenerator.generateIcon("00.00.00.00.00.00.00.00", teamA);
 		icon.x = 0;
 		icon.y = 0;
 		
-		icon = iconGenerator.generateIcon("01.00.04.00.01.00.03.01");
+		icon = iconGenerator.generateIcon("01.00.04.00.01.00.03.01", teamB);
 		icon.x = 150;
 		icon.y = 0;
 		
-		icon = iconGenerator.generateIcon("02.00.08.00.02.00.02.02");
+		icon = iconGenerator.generateIcon("02.00.08.00.02.00.02.02", teamA);
 		icon.x = 300;
 		icon.y = 0;
 		
-		icon = iconGenerator.generateIcon("03.00.00.00.03.00.01.03");
+		icon = iconGenerator.generateIcon("03.00.21.00.03.00.01.03", teamB);
 		icon.x = 450;
 		icon.y = 0;
 		
-		icon = iconGenerator.generateIcon("04.00.00.00.04.00.00.04");
+		icon = iconGenerator.generateIcon("04.00.00.00.04.00.00.04", teamA);
 		icon.x = 600;
 		icon.y = 0;
 		
 		//
-		icon = iconGenerator.generateIcon("05.00.01.00.05.00.0E.05");
+		icon = iconGenerator.generateIcon("05.00.01.00.05.00.0E.05", teamB);
 		icon.x = 0;
 		icon.y = 150;
 		
-		icon = iconGenerator.generateIcon("00.00.05.00.06.00.0D.06");
+		icon = iconGenerator.generateIcon("00.00.05.00.06.00.0D.06", teamA);
 		icon.x = 150;
 		icon.y = 150;
 		
-		icon = iconGenerator.generateIcon("01.00.00.00.07.00.0C.07");
+		icon = iconGenerator.generateIcon("01.00.22.00.07.00.0C.07", teamB);
 		icon.x = 300;
 		icon.y = 150;
 		
-		icon = iconGenerator.generateIcon("02.00.00.00.08.00.0B.08");
+		icon = iconGenerator.generateIcon("02.00.00.00.08.00.0B.08", teamA);
 		icon.x = 450;
 		icon.y = 150;
 		
-		icon = iconGenerator.generateIcon("03.00.00.00.09.00.0A.09");
+		icon = iconGenerator.generateIcon("03.00.00.00.09.00.0A.09", teamB);
 		icon.x = 600;
 		icon.y = 150;
 		
 		//
-		icon = iconGenerator.generateIcon("04.00.02.00.00.00.09.0A");
+		icon = iconGenerator.generateIcon("04.00.02.00.00.00.09.0A", teamA);
 		icon.x = 0;
 		icon.y = 300;
 		
-		icon = iconGenerator.generateIcon("05.00.06.00.01.00.08.0B");
+		icon = iconGenerator.generateIcon("05.00.06.00.01.00.08.0B", teamB);
 		icon.x = 150;
 		icon.y = 300;
 		
-		icon = iconGenerator.generateIcon("00.00.09.00.02.00.07.0C");
+		icon = iconGenerator.generateIcon("00.00.09.00.02.00.07.0C", teamA);
 		icon.x = 300;
 		icon.y = 300;
 		
-		icon = iconGenerator.generateIcon("01.00.00.00.03.00.06.0D");
+		icon = iconGenerator.generateIcon("01.00.00.00.03.00.06.0D", teamB);
 		icon.x = 450;
 		icon.y = 300;
 		
-		icon = iconGenerator.generateIcon("02.00.00.00.04.00.05.0E");
+		icon = iconGenerator.generateIcon("02.00.00.00.04.00.05.0E", teamA);
 		icon.x = 600;
 		icon.y = 300;
 		
 		//
-		icon = iconGenerator.generateIcon("03.00.03.00.05.00.04.0F");
+		icon = iconGenerator.generateIcon("03.00.03.00.05.00.04.0F", teamB);
 		icon.x = 0;
 		icon.y = 450;
 		
-		icon = iconGenerator.generateIcon("04.00.07.00.06.00.03.10");
+		icon = iconGenerator.generateIcon("04.00.07.00.06.00.03.10", teamA);
 		icon.x = 150;
 		icon.y = 450;
 		
-		icon = iconGenerator.generateIcon("05.00.20.00.07.00.02.11");
+		icon = iconGenerator.generateIcon("05.00.20.00.07.00.02.11", teamB);
 		icon.x = 300;
 		icon.y = 450;
 		
-		icon = iconGenerator.generateIcon("00.00.00.00.08.00.01.12");
+		icon = iconGenerator.generateIcon("00.00.00.00.08.00.01.12", teamA);
 		icon.x = 450;
 		icon.y = 450;
 		
-		icon = iconGenerator.generateIcon("01.00.00.00.09.00.00.13");
+		icon = iconGenerator.generateIcon("01.00.00.00.09.00.00.13", teamB);
 		icon.x = 600;
 		icon.y = 450;
 
 		// 
-		icon = iconGenerator.generateIcon("FFF.FF.20.FF.AA0.FF.0F.FF");
+		icon = iconGenerator.generateIcon("FFF.FF.20.FF.AA0.FF.0F.FF", 0);
 		icon.x = 0;
 		icon.y = 600;
 	}
