@@ -8,7 +8,7 @@ var gameField = {
     outfieldRadius: 450,
     
     homePlateX: 400,
-    homePlateY: 750,
+    homePlateY: 550,
 
     fieldGraphics: null,
 

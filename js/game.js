@@ -14,6 +14,8 @@ var gameState = {
 	battingTeam: null,
 	fieldingTeam: null,
 
+	umpire: null,
+
 	// Game state
 	iCurrentInning: 0,
 	bIsTopOfInning: true,
@@ -39,14 +41,17 @@ var gameState = {
 	create: function() {
 		actionManager.parseActions();
 
-		/*gameField.DrawField(game);
+		gameField.DrawField(game);
 
 		this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
 		this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));
 
-		this.startGame();*/
+		this.startGame();
 
-		this.iconTest();
+		//this.iconTest();
+
+		/*var dialog = new DialogBox(this.homeTeam.getPitcher(), true);
+		dialog.setY(40);*/
 	},
 
 	update: function() {
@@ -54,7 +59,17 @@ var gameState = {
 	},
 
 	startGame: function() {
-		this.startInning();
+		var umpireInfo = {name: "Umpire Cat", icon: "FFF.FF.20.FF.AA0.FF.0F.FF"};
+		this.umpire = new Player(0, umpireInfo, 0x222299);
+
+		var playBallDialog = new DialogBox(this.umpire, true, function(option) {
+			gameState.startInning();
+		});
+
+		playBallDialog.setText("Play ball!");
+		playBallDialog.setY(30);
+
+		//this.startInning();
 	},
 
 	startInning: function() {
@@ -116,17 +131,32 @@ var gameState = {
 
 	// Begin an at bat between a batter and a pitcher
 	beginAtBat: function(batter, pitcher) {
-		openWagerDialog(pitcher.getName(), "Pitcher", pitcher.getAP(), function(wagerAmount) {
+		/*openWagerDialog(pitcher.getName(), "Pitcher", pitcher.getAP(), function(wagerAmount) {
 			var pitcherWager = wagerAmount;
 
 			openWagerDialog(batter.getName(), "Batter", batter.getAP(), function(wagerAmount) {
 				gameState.handleAtBatWagers(wagerAmount, pitcherWager);
 			});
+		});*/
+
+		var dialog = new ChoiceDialog(batter, true, function(action) {
+			console.log("Batter selected action: " + action.text);
 		});
+
+		var actions = actionManager.getAvailableBatterActions(batter, 20);
+		dialog.setupChoices("Batter select action:", actions);
+		dialog.setY(30);
 	},
 
 	handleAtBatWagers: function(batterWager, pitcherWager) {
 		console.log("Batter Wager: " + batterWager + ", Pitcher Wager: " + pitcherWager);
+
+		// Pitcher wins ties
+		if (pitcherWager >= batterWager) {
+
+		} else {
+
+		}
 	},
 	
 	

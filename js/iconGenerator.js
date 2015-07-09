@@ -27,7 +27,7 @@ var iconGenerator = {
         var codes = iconString.split(".");
         var icon = game.add.graphics(0, 0);
         
-        icon.lineStyle(1, 0xffffff, 1);
+        icon.lineStyle(3, teamColor, 1);
         icon.beginFill(0xddcccc, 1);
         icon.drawRect(0, 0, this.iconWidth, this.iconHeight);
         icon.endFill();

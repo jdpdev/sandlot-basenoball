@@ -11,7 +11,8 @@ var RIGHT_FIELD = 8;
 function Player(id, playerInfo, teamColor) {
 	this.id = id;
 	this.playerInfo = playerInfo;
-	this.icon = null;
+	this.worldIcon = null;
+	this.portrait = null;
 
 	this.fieldingPosition = 0;
 
@@ -24,23 +25,36 @@ function Player(id, playerInfo, teamColor) {
 
 	// ** Methods ******************************************************
 	this.setPosition = function (position) {
-		this.icon.x = position.x;
-		this.icon.y = position.y;
+		this.worldIcon.x = position.x;
+		this.worldIcon.y = position.y;
 	}
 
 	this.getName = function() {
 		return this.playerInfo.name;
 	}
 
+	this.getPortraitDesc = function() {
+		return this.playerInfo.icon;
+	}
+
 	this.getAP = function() {
 		return this.currentAP;
+	}
+
+	this.getPortrait = function() {
+		if (this.portrait == null) {
+			this.portrait = iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
+			this.portrait.parent.removeChild(this.portrait);
+		}
+
+		return this.portrait;
 	}
 
 	// ** Methods ******************************************************
 	this.setAsFielder = function(position) {
 		this.fieldingPosition = position;
 
-		if (this.icon == null) {
+		if (this.worldIcon == null) {
 			this.drawFielder();
 		}
 
@@ -62,7 +76,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.returnToDugout = function(position, bRun) {
-		if (this.icon == null) {
+		if (this.worldIcon == null) {
 			this.drawFielder();
 		}
 
@@ -138,10 +152,10 @@ function Player(id, playerInfo, teamColor) {
 		}
 
 		// Create icon via graphics
-		this.icon = game.add.graphics(0, 0);
-		this.icon.beginFill(this.teamColor, 1);
-		this.icon.drawRect(0, 0, this.playerWidth, this.playerHeight);
-		this.icon.endFill();
+		this.worldIcon = game.add.graphics(0, 0);
+		this.worldIcon.beginFill(this.teamColor, 1);
+		this.worldIcon.drawRect(0, 0, this.playerWidth, this.playerHeight);
+		this.worldIcon.endFill();
 	}
 
 	// ** Batting ******************************************************

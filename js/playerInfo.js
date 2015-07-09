@@ -5,6 +5,8 @@ function PlayerInfo(json) {
 	// True if right handed, false if not
 	this.handedness = json.hand;
 
+	this.icon = json.icon;
+
 	// Stats
 	this.power = json.power;
 	this.batting = json.batting;
