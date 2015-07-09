@@ -40,6 +40,38 @@ var actionManager = {
 	}
 }
 
+// *****************************************************************************
+//	Types of actions
+// *****************************************************************************
+
+// START ACTIONS
+// Actions that happen at the start of an encounter. Essentially set the tone for what's 
+// going to be happening.
+
+// Take no action
+var ACTION_START_BATTER_LEAVE = 0;
+
+// Swing normally
+var ACTION_START_BATTER_SWING = 1;
+
+// Swing with extra power, at cost of control
+var ACTION_START_BATTER_SLUG = 2;
+
+// Swing with extra control, at cost of power
+var ACTION_START_BATTER_TARGET = 3;
+
+var ACTION_START_PITCHER_FASTBALL = 4;
+
+var ACTION_START_PITCHER_CHANGEUP = 5;
+
+var ACTION_START_PITCHER_BREAKING = 6;
+
+// REPONSE ACTIONS
+// Actions that happen in response to other actions. These modify or nullify action that has happened.
+
+// *****************************************************************************
+//	Wrapper for an action described in json
+// *****************************************************************************
 var Action = function(json) {
 	this.text = json.text;
 	this.actionType = json.type;
