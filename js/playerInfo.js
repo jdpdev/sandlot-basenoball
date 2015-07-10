@@ -10,6 +10,7 @@ function PlayerInfo(json) {
 	// Stats
 	this.power = json.power;
 	this.batting = json.batting;
+	this.pitchPower = json.pitchPower;
 	this.pitching = json.pitching;
 	this.speed = json.speed;
 	this.fielding = json.fielding;

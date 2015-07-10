@@ -15,6 +15,7 @@ ChoiceDialog.prototype.constructor = ChoiceDialog;
 
 // Extends DialogBox::close
 ChoiceDialog.prototype.close = function() {
+	this.clearChoices();
 	currentChoiceDialog = null;
 	this.clearDialog();
 }
@@ -56,7 +57,9 @@ ChoiceDialog.prototype.addChoice = function(action, x, y) {
 
 // Removes all choices
 ChoiceDialog.prototype.clearChoices = function() {
-
+	for (var i = 0; i < this.choiceList.length; i++) {
+		this.surface.removeChild(this.choiceList[i]);
+	}
 }
 
 function choiceTextOnInputOver(event) {
@@ -69,12 +72,11 @@ function choiceTextOnInputOut(event) {
 
 function choiceTextOnInputUp(event) {
 	this.fill = "#ffffff";	
+	currentChoiceDialog.close();
 
 	if (dialogCloseCallback != null) {
 		dialogCloseCallback(this.thisAction);
 	}
-
-	currentChoiceDialog.close();
 }
 
 var currentChoiceDialog = null;

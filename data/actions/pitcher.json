@@ -1,0 +1,39 @@
+{
+	"actions": [
+		{
+			"text": "(Fastball)",
+			"type": 4,
+			"cost": 4,
+			"requires": [ ],
+			"mods": [ 
+				{
+					"stat": "ppow",
+					"amount": 1
+				}
+			]
+		},
+		{
+			"text": "(Change-up)",
+			"type": 5,
+			"cost": 2,
+			"requires": [ ],
+			"mods": [ ]
+		},
+		{
+			"text": "(Breaking Ball)",
+			"type": 6,
+			"cost": 2,
+			"requires": [ ],
+			"mods": [ 
+				{
+					"stat": "ppow",
+					"amount": -2
+				},
+				{
+					"stat": "pit",
+					"amount": 1
+				}
+			]
+		}
+	]
+}

@@ -50,6 +50,10 @@ function Player(id, playerInfo, teamColor) {
 		return this.portrait;
 	}
 
+	this.getInfo = function() {
+		return this.playerInfo;
+	}
+
 	// ** Methods ******************************************************
 	this.setAsFielder = function(position) {
 		this.fieldingPosition = position;

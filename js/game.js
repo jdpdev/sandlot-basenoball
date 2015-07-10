@@ -16,6 +16,9 @@ var gameState = {
 
 	umpire: null,
 
+	selectedBatterAction: null,
+	selectedPitcherAction: null,
+
 	// Game state
 	iCurrentInning: 0,
 	bIsTopOfInning: true,
@@ -30,6 +33,8 @@ var gameState = {
 
 	// Player object that occupies each base: home, first, second, third
 	aRunners: [null, null, null, null],
+
+	pitchTimer: null,
 
 	preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
@@ -62,12 +67,9 @@ var gameState = {
 		var umpireInfo = {name: "Umpire Cat", icon: "FFF.FF.20.FF.AA0.FF.0F.FF"};
 		this.umpire = new Player(0, umpireInfo, 0x222299);
 
-		var playBallDialog = new DialogBox(this.umpire, true, function(option) {
+		this.showUmpireDialog("Play ball!", function(option) {
 			gameState.startInning();
 		});
-
-		playBallDialog.setText("Play ball!");
-		playBallDialog.setY(30);
 
 		//this.startInning();
 	},
@@ -131,21 +133,114 @@ var gameState = {
 
 	// Begin an at bat between a batter and a pitcher
 	beginAtBat: function(batter, pitcher) {
-		/*openWagerDialog(pitcher.getName(), "Pitcher", pitcher.getAP(), function(wagerAmount) {
-			var pitcherWager = wagerAmount;
+		this.doPitch();
+	},
 
-			openWagerDialog(batter.getName(), "Batter", batter.getAP(), function(wagerAmount) {
-				gameState.handleAtBatWagers(wagerAmount, pitcherWager);
+	// Do a pitch for the current at-bat
+	doPitch: function() {
+		this.selectedBatterAction = null;
+		this.selectedPitcherAction = null;
+
+		this.selectPitcherAction();
+	},
+
+	// Have the pitcher select their action
+	selectPitcherAction: function() {
+		var pitcher = this.fieldingTeam.getPitcher();
+		this.showChoiceDialog(pitcher, "Pitcher select action:", actionManager.getAvailablePitcherActions(pitcher, 20), 
+			function(action) {
+				console.log("Pitcher selected action: " + action.text);
+				gameState.selectedPitcherAction = action;
+
+				gameState.selectBatterAction();
 			});
-		});*/
+	},
 
-		var dialog = new ChoiceDialog(batter, true, function(action) {
-			console.log("Batter selected action: " + action.text);
-		});
+	// Have the batter select their action
+	selectBatterAction: function() {
+		var batter = this.aRunners[HOME];
+		this.showChoiceDialog(batter, "Batter select action:", actionManager.getAvailableBatterActions(batter, 20), 
+			function(action) {
+				console.log("Batter selected action: " + action.text);
+				gameState.selectedBatterAction = action;
 
-		var actions = actionManager.getAvailableBatterActions(batter, 20);
-		dialog.setupChoices("Batter select action:", actions);
-		dialog.setY(30);
+				gameState.throwPitch();
+			});
+	},
+
+	// Once actions have been selected, throw the pitch
+	throwPitch: function() {
+		if (this.pitchTimer != null) {
+			this.pitchTimer.destroy();
+		}
+
+		this.pitchTimer = this.game.time.create(true);
+		this.pitchTimer.add(250, pitchTimerResolvePitch, this);
+		this.pitchTimer.start();
+	},
+
+	// Resolve the current pitch
+	resolvePitch: function() {
+		this.pitchTimer.stop();
+		//this.showUmpireDialog("Strike one!", null);
+
+		var pitcher = this.fieldingTeam.getPitcher();
+		var batter = this.aRunners[HOME];
+
+		var pitchSkill = this.selectedPitcherAction.modStat(STAT_PITCHING, pitcher.getInfo().pitching);
+		var pitchPower = this.selectedPitcherAction.modStat(STAT_PITCH_POWER, pitcher.getInfo().pitchPower);
+		var battingSkill = this.selectedBatterAction.modStat(STAT_BATTING, batter.getInfo().batting);
+		var battingPower = this.selectedBatterAction.modStat(STAT_POWER, batter.getInfo().power);
+		var roll;
+
+		// Unopposed pitch strike chance: pskill / 10
+		if (this.selectedBatterAction.getActionType() == ACTION_START_BATTER_LEAVE) {
+			roll = Math.random();
+			console.log("pitcher rolls " + roll + " <= " + (pitchSkill / 10));
+
+			if (roll <= pitchSkill / 10) {
+				this.recordStrike();
+			} else {
+				this.recordBall();
+			}
+		}
+
+		// Batter contact chance: 
+	},
+
+	// Records a strike. Returns true on strike out.
+	recordStrike: function() {
+		this.iBatterStrikes++;
+
+		if (this.iBatterStrikes >= 3) {
+			this.showUmpireDialog("Strike three! You're MEOW-t!", function() {
+				gameState.recordOut();
+			});
+		} else {
+			this.showUmpireDialog("Steeeeeee-rike!", function() {
+				gameState.doPitch();
+			});
+		}
+	},
+
+	// Records a ball. Returns true on a walk.
+	recordBall: function() {
+		this.iBatterBalls++;
+
+		if (this.iBatterBalls >= 4) {
+			this.showUmpireDialog("Ball four!", function() {
+				
+			});
+		} else {
+			this.showUmpireDialog("(Licks some dirt off.)", function() {
+				gameState.doPitch();
+			});
+		}
+	},
+
+	// Records an out. Returns true on end-of-inning.
+	recordOut: function() {
+
 	},
 
 	handleAtBatWagers: function(batterWager, pitcherWager) {
@@ -159,6 +254,21 @@ var gameState = {
 		}
 	},
 	
+
+	// Show the umpire's dialog box
+	showUmpireDialog: function(text, onClose) {
+		var dialog = new DialogBox(this.umpire, true, onClose);
+
+		dialog.setText(text);
+		dialog.setY(420);
+	},
+
+	// Show a choice dialog for a player
+	showChoiceDialog: function(player, text, choices, callback) {
+		var dialog = new ChoiceDialog(player, true, callback);
+		dialog.setupChoices(text, choices);
+		dialog.setY(30);
+	},
 	
 	iconTest: function() {
 		var teamA = 0xff0000;
@@ -254,3 +364,7 @@ var gameState = {
 		icon.y = 600;
 	}
 };
+
+function pitchTimerResolvePitch() {
+	gameState.resolvePitch();
+}
