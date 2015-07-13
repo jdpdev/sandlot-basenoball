@@ -191,14 +191,15 @@ var gameState = {
 		var pitchPower = this.selectedPitcherAction.modStat(STAT_PITCH_POWER, pitcher.getInfo().pitchPower);
 		var battingSkill = this.selectedBatterAction.modStat(STAT_BATTING, batter.getInfo().batting);
 		var battingPower = this.selectedBatterAction.modStat(STAT_POWER, batter.getInfo().power);
-		var roll;
+		
+		var roll = Math.random();
+		var bInStrikeZone = roll <= pitchSkill / 10;
 
 		// Unopposed pitch strike chance: pskill / 10
 		if (this.selectedBatterAction.getActionType() == ACTION_START_BATTER_LEAVE) {
-			roll = Math.random();
 			console.log("pitcher rolls " + roll + " <= " + (pitchSkill / 10));
 
-			if (roll <= pitchSkill / 10) {
+			if (bInStrikeZone) {
 				this.recordStrike();
 			} else {
 				this.recordBall();
@@ -206,6 +207,30 @@ var gameState = {
 		}
 
 		// Batter contact chance: 
+		//	delta: Total pitch skill - batting skill
+		//	* d15  (25) = 80/20  miss/hit	
+		//	* d0   (10) = 50/50
+		//	* d-10 (0)  = 20/80
+		else {
+			if (!bInStrikeZone) {
+				battingSkill -= 2;
+				battingSkill = Math.max(0, battingSkill);
+			}
+
+			var pitchTotal = pitchSkill + pitchPower;
+			var delta = pitchTotal - battingSkill + 10;
+			var pitchPct = .2 + .6 * (delta / 25);
+			var batPct = .8 - .6 * (delta / 25);
+			var batRoll = Math.random();
+
+			// Made contact
+			if (batRoll <= batPct) {
+				console.log("batter made contact: " + batRoll + " <= " + batPct);
+			} else {
+				console.log("swinging strike: " + batRoll + " <= " + batPct);
+				this.recordStrike();
+			}
+		}
 	},
 
 	// Records a strike. Returns true on strike out.
