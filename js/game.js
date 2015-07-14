@@ -92,6 +92,7 @@ var gameState = {
 		this.iInningOuts = 0;
 		this.iBatterStrikes = 0;
 		this.iBatterBalls = 0;
+		this.aRunners = [null, null, null, null];
 
 		this.callNewBatter();
 	},
@@ -133,6 +134,9 @@ var gameState = {
 
 	// Begin an at bat between a batter and a pitcher
 	beginAtBat: function(batter, pitcher) {
+		this.iBatterStrikes = 0;
+		this.iBatterBalls = 0;
+
 		this.doPitch();
 	},
 
@@ -226,6 +230,7 @@ var gameState = {
 			// Made contact
 			if (batRoll <= batPct) {
 				console.log("batter made contact: " + batRoll + " <= " + batPct);
+				this.handleHit(batPct - batRoll, battingSkill, battingPower);
 			} else {
 				console.log("swinging strike: " + batRoll + " <= " + batPct);
 				this.recordStrike();
@@ -265,7 +270,75 @@ var gameState = {
 
 	// Records an out. Returns true on end-of-inning.
 	recordOut: function() {
+		this.iInningOuts++;
+		console.log("Outs: " + this.iInningOuts);
 
+		if (this.iInningOuts >= 3) {
+			this.endInning();
+		} else {
+			this.callNewBatter();
+		}
+	},
+
+	// Handle getting bat on ball
+	// margin is the difference between roll and what they were rolling for
+	handleHit: function(margin, battingSkill, battingPower) {
+		//this.recordOut();
+
+		// Hit types: line drive, ground ball, fly ball
+		// * Line drives give most hits, balanced between single and extra bases
+		// * Ground balls give medium hits, balanced towards singles
+		// * Fly balls give fewer hits, balanced towards extra bases
+		//
+		// Margin caps at .8
+
+		// Line drive, ground ball, fly ball
+		var weights = [3, 6, 5];
+		var weightTotal = 14;
+		var hitType = 2;
+		var roll = Math.floor(Math.random() * weightTotal);
+
+		for (var i = 0; i < weights.length; i++) {
+			roll -= weights[i];
+
+			if (roll <= 0) {
+				hitType = i;
+				break;
+			}
+		} 
+
+		// The umpire gives each hit a guarateed result, which actions can try to change
+		// Types have different ratios of hits, extra bases, and outs.
+		switch (hitType) {
+			// Line drive
+			case 0:
+				console.log("Line drive");
+				this.showUmpireDialog("Line drive to right, take first!", function() {
+					
+				});
+				break;
+
+			// Ground ball
+			case 1:
+				// TODO 
+				//	* see if fielders get it
+				//	* see if runner makes it
+				//	* runner action intercept
+				console.log("Ground ball");
+				this.showUmpireDialog("Grounder up the middle!", function() {
+					
+				});
+				break;
+
+			// Fly ball
+			default:
+			case 2:
+				console.log("Fly ball");
+				this.showUmpireDialog("Fly ball to shallow left!", function() {
+					this.recordOut();
+				});
+				break;
+		}
 	},
 
 	handleAtBatWagers: function(batterWager, pitcherWager) {

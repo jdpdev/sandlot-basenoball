@@ -90,6 +90,7 @@ var ACTION_START_PITCHER_BREAKING = 6;
 
 
 // STAT SHORTCUTS
+// Player stats
 var STAT_POWER = "pow";
 var STAT_BATTING = "bat";
 var STAT_PITCH_POWER = "ppo";
@@ -98,6 +99,11 @@ var STAT_SPEED = "spe";
 var STAT_FIELDING = "fie";
 var STAT_IMAGINATION = "ima";
 var STAT_ARGUING = "arg";
+
+// Result stats, modifying how results are calculated
+var STAT_LINE_DRIVE = "ldr";
+var STAT_GROUND_BALL = "gdb"
+var STAT_FLY_BALL = "fly";
 
 // *****************************************************************************
 //	Wrapper for an action described in json
