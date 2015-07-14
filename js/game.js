@@ -41,10 +41,12 @@ var gameState = {
 		game.load.json('spacebutts', './data/teams/spacebutts.json');
 
 		actionManager.loadActions();
+		lineManager.load();
 	},
 
 	create: function() {
 		actionManager.parseActions();
+		lineManager.parse();
 
 		gameField.DrawField(game);
 
@@ -118,7 +120,9 @@ var gameState = {
 	callNewBatter: function() {
 		this.aRunners[HOME] = this.battingTeam.presentNextBatter();
 
-		this.beginAtBat(this.aRunners[HOME], this.fieldingTeam.getPitcher());
+		this.showPlayerDialog(this.aRunners[HOME], true, "New Batter\n" + this.aRunners[HOME].getName(), function() {
+			gameState.beginAtBat(gameState.aRunners[HOME], gameState.fieldingTeam.getPitcher());	
+		});
 	},
 
 	/* *** Game Logic *****************************************************************
@@ -204,7 +208,7 @@ var gameState = {
 			console.log("pitcher rolls " + roll + " <= " + (pitchSkill / 10));
 
 			if (bInStrikeZone) {
-				this.recordStrike();
+				this.recordStrike(true);
 			} else {
 				this.recordBall();
 			}
@@ -233,13 +237,13 @@ var gameState = {
 				this.handleHit(batPct - batRoll, battingSkill, battingPower);
 			} else {
 				console.log("swinging strike: " + batRoll + " <= " + batPct);
-				this.recordStrike();
+				this.recordStrike(false);
 			}
 		}
 	},
 
 	// Records a strike. Returns true on strike out.
-	recordStrike: function() {
+	recordStrike: function(bLooking) {
 		this.iBatterStrikes++;
 
 		if (this.iBatterStrikes >= 3) {
@@ -247,7 +251,7 @@ var gameState = {
 				gameState.recordOut();
 			});
 		} else {
-			this.showUmpireDialog("Steeeeeee-rike!", function() {
+			this.showUmpireDialog(lineManager.getStrikeLine(bLooking).text, function() {
 				gameState.doPitch();
 			});
 		}
@@ -259,10 +263,10 @@ var gameState = {
 
 		if (this.iBatterBalls >= 4) {
 			this.showUmpireDialog("Ball four!", function() {
-				
+				gameState.advanceRunners(HOME);
 			});
 		} else {
-			this.showUmpireDialog("(Licks some dirt off.)", function() {
+			this.showUmpireDialog(lineManager.getBallLine().text, function() {
 				gameState.doPitch();
 			});
 		}
@@ -314,7 +318,7 @@ var gameState = {
 			case 0:
 				console.log("Line drive");
 				this.showUmpireDialog("Line drive to right, take first!", function() {
-					
+					gameState.advanceRunners(HOME);
 				});
 				break;
 
@@ -326,7 +330,7 @@ var gameState = {
 				//	* runner action intercept
 				console.log("Ground ball");
 				this.showUmpireDialog("Grounder up the middle!", function() {
-					
+					gameState.advanceRunners(HOME);
 				});
 				break;
 
@@ -335,7 +339,7 @@ var gameState = {
 			case 2:
 				console.log("Fly ball");
 				this.showUmpireDialog("Fly ball to shallow left!", function() {
-					this.recordOut();
+					gameState.recordOut();
 				});
 				break;
 		}
@@ -352,6 +356,40 @@ var gameState = {
 		}
 	},
 	
+	// Attempt to advance the runners
+	// Forced runners will all move to the next base. Non-forced will decide on their own.
+	// * targetRunner is optional base id of a specific runner to target with this command
+	advanceRunners: function(targetRunner) {
+		var startBase = HOME;
+		var bIsForced = true;
+		
+		if (targetRunner != undefined && targetRunner >= HOME && targetRunner <= THIRD_BASE) {
+			startBase = targetRunner;
+			
+			if (startBase > HOME) {
+				if (this.aRunners[startBase - 1] == null) {
+					bIsForced = false;
+				}
+			}
+		}
+		
+		for (var i = startBase; i <= THIRD_BASE; i++) {
+			if (this.aRunners[i] == null) {
+				bIsForced = false;
+				continue;
+			}
+			
+			// TODO have some AI decide a not-forced runner
+			var targetBase = i + 1;
+			
+			if (targetBase > THIRD_BASE) {
+				targetBase = HOME;
+			}
+			
+			this.aRunners[i].advanceToBase(targetBase);
+			bIsForced = true;
+		}
+	},
 
 	// Show the umpire's dialog box
 	showUmpireDialog: function(text, onClose) {
@@ -359,6 +397,14 @@ var gameState = {
 
 		dialog.setText(text);
 		dialog.setY(420);
+	},
+	
+	// Shows a generic dialog for a specific player
+	showPlayerDialog: function(player, bLeft, text, onClose) {
+		var dialog = new DialogBox(player, bLeft, onClose);
+
+		dialog.setText(text);
+		dialog.setY(30);
 	},
 
 	// Show a choice dialog for a player

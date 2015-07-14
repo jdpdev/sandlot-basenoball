@@ -23,7 +23,7 @@ function Player(id, playerInfo, teamColor) {
 
 	this.currentAP = 50;
 
-	// ** Methods ******************************************************
+	// ** Getters and setters **************************************************
 	this.setPosition = function (position) {
 		this.worldIcon.x = position.x;
 		this.worldIcon.y = position.y;
@@ -54,7 +54,7 @@ function Player(id, playerInfo, teamColor) {
 		return this.playerInfo;
 	}
 
-	// ** Methods ******************************************************
+	// ** Methods **************************************************************
 	this.setAsFielder = function(position) {
 		this.fieldingPosition = position;
 
@@ -163,4 +163,35 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	// ** Batting ******************************************************
+	
+	this.retireBatter = function(dugoutPos) {
+		this.returnToDugout(dugoutPos, true);
+	}
+	
+	// Advance the runner to a base
+	// base is the id of the base to advance to
+	this.advanceToBase = function(base) {
+		var basePos;
+		
+		switch (base) {
+			default:
+			case HOME:
+				basePos = gameField.GetHomePlatePos();
+				break;
+				
+			case FIRST_BASE:
+				basePos = gameField.GetFirstBasePos();
+				break;
+				
+			case SECOND_BASE:
+				basePos = gameField.GetSecondBasePos();
+				break;
+				
+			case THIRD_BASE:
+				basePos = gameField.GetThirdBasePos();
+				break;
+		}
+		
+		game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 4000, Phaser.Easing.Default, true);
+	}
 }

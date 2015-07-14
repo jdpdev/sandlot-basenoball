@@ -52,6 +52,7 @@ function Team() {
 	// Returns the player object
 	this.presentNextBatter = function() {
 		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
+		iCurrentBatterIndex++;
 		return players[battingOrder[iCurrentBatterIndex]];
 	},
 

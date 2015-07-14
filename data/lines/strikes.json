@@ -1,0 +1,40 @@
+{
+    "lines": [
+        {
+            "text": "Steeeee-rike!",
+            "special": 2
+        },
+        {
+            "text": "BOOM-shakalaka",
+            "special": 2
+        },
+        {
+            "text": "What a breeze, HUH!",
+            "special": 1
+        },
+        {
+            "text": "You're supposed to hit the ball! Strike!",
+            "special": 1
+        },
+        {
+            "text": "Nothing but air!",
+            "special": 1
+        },
+        {
+            "text": "Sha-wing, batta batta!",
+            "special": 1
+        },
+        {
+            "text": "Woosh!",
+            "special": 0
+        },
+        {
+            "text": "Caught him napping!",
+            "special": 0
+        },
+        {
+            "text": "The game's about hitting the ball",
+            "special": 0
+        }
+    ]
+}
