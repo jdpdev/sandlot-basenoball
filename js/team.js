@@ -13,7 +13,7 @@ function Team() {
 	var teamColor;
 
 	// Index of the batter currently at the plate
-	var iCurrentBatterIndex = 0;
+	var iCurrentBatterIndex = -1;
 
 	// Load information about the team from a json object
 	this.loadTeam = function(json) {
@@ -42,17 +42,21 @@ function Team() {
 	}
 
 	// Begin the batting half-innning
-	this.batTeam = function() {
+	this.batTeam = function(bTopInning) {
 		for (var i = 0; i < fieldingPositions.length; i++) {
-			players[fieldingPositions[i]].returnToDugout(gameField.GetHomeDugoutPos(), true);
+			if (bTopInning) {
+				players[fieldingPositions[i]].returnToDugout(gameField.GetAwayDugoutPos(), true);
+			} else {
+				players[fieldingPositions[i]].returnToDugout(gameField.GetHomeDugoutPos(), true);
+			}
 		}
 	}
 
 	// Present the next batter in the lineup to the plate
 	// Returns the player object
 	this.presentNextBatter = function() {
-		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
 		iCurrentBatterIndex++;
+		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
 		return players[battingOrder[iCurrentBatterIndex]];
 	},
 

@@ -34,6 +34,9 @@ var gameState = {
 	// Player object that occupies each base: home, first, second, third
 	aRunners: [null, null, null, null],
 
+	// Number of runners currently in motion
+	iRunningRunners: 0,
+
 	pitchTimer: null,
 
 	preload: function() {
@@ -79,12 +82,12 @@ var gameState = {
 	startInning: function() {
 		if (this.bIsTopOfInning) {
 			this.homeTeam.fieldTeam();
-			this.awayTeam.batTeam();	
+			this.awayTeam.batTeam(this.bIsTopOfInning);	
 
 			this.fieldingTeam = this.homeTeam;
 			this.battingTeam = this.awayTeam;
 		} else {
-			this.homeTeam.batTeam();
+			this.homeTeam.batTeam(this.bIsTopOfInning);
 			this.awayTeam.fieldTeam();
 
 			this.fieldingTeam = this.awayTeam;
@@ -248,7 +251,7 @@ var gameState = {
 
 		if (this.iBatterStrikes >= 3) {
 			this.showUmpireDialog("Strike three! You're MEOW-t!", function() {
-				gameState.recordOut();
+				gameState.recordOut(gameState.aRunners[HOME]);
 			});
 		} else {
 			this.showUmpireDialog(lineManager.getStrikeLine(bLooking).text, function() {
@@ -273,13 +276,14 @@ var gameState = {
 	},
 
 	// Records an out. Returns true on end-of-inning.
-	recordOut: function() {
+	recordOut: function(player) {
 		this.iInningOuts++;
 		console.log("Outs: " + this.iInningOuts);
 
 		if (this.iInningOuts >= 3) {
 			this.endInning();
 		} else {
+			this.sendBatterToDugout(player);
 			this.callNewBatter();
 		}
 	},
@@ -339,7 +343,7 @@ var gameState = {
 			case 2:
 				console.log("Fly ball");
 				this.showUmpireDialog("Fly ball to shallow left!", function() {
-					gameState.recordOut();
+					gameState.recordOut(gameState.aRunners[HOME]);
 				});
 				break;
 		}
@@ -386,8 +390,26 @@ var gameState = {
 				targetBase = HOME;
 			}
 			
+			this.iRunningRunners++;
 			this.aRunners[i].advanceToBase(targetBase);
 			bIsForced = true;
+		}
+	},
+
+	// Called by runner when it's done, either when run complete or intercepted early
+	// bAtBase true if reached base on its own
+	runnerReportComplete: function(runner, targetBase, bAtBase) {
+		this.iRunningRunners--;
+
+		this.aRunners[targetBase] = runner;
+
+		// TODO safe or out
+		if (targetBase == HOME) {
+			
+		}
+
+		if (this.iRunningRunners <= 0) {
+			this.callNewBatter();
 		}
 	},
 
@@ -412,6 +434,18 @@ var gameState = {
 		var dialog = new ChoiceDialog(player, true, callback);
 		dialog.setupChoices(text, choices);
 		dialog.setY(30);
+	},
+
+	sendBatterToDugout: function(player) {
+		var dugoutPos;
+
+		if (this.bIsTopOfInning) {
+			dugoutPos = gameField.GetAwayDugoutPos();
+		} else {
+			dugoutPos = gameField.GetHomeDugoutPos();
+		}
+
+		player.returnToDugout(dugoutPos);
 	},
 	
 	iconTest: function() {

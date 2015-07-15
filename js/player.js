@@ -23,6 +23,12 @@ function Player(id, playerInfo, teamColor) {
 
 	this.currentAP = 50;
 
+	// Tween used when running
+	this.runTween = null;
+
+	this.runCompleteCallback = null;
+	this.runTarget = -1;
+
 	// ** Getters and setters **************************************************
 	this.setPosition = function (position) {
 		this.worldIcon.x = position.x;
@@ -108,6 +114,7 @@ function Player(id, playerInfo, teamColor) {
 			// First base
 			case FIRST_BASE:
 				point = gameField.GetFirstBasePos();
+				point.x -= 20;
 				break;
 				
 			// Second base
@@ -118,6 +125,7 @@ function Player(id, playerInfo, teamColor) {
 			// Third base
 			case THIRD_BASE:
 				point = gameField.GetThirdBasePos();
+				point.x += 20;
 				break;
 				
 			// Shortstop
@@ -160,6 +168,13 @@ function Player(id, playerInfo, teamColor) {
 		this.worldIcon.beginFill(this.teamColor, 1);
 		this.worldIcon.drawRect(0, 0, this.playerWidth, this.playerHeight);
 		this.worldIcon.endFill();
+		this.worldIcon.myPlayer = this;
+
+		this.teamNumber = game.add.text(0, 0, this.id, { font: "14px Arial", fill: "#000000", align: "left" });
+		this.worldIcon.addChild(this.teamNumber);
+
+		this.teamNumber.x = 0;
+		this.teamNumber.y = 0;
 	}
 
 	// ** Batting ******************************************************
@@ -179,19 +194,41 @@ function Player(id, playerInfo, teamColor) {
 				basePos = gameField.GetHomePlatePos();
 				break;
 				
-			case FIRST_BASE:
+			case FIRST:
 				basePos = gameField.GetFirstBasePos();
 				break;
 				
-			case SECOND_BASE:
+			case SECOND:
 				basePos = gameField.GetSecondBasePos();
 				break;
 				
-			case THIRD_BASE:
+			case THIRD:
 				basePos = gameField.GetThirdBasePos();
 				break;
 		}
+
+		basePos.x -= this.playerWidth * 0.5;
+		basePos.y -= this.playerHeight;
 		
-		game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 4000, Phaser.Easing.Default, true);
+		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 3000, Phaser.Easing.Default, true);
+		this.runTarget = base;
+		this.runTween.onComplete.add(this.onRunCompleted, this);
+	}
+
+	this.onRunCompleted = function(target, tween) {
+		target.myPlayer.runTween = null;
+		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
+
+		/*if (target.myPlayer.runCompleteCallback != null && target.myPlayer.runCompleteCallback != undefined) {
+			target.myPlayer.runCompleteCallback(this.runTarget);
+		}*/
+	}
+}
+
+function playerOnRunCompleted(target, tween) {
+	target.myPlayer.runTween = null;
+
+	if (target.myPlayer.runCompleteCallback != null && target.myPlayer.runCompleteCallback != undefined) {
+		target.myPlayer.runCompleteCallback(this.runTarget);
 	}
 }
