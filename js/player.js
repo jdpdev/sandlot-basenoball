@@ -177,15 +177,58 @@ function Player(id, playerInfo, teamColor) {
 		this.teamNumber.y = 0;
 	}
 
-	// ** Batting ******************************************************
+	// ** Batter ******************************************************
 	
 	this.retireBatter = function(dugoutPos) {
 		this.returnToDugout(dugoutPos, true);
 	}
 	
-	// Advance the runner to a base
+	// ** Runner ******************************************************
+
+	// Advance the runner to a base unopposed.
 	// base is the id of the base to advance to
 	this.advanceToBase = function(base) {
+		var basePos = this.getBasePosition(base);
+
+		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
+		this.runTarget = base;
+		this.runTween.onComplete.add(this.onAdvanceCompleted, this);
+	}
+
+	// Runner has advanced to their base
+	this.onAdvanceCompleted = function(target, tween) {
+		target.myPlayer.runTween = null;
+		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
+	}
+
+	// The ball has been put in play, the batter has to decide what to do.
+	//	targetBase is the base the runner would run to, defined in game.js
+	//	hitType is defined in game.js
+	//	difficulty is how well it's hit
+	//	targetFielder is the fielder it's going to
+	//	bForced is if the run is forced
+	this.ballInPlay = function(targetBase, hitType, difficulty, targetFielder, bForced) {
+
+		// Not forced, decide if we really want to run
+		if (!bForced) {
+			console.log("Batter " + this.getName() +  " decides not to run");
+			return;
+		}
+
+		var basePos = this.getBasePosition(targetBase);
+
+		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
+		this.runTarget = targetBase;
+		this.runTween.onComplete.add(this.onRunCompleted, this);
+	}
+
+	this.onRunCompleted = function(target, tween) {
+		target.myPlayer.runTween = null;
+		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
+	}
+
+	// Returns the position of a base, as a point
+	this.getBasePosition = function(base) {
 		var basePos;
 		
 		switch (base) {
@@ -209,26 +252,50 @@ function Player(id, playerInfo, teamColor) {
 
 		basePos.x -= this.playerWidth * 0.5;
 		basePos.y -= this.playerHeight;
-		
-		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 3000, Phaser.Easing.Default, true);
-		this.runTarget = base;
-		this.runTween.onComplete.add(this.onRunCompleted, this);
+
+		return basePos;
 	}
 
-	this.onRunCompleted = function(target, tween) {
-		target.myPlayer.runTween = null;
-		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
-
-		/*if (target.myPlayer.runCompleteCallback != null && target.myPlayer.runCompleteCallback != undefined) {
-			target.myPlayer.runCompleteCallback(this.runTarget);
-		}*/
+	// Returns how long it takes this runner to get to a base, in ms
+	this.getRunSpeedTime = function() {
+		return 3000;
 	}
 }
 
-function playerOnRunCompleted(target, tween) {
-	target.myPlayer.runTween = null;
 
-	if (target.myPlayer.runCompleteCallback != null && target.myPlayer.runCompleteCallback != undefined) {
-		target.myPlayer.runCompleteCallback(this.runTarget);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// **********************************************************************
+//	"Static" methods
+// **********************************************************************
+
+// Returns human-friendly name for a fielding index
+function GetPlayerPositionName(positionIndex) {
+	if (positionIndex < PITCHER || positionIndex > RIGHT_FIELD) {
+		return "Imaginary Fielder";
+	}
+
+	switch (positionIndex) {
+		case PITCHER: 		return "Pitcher";
+		case CATCHER: 		return "Catcher";
+		case FIRST_BASE: 	return "First Base";
+		case SECOND_BASE: 	return "Second Base";
+		case THIRD_BASE: 	return "Third Base";
+		case SHORT_STOP: 	return "Shortstop";
+		case LEFT_FIELD: 	return "Left Field";
+		case CENTER_FIELD: 	return "Center Field";
+		case RIGHT_FIELD: 	return "Right Field";
 	}
 }

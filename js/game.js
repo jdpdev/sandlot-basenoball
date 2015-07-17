@@ -5,6 +5,10 @@ var FIRST = 1;
 var SECOND = 2;
 var THIRD = 3;
 
+var LINE_DRIVE = 0;
+var GROUND_BALL = 1;
+var FLY_BALL = 2;
+
 var gameState = {
 
 	// The teams
@@ -266,7 +270,7 @@ var gameState = {
 
 		if (this.iBatterBalls >= 4) {
 			this.showUmpireDialog("Ball four!", function() {
-				gameState.advanceRunners(HOME);
+				gameState.walkBatter();
 			});
 		} else {
 			this.showUmpireDialog(lineManager.getBallLine().text, function() {
@@ -288,15 +292,39 @@ var gameState = {
 		}
 	},
 
+	// Walk the batter and advance all forced runners
+	walkBatter: function() {
+		var startBase = HOME;
+		var bIsForced = true;
+		
+		for (var i = startBase; i <= THIRD; i++) {
+			if (this.aRunners[i] == null) {
+				bIsForced = false;
+				continue;
+			}
+			
+			// TODO have some AI decide a not-forced runner
+			var targetBase = i + 1;
+			
+			if (targetBase > THIRD) {
+				targetBase = HOME;
+			}
+			
+			this.iRunningRunners++;
+			this.aRunners[i].advanceToBase(targetBase);
+			bIsForced = true;
+		}
+	},
+
 	// Handle getting bat on ball
 	// margin is the difference between roll and what they were rolling for
 	handleHit: function(margin, battingSkill, battingPower) {
 		//this.recordOut();
 
 		// Hit types: line drive, ground ball, fly ball
-		// * Line drives give most hits, balanced between single and extra bases
-		// * Ground balls give medium hits, balanced towards singles
-		// * Fly balls give fewer hits, balanced towards extra bases
+		// 	* Line drives require high margin, and are most productive
+		//	* Ground ball medium margin
+		//	* Fly ball low margin 
 		//
 		// Margin caps at .8
 
@@ -315,14 +343,53 @@ var gameState = {
 			}
 		} 
 
-		// The umpire gives each hit a guarateed result, which actions can try to change
-		// Types have different ratios of hits, extra bases, and outs.
+		// Based on the type of hit, pick a fielder to be the general vicinity.
+		// Difficulty for fielder is function of margin, batting skill and power.
+		// Fielder counters with fielding skill and speed.
+		//
+		// Line drive picks infield or outfield 
+		//	- Can pick infielders or outfielders with even odds
+		//	- Bskill and margin for outfield, +bpower for infield
+		//	- If goes to outfield, almost guarantee at least a single
+		// Fly ball picks infield or outfield
+		//	- Better margin goes flatter, power how far
+		// Grounder picks infield
+		//	- Bskill for base difficulty, power function of margin
+		//
+		// TODO what range should difficulty be normalized to?
 		switch (hitType) {
 			// Line drive
 			case 0:
-				console.log("Line drive");
-				this.showUmpireDialog("Line drive to right, take first!", function() {
-					gameState.advanceRunners(HOME);
+				// Select target fielder
+				var targetFielder = Math.floor(Math.random() * 8);
+
+				if (targetFielder == 8) {
+					targetFielder--;
+				}
+
+				// Exclude the catcher (index 1)
+				if (targetFielder > 0) {
+					targetFielder + 1;
+				}
+
+				var difficulty = 0;
+
+				// Infield and outfield use different math
+				if (targetFielder < LEFT_FIELD) {
+					difficulty = battingSkill * margin + battingPower;
+
+					// Make it harder for the pitcher
+					if (targetFielder == PITCHER && battingPower * margin >= 5) {
+						difficulty *= 1.5;
+					}
+				} else {
+					difficulty = battingSkill * margin * 2 + battingPower;
+				}
+
+				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + ")");
+
+				this.showUmpireDialog("Line drive to " + GetPlayerPositionName(targetFielder) + "!", function() {
+					gameState.putBallInPlay(HOME);
 				});
 				break;
 
@@ -334,7 +401,7 @@ var gameState = {
 				//	* runner action intercept
 				console.log("Ground ball");
 				this.showUmpireDialog("Grounder up the middle!", function() {
-					gameState.advanceRunners(HOME);
+					gameState.putBallInPlay(HOME);
 				});
 				break;
 
@@ -349,49 +416,28 @@ var gameState = {
 		}
 	},
 
-	handleAtBatWagers: function(batterWager, pitcherWager) {
-		console.log("Batter Wager: " + batterWager + ", Pitcher Wager: " + pitcherWager);
-
-		// Pitcher wins ties
-		if (pitcherWager >= batterWager) {
-
-		} else {
-
-		}
-	},
 	
-	// Attempt to advance the runners
+	
+	// Tell the runners that the ball is in play
 	// Forced runners will all move to the next base. Non-forced will decide on their own.
-	// * targetRunner is optional base id of a specific runner to target with this command
-	advanceRunners: function(targetRunner) {
+	putBallInPlay: function(hitType, difficulty, targetFielder) {
 		var startBase = HOME;
 		var bIsForced = true;
 		
-		if (targetRunner != undefined && targetRunner >= HOME && targetRunner <= THIRD_BASE) {
-			startBase = targetRunner;
-			
-			if (startBase > HOME) {
-				if (this.aRunners[startBase - 1] == null) {
-					bIsForced = false;
-				}
-			}
-		}
-		
-		for (var i = startBase; i <= THIRD_BASE; i++) {
+		for (var i = startBase; i <= THIRD; i++) {
 			if (this.aRunners[i] == null) {
 				bIsForced = false;
 				continue;
 			}
 			
-			// TODO have some AI decide a not-forced runner
 			var targetBase = i + 1;
 			
-			if (targetBase > THIRD_BASE) {
+			if (targetBase > THIRD) {
 				targetBase = HOME;
 			}
 			
 			this.iRunningRunners++;
-			this.aRunners[i].advanceToBase(targetBase);
+			this.aRunners[i].ballInPlay(targetBase, hitType, difficulty, targetFielder, bIsForced);
 			bIsForced = true;
 		}
 	},
@@ -405,7 +451,7 @@ var gameState = {
 
 		// TODO safe or out
 		if (targetBase == HOME) {
-			
+
 		}
 
 		if (this.iRunningRunners <= 0) {
