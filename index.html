@@ -2,76 +2,44 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>hello phaser!</title>
+        <title>Sandlot Basenoball</title>
+
         <script src="//cdn.jsdelivr.net/phaser/2.3.0/phaser.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+        <script src="js/player.js" type="text/javascript"></script>
+        <script src="js/playerInfo.js" type="text/javascript"></script>
+        <script src="js/team.js" type="text/javascript"></script>
+        <script src="js/field.js" type="text/javascript"></script>
+        <script src="js/main.js" type="text/javascript"></script>
+        <script src="js/game.js" type="text/javascript"></script>
+        <script src="js/actions.js" type="text/javascript"></script>
+        <script src="js/lines.js" type="text/javascript"></script>
+        <script src="js/iconGenerator.js" type="text/javascript"></script>
+
+        <!-- UI -->
+        <script src="js/htmlui.js" type="text/javascript"></script>
+        <script src="js/ui/dialogBox.js" type="text/javascript"></script>
+        <script src="js/choiceDialog.js" type="text/javascript"></script>
+
+        <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
 
     <script type="text/javascript">
 
     window.onload = function() {
-
-        var game = new Phaser.Game(800, 800, Phaser.AUTO, '', { preload: preload, create: create });
-
-        function preload () {
-
-            game.load.image('logo', 'phaser.png');
-
-        }
-
-        function create () {
-            var fieldWidth = 800;
-            var fieldHeight = 800;
-            var infieldRadius = 250;
-            var basesRadius = 150;
-            
-            var homePlateX = 400;
-            var homePlateY = fieldHeight - 50;
-            
-            var graphics = game.add.graphics(0, 0);
-
-            // Grass
-            graphics.beginFill(0x00aa00, 1);
-            graphics.drawRect(0, 0, 800, 800);
-            graphics.endFill();
-            
-            // Infield
-            graphics.lineStyle(1, 0x8B4513, 1);
-            graphics.beginFill(0x8B4513, 1);
-            
-            graphics.moveTo(homePlateX, homePlateY);
-            graphics.lineTo(homePlateX - infieldRadius, homePlateY - infieldRadius);
-            graphics.lineTo(homePlateX + infieldRadius, homePlateY - infieldRadius);
-            graphics.lineTo(homePlateX, homePlateY);
-            graphics.arc(homePlateX, homePlateY, Math.sqrt(infieldRadius * infieldRadius + infieldRadius * infieldRadius), game.math.degToRad(225), game.math.degToRad(315));
-            graphics.endFill();
-            
-            // Bases
-            DrawBase(homePlateX, homePlateY, graphics);
-            DrawBase(homePlateX + basesRadius, homePlateY - basesRadius, graphics);
-            DrawBase(homePlateX, homePlateY - basesRadius * 2, graphics);
-            DrawBase(homePlateX - basesRadius, homePlateY - basesRadius, graphics);
-            
-            // Foul lines
-            graphics.lineStyle(2, 0xffffff, 1);
-            graphics.moveTo(homePlateX, homePlateY);
-            graphics.lineTo(homePlateX - fieldWidth * 0.5, homePlateY - fieldWidth * 0.5);
-            graphics.moveTo(homePlateX, homePlateY);
-            graphics.lineTo(homePlateX + fieldWidth * 0.5, homePlateY - fieldWidth * 0.5);
-            
-            // Back wall
-            graphics.arc(homePlateX, homePlateY, Math.sqrt((fieldWidth * 0.5) * (fieldWidth * 0.5) + (fieldWidth * 0.5) * (fieldWidth * 0.5)), 0, 360);
-        }
-
-        function DrawBase(cx, cy, graphics) {
-            graphics.lineStyle(0, 0xffffff, 1);
-            graphics.beginFill(0xffffff, 1);
-            graphics.drawRect(cx - 7, cy - 7, 14, 14);
-            graphics.endFill();
-        }
+        InitializeGame();
     };
 
     </script>
+
+    <div id="wagerAPDialog" class="gameDialog wagerAPDialog" style="display: none">
+        <h2 id="whoWagers"></h2>
+        <h4>Place Your Wager</h4>
+        <input type="text" name="wagerAmount"> of <span id="maxAP"></span> Imagination<br/>
+        <p><a class="submitBtn">Confirm</a></p>
+    </div>
 
     </body>
 </html>
