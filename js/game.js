@@ -329,7 +329,7 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [3, 6, 5];
+		var weights = [3, 7, 5];
 		var weightTotal = 14;
 		var hitType = 2;
 		var roll = Math.floor(Math.random() * weightTotal);
@@ -357,22 +357,15 @@ var gameState = {
 		//	- Bskill for base difficulty, power function of margin
 		//
 		// TODO what range should difficulty be normalized to?
+		//
+		// Distance is literal distance the ball travels
 		switch (hitType) {
 			// Line drive
 			case 0:
 				// Select target fielder
-				var targetFielder = Math.floor(Math.random() * 8);
-
-				if (targetFielder == 8) {
-					targetFielder--;
-				}
-
-				// Exclude the catcher (index 1)
-				if (targetFielder > 0) {
-					targetFielder + 1;
-				}
-
+				var targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
 				var difficulty = 0;
+				var distance = 0;
 
 				// Infield and outfield use different math
 				if (targetFielder < LEFT_FIELD) {
@@ -389,38 +382,76 @@ var gameState = {
 				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + ")");
 
 				this.showUmpireDialog("Line drive to " + GetPlayerPositionName(targetFielder) + "!", function() {
-					gameState.putBallInPlay(HOME);
+					gameState.putBallInPlay(LINE_DRIVE, targetFielder, difficulty, distance);
 				});
 				break;
 
 			// Ground ball
 			case 1:
-				// TODO 
-				//	* see if fielders get it
-				//	* see if runner makes it
-				//	* runner action intercept
+				var targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, true);
+				var difficulty = battingSkill + battingPower * margin;
+				var distance = 0;
+				
+				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + ")");
+				
 				console.log("Ground ball");
-				this.showUmpireDialog("Grounder up the middle!", function() {
-					gameState.putBallInPlay(HOME);
+				this.showUmpireDialog("Ground ball to " + GetPlayerPositionName(targetFielder) + "!", function() {
+					gameState.putBallInPlay(GROUND_BALL, targetFielder, difficulty, distance);
 				});
 				break;
 
 			// Fly ball
 			default:
 			case 2:
+				var targetFielder = 0;
+				var difficulty = 0;
+				var distance = 0;
+				
+				if (margin >= 0.6) {
+					targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
+					difficulty = battingSkill * margin + battingPower * margin;
+				} else if (margin >= 0.3) {
+					targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
+					difficulty = battingSkill * margin + battingPower * margin * 0.5;
+				} else {
+					targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, false);
+					difficulty = battingSkill * margin;
+				}
+				
+				console.log("Fly ball to " + targetFielder + " (difficulty: " + difficulty + ")");
+				
 				console.log("Fly ball");
-				this.showUmpireDialog("Fly ball to shallow left!", function() {
-					gameState.recordOut(gameState.aRunners[HOME]);
+				this.showUmpireDialog("Fly ball to " + GetPlayerPositionName(targetFielder) + "!", function() {
+					gameState.putBallInPlay(FLY_BALL, targetFielder, difficulty, distance);
 				});
 				break;
 		}
 	},
-
 	
+	// Pick a random fielder
+	// startPos and endPos are the range of fielders to get, inclusive
+	getRandomFielder: function(startPos, endPos, bExcludeCatcher) {
+		var targetFielder = startPos + Math.floor(Math.random() * (endPos - startPos + 1));
+
+		if (targetFielder >= endPos + 1) {
+			targetFielder = endPos;
+		}
+
+		// Exclude the catcher (index 1)
+		if (bExcludeCatcher && startPos <= CATCHER && targetFielder > 0) {
+			targetFielder + 1;
+			
+			if (targetFielder > endPos) {
+				targetFielder = endPos;
+			}
+		}
+		
+		return targetFielder;
+	},
 	
 	// Tell the runners that the ball is in play
 	// Forced runners will all move to the next base. Non-forced will decide on their own.
-	putBallInPlay: function(hitType, difficulty, targetFielder) {
+	putBallInPlay: function(hitType, targetFielder, difficulty, distance) {
 		var startBase = HOME;
 		var bIsForced = true;
 		
