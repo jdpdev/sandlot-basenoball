@@ -99,6 +99,8 @@ var ACTION_START_PITCHER_CHANGEUP = 5;
 
 var ACTION_START_PITCHER_BREAKING = 6;
 
+var ACTION_START_PITCHER_LOB = 7;
+
 // REPONSE ACTIONS
 // Actions that happen in response to other actions. These modify or nullify action that has happened.
 

@@ -61,12 +61,14 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.getPortrait = function() {
-		if (this.portrait == null) {
+		/*if (this.portrait == null) {
 			this.portrait = iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
 			this.portrait.parent.removeChild(this.portrait);
 		}
 
-		return this.portrait;
+		return this.portrait;*/
+
+		return iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
 	}
 
 	this.getInfo = function() {

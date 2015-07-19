@@ -43,6 +43,9 @@ var gameState = {
 
 	pitchTimer: null,
 
+	pitcherInfoHUD: null,
+	batterInfoHUD: null,
+
 	preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
 		game.load.json('spacebutts', './data/teams/spacebutts.json');
@@ -103,6 +106,18 @@ var gameState = {
 		this.iBatterBalls = 0;
 		this.aRunners = [null, null, null, null];
 
+		// HUD
+		if (this.pitcherInfoHUD == null) {
+			this.pitcherInfoHUD = new PitcherInfoHUD();
+			this.pitcherInfoHUD.setPosition(5, 510);
+		}
+
+		if (this.batterInfoHUD == null) {
+			this.batterInfoHUD = new BatterInfoHUD();
+			this.batterInfoHUD.setPosition(795, 510);
+		}
+
+		this.pitcherInfoHUD.setPlayer(this.fieldingTeam.getPitcher());
 		this.callNewBatter();
 	},
 
@@ -126,6 +141,7 @@ var gameState = {
 
 	callNewBatter: function() {
 		this.aRunners[HOME] = this.battingTeam.presentNextBatter();
+		this.batterInfoHUD.setPlayer(this.aRunners[HOME]);
 
 		this.showPlayerDialog(this.aRunners[HOME], true, "New Batter\n" + this.aRunners[HOME].getName(), function() {
 			gameState.beginAtBat(gameState.aRunners[HOME], gameState.fieldingTeam.getPitcher());	
@@ -155,6 +171,9 @@ var gameState = {
 	doPitch: function() {
 		this.selectedBatterAction = null;
 		this.selectedPitcherAction = null;
+
+		this.pitcherInfoHUD.updatePlayer();
+		this.batterInfoHUD.updatePlayer();
 
 		this.selectPitcherAction();
 	},
