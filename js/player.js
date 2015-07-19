@@ -22,6 +22,7 @@ function Player(id, playerInfo, teamColor) {
 	this.teamColor = parseInt(teamColor);
 
 	this.currentAP = 50;
+	this.maxAP = 50;
 
 	// Tween used when running
 	this.runTween = null;
@@ -45,6 +46,18 @@ function Player(id, playerInfo, teamColor) {
 
 	this.getAP = function() {
 		return this.currentAP;
+	}
+
+	this.getMaxAP = function() {
+		return this.maxAP;
+	}
+
+	this.consumeAP = function(amount) {
+		this.currentAP -= amount;
+
+		if (this.currentAP < 0) {
+			this.currentAP = 0;
+		}
 	}
 
 	this.getPortrait = function() {
@@ -177,12 +190,28 @@ function Player(id, playerInfo, teamColor) {
 		this.teamNumber.y = 0;
 	}
 
+
+
+
+
+
+
+
 	// ** Batter ******************************************************
 	
 	this.retireBatter = function(dugoutPos) {
 		this.returnToDugout(dugoutPos, true);
 	}
 	
+
+
+
+
+
+
+
+
+
 	// ** Runner ******************************************************
 
 	// Advance the runner to a base unopposed.
@@ -259,6 +288,19 @@ function Player(id, playerInfo, teamColor) {
 	// Returns how long it takes this runner to get to a base, in ms
 	this.getRunSpeedTime = function() {
 		return 3000;
+	}
+
+
+
+
+
+
+
+
+
+	// ** Fielding ******************************************************
+	this.fieldBall = function(hitType, difficulty, distance) {
+		var myDist = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY).getMagnitude();
 	}
 }
 

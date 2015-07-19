@@ -7,12 +7,17 @@ var gameField = {
     basesRadius: 150,
     outfieldRadius: 450,
     
+    // The distance between the infield and the fence
+    outfieldGap: 0,
+    
     homePlateX: 400,
     homePlateY: 550,
 
     fieldGraphics: null,
 
 	DrawField: function(game) {
+		this.outfieldGap = this.backWallLength - this.infieldRadius;
+
 		this.fieldGraphics = game.add.graphics(0, 0);
 		var graphics = this.fieldGraphics;
 

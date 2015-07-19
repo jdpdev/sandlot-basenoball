@@ -56,11 +56,22 @@ function Team() {
 	// Returns the player object
 	this.presentNextBatter = function() {
 		iCurrentBatterIndex++;
+
+		if (iCurrentBatterIndex >= 8) {
+			iCurrentBatterIndex = 0;
+		}
+
 		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
 		return players[battingOrder[iCurrentBatterIndex]];
 	},
 
+	// Returns the pitcher player
 	this.getPitcher = function() {
-		return players[fieldingPositions[fieldingPositions[PITCHER]]];
+		return this.getFielderForPosition(PITCHER);
+	}
+
+	// Returns the fielder at a specific position
+	this.getFielderForPosition = function(position) {
+		return players[fieldingPositions[fieldingPositions[position]]];
 	}
 }

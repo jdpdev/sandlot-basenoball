@@ -165,6 +165,7 @@ var gameState = {
 		this.showChoiceDialog(pitcher, "Pitcher select action:", actionManager.getAvailablePitcherActions(pitcher, 20), 
 			function(action) {
 				console.log("Pitcher selected action: " + action.text);
+				pitcher.consumeAP(action.getCost());
 				gameState.selectedPitcherAction = action;
 
 				gameState.selectBatterAction();
@@ -177,6 +178,7 @@ var gameState = {
 		this.showChoiceDialog(batter, "Batter select action:", actionManager.getAvailableBatterActions(batter, 20), 
 			function(action) {
 				console.log("Batter selected action: " + action.text);
+				batter.consumeAP(action.getCost());
 				gameState.selectedBatterAction = action;
 
 				gameState.throwPitch();
@@ -379,7 +381,10 @@ var gameState = {
 					difficulty = battingSkill * margin * 2 + battingPower;
 				}
 
-				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + ")");
+				distance = battingSkill * margin + battingPower * margin;
+				distance = gameField.infieldRadius + this.adjustBySinCurve(distance / 15) * (gameField.backWallLength + 20 - gameField.infieldRadius);
+
+				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 
 				this.showUmpireDialog("Line drive to " + GetPlayerPositionName(targetFielder) + "!", function() {
 					gameState.putBallInPlay(LINE_DRIVE, targetFielder, difficulty, distance);
@@ -390,9 +395,10 @@ var gameState = {
 			case 1:
 				var targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, true);
 				var difficulty = battingSkill + battingPower * margin;
-				var distance = 0;
+				var distance = battingPower * margin;
+				distance = this.adjustBySinCurve(distance / 8) * (gameField.infieldRadius + 20);
 				
-				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + ")");
+				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 				
 				console.log("Ground ball");
 				this.showUmpireDialog("Ground ball to " + GetPlayerPositionName(targetFielder) + "!", function() {
@@ -405,23 +411,52 @@ var gameState = {
 			case 2:
 				var targetFielder = 0;
 				var difficulty = 0;
-				var distance = 0;
+				var distance = (battingPower * margin) / 7;
+				var goingToWall = "";
 				
 				if (margin >= 0.6) {
 					targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
 					difficulty = battingSkill * margin + battingPower * margin;
+					distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
 				} else if (margin >= 0.3) {
 					targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
 					difficulty = battingSkill * margin + battingPower * margin * 0.5;
+
+					if (targetFielder >= LEFT_FIELD) {
+						distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
+					} else {
+						distance = this.adjustBySinCurve(distance) * gameField.infieldRadius + 30;
+					}
+
 				} else {
 					targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, false);
-					difficulty = battingSkill * margin;
+					difficulty = 1;
+					distance = this.adjustBySinCurve(distance) * gameField.infieldRadius - 20;
+				}
+
+				if (distance >= gameField.backWallLength) {
+					switch (Math.round(Math.random() * 3)) {
+						case 0:
+							goingToWall = " It's going to the wall!";
+							break;
+
+						case 1:
+							goingToWall = " Someone gave it some catnip!";
+							break;
+
+						case 2:
+							goingToWall = " It's got some legs!";
+							break;
+
+						case 3:
+							goingToWall = " Back! Back! Back!";
+							break;
+					}
 				}
 				
-				console.log("Fly ball to " + targetFielder + " (difficulty: " + difficulty + ")");
+				console.log("Fly ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 				
-				console.log("Fly ball");
-				this.showUmpireDialog("Fly ball to " + GetPlayerPositionName(targetFielder) + "!", function() {
+				this.showUmpireDialog("Fly ball to " + GetPlayerPositionName(targetFielder) + "!" + goingToWall, function() {
 					gameState.putBallInPlay(FLY_BALL, targetFielder, difficulty, distance);
 				});
 				break;
@@ -455,6 +490,7 @@ var gameState = {
 		var startBase = HOME;
 		var bIsForced = true;
 		
+		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
 			if (this.aRunners[i] == null) {
 				bIsForced = false;
@@ -471,6 +507,10 @@ var gameState = {
 			this.aRunners[i].ballInPlay(targetBase, hitType, difficulty, targetFielder, bIsForced);
 			bIsForced = true;
 		}
+
+		// Set the fielder fielding
+		var fielder = this.fieldingTeam.getFielderForPosition(targetFielder);
+		fielder.fieldBall(hitType, difficulty, distance);
 	},
 
 	// Called by runner when it's done, either when run complete or intercepted early
@@ -523,6 +563,13 @@ var gameState = {
 		}
 
 		player.returnToDugout(dugoutPos);
+	},
+
+	// Given a value normalized [0,1], return a normalized version modified by a sin curve
+	adjustBySinCurve: function(pct) {
+		pct = Math.min(Math.max(pct, 0), 1);
+		pct = Math.sin(pct * Math.PI - Math.PI / 2) / 2 + .5;
+		return pct;
 	},
 	
 	iconTest: function() {
