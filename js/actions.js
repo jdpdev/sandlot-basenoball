@@ -12,6 +12,7 @@ var actionManager = {
 	loadActions: function() {
 		game.load.json("batterActions", './data/actions/batter.json');
 		game.load.json("pitcherActions", './data/actions/pitcher.json');
+		game.load.json("fielderActions", './data/actions/fielding.json');
 	},
 
 	parseActions: function() {
@@ -30,6 +31,14 @@ var actionManager = {
 		for (var i = 0; i < actions.length; i++) {
 			this.pitcherActions.push(new Action(actions[i]));
 		}
+
+		// Fielding
+		actions = game.cache.getJSON("fielderActions")["actions"];
+		this.fielderActions = [];
+
+		for (var i = 0; i < actions.length; i++) {
+			this.fielderActions.push(new Action(actions[i]));
+		}
 	},
 
 	// Returns a list of batter actions that are available to the given player with an amount of ap to spend
@@ -40,6 +49,11 @@ var actionManager = {
 	// Returns a list of pitcher actions that are available to the given player with an amount of ap to spend
 	getAvailablePitcherActions: function(playerInfo, ap) {
 		return this.getAvailableActions(this.pitcherActions, playerInfo, ap);
+	},
+
+	// Returns a list of pitcher actions that are available to the given player with an amount of ap to spend
+	getAvailableFielderActions: function(playerInfo, ap) {
+		return this.getAvailableActions(this.fielderActions, playerInfo, ap);
 	},
 
 	getAvailableActions: function(actions, playerInfo, ap) {
@@ -124,6 +138,10 @@ var Action = function(json) {
 			this.requirements[i].max = 10;
 		}
 	}
+}
+
+Action.prototype.getCost = function() {
+	return this.cost;
 }
 
 Action.prototype.getActionType = function() {

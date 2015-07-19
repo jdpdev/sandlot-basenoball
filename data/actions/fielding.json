@@ -1,0 +1,66 @@
+{
+	"actions": [
+		{
+			"text": "Mine!",
+			"type": 0,
+			"cost": 0,
+			"requires": [ ],
+			"mods": [ ]
+		},
+		{
+			"text": "I got it!",
+			"type": 0,
+			"cost": 5,
+			"requires": [
+				{ 
+					"stat": "fie",
+					"min": 2
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": 1
+				}
+			]
+		},
+		{
+			"text": "Gotta go fast!",
+			"type": 0,
+			"cost": 15,
+			"requires": [
+				{ 
+					"stat": "fie",
+					"min": 8
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": 1
+				},
+				{
+					"stat": "spe",
+					"amount": 2
+				}
+			]
+		},
+		{
+			"text": "Angels lift me!",
+			"type": 0,
+			"cost": 20,
+			"requires": [
+				{ 
+					"stat": "fie",
+					"min": 6
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": 3
+				}
+			]
+		}
+	]
+}
