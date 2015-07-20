@@ -292,7 +292,14 @@ function Player(id, playerInfo, teamColor) {
 		return 3000;
 	}
 
+	this.getRunSpeed = function() {
+		// Run speed, used when running and fielding, is calibrated on time to get to base
+		// skill 0 = 5sec
+		// skill 5 = 4sec
+		// skill 10 = 3sec
 
+		return gameField.basesRadius / (5 - ((this.getInfo().speed / 10) * 2));
+	}
 
 
 
@@ -303,6 +310,20 @@ function Player(id, playerInfo, teamColor) {
 	// ** Fielding ******************************************************
 	this.fieldBall = function(hitType, difficulty, distance) {
 		var myDist = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY).getMagnitude();
+
+		// Simulate running to the point
+		var runTimer = game.time.create(true);
+		runTimer.add(myDist / this.getRunSpeed(), this.runToFieldFinished, this, hitType, difficulty);
+		runTimer.start();
+	}
+
+	// Present fielding choices
+	this.runToFieldFinished = function(hitType, difficulty) {
+		gameState.showChoiceDialog(this, "Fielder select action:", actionManager.getAvailableFielderActions(this, this.getAP()), 
+			function(action) {
+				console.log("Fielder selected action: " + action.text);
+				this.consumeAP(action.getCost());
+			});
 	}
 }
 

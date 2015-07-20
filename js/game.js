@@ -181,7 +181,7 @@ var gameState = {
 	// Have the pitcher select their action
 	selectPitcherAction: function() {
 		var pitcher = this.fieldingTeam.getPitcher();
-		this.showChoiceDialog(pitcher, "Pitcher select action:", actionManager.getAvailablePitcherActions(pitcher, 20), 
+		this.showChoiceDialog(pitcher, "Pitcher select action:", actionManager.getAvailablePitcherActions(pitcher, pitcher.getAP()), 
 			function(action) {
 				console.log("Pitcher selected action: " + action.text);
 				pitcher.consumeAP(action.getCost());
@@ -194,7 +194,7 @@ var gameState = {
 	// Have the batter select their action
 	selectBatterAction: function() {
 		var batter = this.aRunners[HOME];
-		this.showChoiceDialog(batter, "Batter select action:", actionManager.getAvailableBatterActions(batter, 20), 
+		this.showChoiceDialog(batter, "Batter select action:", actionManager.getAvailableBatterActions(batter, batter.getAP()), 
 			function(action) {
 				console.log("Batter selected action: " + action.text);
 				batter.consumeAP(action.getCost());
@@ -400,8 +400,11 @@ var gameState = {
 					difficulty = battingSkill * margin * 2 + battingPower;
 				}
 
-				distance = battingSkill * margin + battingPower * margin;
-				distance = gameField.infieldRadius + this.adjustBySinCurve(distance / 15) * (gameField.backWallLength + 20 - gameField.infieldRadius);
+				distance = (battingSkill * margin + battingPower * margin) / 15;
+
+				console.log("Line drive, normalized distance: " + distance);
+
+				distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * (gameField.backWallLength + 20 - gameField.infieldRadius);
 
 				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 
@@ -414,8 +417,11 @@ var gameState = {
 			case 1:
 				var targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, true);
 				var difficulty = battingSkill + battingPower * margin;
-				var distance = battingPower * margin;
-				distance = this.adjustBySinCurve(distance / 8) * (gameField.infieldRadius + 20);
+				var distance = (battingPower * margin) / 8;
+
+				console.log("Ground ball, normalized distance: " + distance);
+
+				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 				
@@ -432,6 +438,8 @@ var gameState = {
 				var difficulty = 0;
 				var distance = (battingPower * margin) / 7;
 				var goingToWall = "";
+
+				console.log("Fly ball, normalized distance: " + distance);
 				
 				if (margin >= 0.6) {
 					targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
@@ -493,7 +501,7 @@ var gameState = {
 
 		// Exclude the catcher (index 1)
 		if (bExcludeCatcher && startPos <= CATCHER && targetFielder > 0) {
-			targetFielder + 1;
+			targetFielder += 1;
 			
 			if (targetFielder > endPos) {
 				targetFielder = endPos;
