@@ -109,7 +109,7 @@ var ACTION_START_PITCHER_LOB = 7;
 // Player stats
 var STAT_POWER = "pow";
 var STAT_BATTING = "bat";
-var STAT_PITCH_POWER = "ppo";
+var STAT_PITCH_POWER = "ppow";
 var STAT_PITCHING = "pit";
 var STAT_SPEED = "spe";
 var STAT_FIELDING = "fie";
@@ -227,4 +227,50 @@ Action.prototype.modStat = function(stat, value) {
 	}
 
 	return value;
+}
+
+Action.prototype.getModDisplay = function(mod) {
+	var display = "";
+
+	switch (mod.stat) {
+		case STAT_POWER:
+			display = "Power";
+			break;
+
+		case STAT_BATTING:
+			display = "Batting";
+			break;
+
+		case STAT_PITCH_POWER:
+			display = "Pitch Power";
+			break;
+
+		case STAT_PITCHING:
+			display = "Pitching";
+			break;
+
+		case STAT_SPEED:
+			display = "Speed";
+			break;
+
+		case STAT_FIELDING:
+			display = "Fielding";
+			break;
+
+		case STAT_IMAGINATION:
+			display = "Imagination";
+			break;
+
+		case STAT_ARGUING:
+			display = "Arguing";
+			break;
+	}
+
+	if (mod.amount >= 0) {
+		display += " +" + mod.amount;
+	} else {
+		display += " " + mod.amount;
+	}
+
+	return display;
 }

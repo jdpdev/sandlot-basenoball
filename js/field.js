@@ -2,10 +2,10 @@ var gameField = {
 
 	fieldWidth: 800,
 	fieldHeight: 800,
-	backWallLength: 400,
+	backWallLength: 385,
 	infieldRadius: 250,
     basesRadius: 150,
-    outfieldRadius: 450,
+    outfieldRadius: 420,
     
     // The distance between the infield and the fence
     outfieldGap: 0,

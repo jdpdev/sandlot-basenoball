@@ -9,6 +9,10 @@
 				{
 					"stat": "ppow",
 					"amount": -2
+				},
+				{
+					"stat": "pit",
+					"amount": -2
 				}
 			]
 		},

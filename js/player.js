@@ -248,14 +248,49 @@ function Player(id, playerInfo, teamColor) {
 
 		var basePos = this.getBasePosition(targetBase);
 
-		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
+		this.worldIcon.update = this.runnerOnUpdate;
+		this.worldIcon.player = this;
+		this.targetBasePos = basePos;
+		this.runTarget = targetFielder;
+
+		/*this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
 		this.runTarget = targetBase;
-		this.runTween.onComplete.add(this.onRunCompleted, this);
+		this.runTween.onComplete.add(this.onRunCompleted, this);*/
 	}
 
-	this.onRunCompleted = function(target, tween) {
-		target.myPlayer.runTween = null;
-		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
+	this.onRunCompleted = function() {
+		this.worldIcon.update = function() { };
+		gameState.runnerReportComplete(this, this.runTarget, true);
+	}
+
+	this.runnerOnUpdate = function() {
+		if (gameState.bGlobalUIPause) {
+			return;
+		}
+
+		var player = this.player;
+		var delta = game.time.elapsed * 0.001;
+		var pDiff = new Phaser.Point(player.targetBasePos.x - player.worldIcon.x, player.targetBasePos.y - player.worldIcon.y);
+		var speedStep = player.getRunSpeed() * delta;
+		var bDone = false;
+
+		if (pDiff.getMagnitude() > speedStep) {
+			pDiff.setMagnitude(speedStep);
+		} else {
+			bDone = true;
+		}
+
+		player.worldIcon.x += pDiff.x;
+		player.worldIcon.y += pDiff.y;
+
+		if (bDone) {
+			player.onRunCompleted();
+		}
+	}
+
+	// Stop the player from running
+	this.interruptRun = function() {
+		this.worldIcon.update = function() { };
 	}
 
 	// Returns the position of a base, as a point
@@ -313,16 +348,19 @@ function Player(id, playerInfo, teamColor) {
 
 		// Simulate running to the point
 		var runTimer = game.time.create(true);
-		runTimer.add(myDist / this.getRunSpeed(), this.runToFieldFinished, this, hitType, difficulty);
+		runTimer.add(1, this.runToFieldFinished, this, hitType, difficulty, distance);
 		runTimer.start();
 	}
 
 	// Present fielding choices
-	this.runToFieldFinished = function(hitType, difficulty) {
+	this.runToFieldFinished = function(hitType, difficulty, distance) {
+		var fielder = this;
+
 		gameState.showChoiceDialog(this, "Fielder select action:", actionManager.getAvailableFielderActions(this, this.getAP()), 
 			function(action) {
 				console.log("Fielder selected action: " + action.text);
-				this.consumeAP(action.getCost());
+				fielder.consumeAP(action.getCost());
+				gameState.fielderSelectAction(fielder, action, hitType, difficulty, distance);
 			});
 	}
 }

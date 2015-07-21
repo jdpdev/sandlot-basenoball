@@ -75,8 +75,14 @@ ChoiceDialog.prototype.setupChoices = function(text, actions) {
 // Internal method, adds an action as a choice
 // Returns the choice object
 ChoiceDialog.prototype.addChoice = function(action, x, y) {
+	var modList = "";
+
+	for (var i = 0; i < action.mods.length; i++) {
+		modList += action.getModDisplay(action.mods[i]) + " ";
+	}
+
 	var choice = this.createText();
-	choice.setText(action.text + " (" + (action.cost * -1) + "AP)");
+	choice.setText(action.text + " (" + (action.cost * -1) + "AP " + modList + ")");
 	choice.x = x;
 	choice.y = y;
 
@@ -94,6 +100,9 @@ ChoiceDialog.prototype.addChoice = function(action, x, y) {
 // Removes all choices
 ChoiceDialog.prototype.clearChoices = function() {
 	for (var i = 0; i < this.choiceList.length; i++) {
+		this.choiceList[i].events.onInputOver.removeAll();
+		this.choiceList[i].events.onInputOut.removeAll();
+		this.choiceList[i].events.onInputUp.removeAll();
 		this.surface.removeChild(this.choiceList[i]);
 	}
 }

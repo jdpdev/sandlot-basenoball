@@ -22,6 +22,9 @@ var gameState = {
 
 	selectedBatterAction: null,
 	selectedPitcherAction: null,
+	selectedFielderAction: null,
+
+	activeFielder: null,
 
 	// Game state
 	iCurrentInning: 0,
@@ -41,10 +44,15 @@ var gameState = {
 	// Number of runners currently in motion
 	iRunningRunners: 0,
 
+	// Whether the ball is in play and alive
+	bIsBallInPlay: false,
+
 	pitchTimer: null,
 
 	pitcherInfoHUD: null,
 	batterInfoHUD: null,
+
+	bGlobalUIPause: false,
 
 	preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
@@ -301,14 +309,30 @@ var gameState = {
 	},
 
 	// Records an out. Returns true on end-of-inning.
+	// Returns true if the ball is in play and is still alive
 	recordOut: function(player) {
 		this.iInningOuts++;
+		this.iRunningRunners--;
 		console.log("Outs: " + this.iInningOuts);
+
+		this.sendBatterToDugout(player);
+
+		if (this.iInningOuts >= 3 || this.iRunningRunners <= 0) {
+			this.callDeadBall();
+			return false;
+		}
+
+		return this.bIsBallInPlay;
+	},
+
+	// Call dead ball after a ball put into play is resolved
+	callDeadBall: function() {
+		console.log("Dead ball!");
+		this.bIsBallInPlay = false;
 
 		if (this.iInningOuts >= 3) {
 			this.endInning();
 		} else {
-			this.sendBatterToDugout(player);
 			this.callNewBatter();
 		}
 	},
@@ -516,6 +540,7 @@ var gameState = {
 	putBallInPlay: function(hitType, targetFielder, difficulty, distance) {
 		var startBase = HOME;
 		var bIsForced = true;
+		this.bIsBallInPlay = true;
 		
 		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
@@ -540,6 +565,65 @@ var gameState = {
 		fielder.fieldBall(hitType, difficulty, distance);
 	},
 
+	// Called by a fielder when they have selected their action
+	fielderSelectAction: function(fielder, action, hitType, difficulty, distance) {
+		this.selectedFielderAction = action;
+		this.activeFielder = fielder;
+
+		this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+	},
+
+	// Resolve the result of the fielder attempting to get the ball
+	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
+		var delta = fielder.getInfo().fielding - difficulty;
+		var roll = Math.random();
+		var bSuccess = false;
+
+		// Delta 0 is even odds. Effective range is [-10, +5].
+		if (delta >= 0) {
+			delta = 0.5 + 0.5 * (delta / 5);
+		} else {
+			delta = 0.5 - 0.5 * (delta / -10);
+		}
+
+		bSuccess = roll <= delta;
+
+		console.log("Fielder rolls " + roll + " <= " + delta);
+
+		switch (hitType) {
+			case LINE_DRIVE:
+				if (bSuccess) {
+
+					// Can make a play
+					if (this.recordOut(this.aRunners[HOME])) {
+
+					}
+				}
+				break;
+
+			case GROUND_BALL:
+				if (bSuccess) {
+					this.fielderGathersBall(this.activeFielder);
+				}
+				break;
+
+			case FLY_BALL:
+				if (bSuccess) {
+
+					// Can make a play
+					if (this.recordOut(this.aRunners[HOME])) {
+
+					}
+				}
+				break;
+		}
+	},
+
+	// Called when the fielder has gathered the ball and can make a play
+	fielderGathersBall: function(fielder) {
+
+	},
+
 	// Called by runner when it's done, either when run complete or intercepted early
 	// bAtBase true if reached base on its own
 	runnerReportComplete: function(runner, targetBase, bAtBase) {
@@ -547,13 +631,10 @@ var gameState = {
 
 		this.aRunners[targetBase] = runner;
 
-		// TODO safe or out
-		if (targetBase == HOME) {
-
-		}
+		
 
 		if (this.iRunningRunners <= 0) {
-			this.callNewBatter();
+			this.callDeadBall();
 		}
 	},
 
@@ -578,6 +659,11 @@ var gameState = {
 		var dialog = new ChoiceDialog(player, true, callback);
 		dialog.setupChoices(text, choices);
 		dialog.setY(30);
+	},
+
+	// Shows options for bases a fielder can throw to, based on runners
+	showBaseOptions: function(player) {
+
 	},
 
 	sendBatterToDugout: function(player) {

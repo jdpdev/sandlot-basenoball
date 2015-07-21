@@ -37,6 +37,8 @@ DialogBox.prototype.setupWindow = function() {
 	// Click to close
 	this.surface.inputEnabled = true;
 	this.surface.events.onInputUp.add(dialogBoxInputUp, this);
+
+	gameState.bGlobalUIPause = true;
 }
 
 // Cleans up and closes the dialog
@@ -46,6 +48,7 @@ DialogBox.prototype.close = function() {
 
 DialogBox.prototype.clearDialog = function() {
 	this.surface.parent.removeChild(this.surface);
+	gameState.bGlobalUIPause = false;
 }
 
 DialogBox.prototype.setY = function(y) {
