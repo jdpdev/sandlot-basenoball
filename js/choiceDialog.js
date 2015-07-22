@@ -72,17 +72,48 @@ ChoiceDialog.prototype.setupChoices = function(text, actions) {
 	}
 }
 
+// Sets up a list of non-action choices.
+// Each choice is an object with keys "id", "text", and optional "ap"
+ChoiceDialog.prototype.setupCustomChoices = function(text, choices) {
+	this.setText(text);
+
+	var textBounds = this.textField.getBounds();
+	var startY = textBounds.y + textBounds.height + 5;
+	var choice;
+
+	for (var i = 0; i < choices.length; i++) {
+		choice = this.addChoice(choices[i], textBounds.x, startY, choices[i]["text"], choices[i]["ap"]);
+
+		this.choiceList.push(choice);
+		startY += 25;
+	}
+}
+
 // Internal method, adds an action as a choice
 // Returns the choice object
-ChoiceDialog.prototype.addChoice = function(action, x, y) {
+ChoiceDialog.prototype.addChoice = function(action, x, y, text, cost) {
 	var modList = "";
 
-	for (var i = 0; i < action.mods.length; i++) {
-		modList += action.getModDisplay(action.mods[i]) + " ";
+	if (action.mods != undefined) {
+		for (var i = 0; i < action.mods.length; i++) {
+			modList += action.getModDisplay(action.mods[i]) + " ";
+		}
+	}
+
+	var displayString = "";
+
+	if (text == undefined) {
+		displayString = action.text + " (" + (action.cost * -1) + "AP " + modList + ")";
+	} else {
+		displayString = text;
+
+		if (cost != undefined) {
+			displayString += " (" + cost + " AP)";
+		}
 	}
 
 	var choice = this.createText();
-	choice.setText(action.text + " (" + (action.cost * -1) + "AP " + modList + ")");
+	choice.setText(displayString);
 	choice.x = x;
 	choice.y = y;
 
@@ -109,7 +140,12 @@ ChoiceDialog.prototype.clearChoices = function() {
 
 function choiceTextOnInputOver(event) {
 	this.fill = "#ffff00";
-	currentChoiceDialog.drawAPBar(this.thisAction.getCost());
+
+	if (this.thisAction.getCost != undefined) {
+		currentChoiceDialog.drawAPBar(this.thisAction.getCost());
+	} else {
+		currentChoiceDialog.drawAPBar(0);
+	}
 }
 
 function choiceTextOnInputOut(event) {

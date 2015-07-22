@@ -39,7 +39,8 @@ var gameState = {
 	iBatterBalls: 0,
 
 	// Player object that occupies each base: home, first, second, third
-	aRunners: [null, null, null, null],
+	aRunnerLocations: [null, null, null, null],
+	aRunnerTargets: [null, null, null, null],
 
 	// Number of runners currently in motion
 	iRunningRunners: 0,
@@ -112,7 +113,7 @@ var gameState = {
 		this.iInningOuts = 0;
 		this.iBatterStrikes = 0;
 		this.iBatterBalls = 0;
-		this.aRunners = [null, null, null, null];
+		this.aRunnerLocations = [null, null, null, null];
 
 		// HUD
 		if (this.pitcherInfoHUD == null) {
@@ -148,11 +149,11 @@ var gameState = {
 	},
 
 	callNewBatter: function() {
-		this.aRunners[HOME] = this.battingTeam.presentNextBatter();
-		this.batterInfoHUD.setPlayer(this.aRunners[HOME]);
+		this.aRunnerLocations[HOME] = this.battingTeam.presentNextBatter();
+		this.batterInfoHUD.setPlayer(this.aRunnerLocations[HOME]);
 
-		this.showPlayerDialog(this.aRunners[HOME], true, "New Batter\n" + this.aRunners[HOME].getName(), function() {
-			gameState.beginAtBat(gameState.aRunners[HOME], gameState.fieldingTeam.getPitcher());	
+		this.showPlayerDialog(this.aRunnerLocations[HOME], true, "New Batter\n" + this.aRunnerLocations[HOME].getName(), function() {
+			gameState.beginAtBat(gameState.aRunnerLocations[HOME], gameState.fieldingTeam.getPitcher());	
 		});
 	},
 
@@ -201,7 +202,7 @@ var gameState = {
 
 	// Have the batter select their action
 	selectBatterAction: function() {
-		var batter = this.aRunners[HOME];
+		var batter = this.aRunnerLocations[HOME];
 		this.showChoiceDialog(batter, "Batter select action:", actionManager.getAvailableBatterActions(batter, batter.getAP()), 
 			function(action) {
 				console.log("Batter selected action: " + action.text);
@@ -229,7 +230,7 @@ var gameState = {
 		//this.showUmpireDialog("Strike one!", null);
 
 		var pitcher = this.fieldingTeam.getPitcher();
-		var batter = this.aRunners[HOME];
+		var batter = this.aRunnerLocations[HOME];
 
 		var pitchSkill = this.selectedPitcherAction.modStat(STAT_PITCHING, pitcher.getInfo().pitching);
 		var pitchPower = this.selectedPitcherAction.modStat(STAT_PITCH_POWER, pitcher.getInfo().pitchPower);
@@ -284,7 +285,7 @@ var gameState = {
 
 		if (this.iBatterStrikes >= 3) {
 			this.showUmpireDialog("Strike three! You're MEOW-t!", function() {
-				gameState.recordOut(gameState.aRunners[HOME]);
+				gameState.recordOut(gameState.aRunnerLocations[HOME]);
 			});
 		} else {
 			this.showUmpireDialog(lineManager.getStrikeLine(bLooking).text, function() {
@@ -315,7 +316,7 @@ var gameState = {
 		this.iRunningRunners--;
 		console.log("Outs: " + this.iInningOuts);
 
-		this.sendBatterToDugout(player);
+		this.sendBatterToDugout(player, true);
 
 		if (this.iInningOuts >= 3 || this.iRunningRunners <= 0) {
 			this.callDeadBall();
@@ -343,7 +344,7 @@ var gameState = {
 		var bIsForced = true;
 		
 		for (var i = startBase; i <= THIRD; i++) {
-			if (this.aRunners[i] == null) {
+			if (this.aRunnerLocations[i] == null) {
 				bIsForced = false;
 				continue;
 			}
@@ -356,7 +357,7 @@ var gameState = {
 			}
 			
 			this.iRunningRunners++;
-			this.aRunners[i].advanceToBase(targetBase);
+			this.aRunnerLocations[i].advanceToBase(targetBase);
 			bIsForced = true;
 		}
 	},
@@ -375,7 +376,8 @@ var gameState = {
 
 		// Line drive, ground ball, fly ball
 		var weights = [3, 7, 5];
-		var weightTotal = 14;
+		//var weights = [0, 1, 0];
+		var weightTotal = 1;
 		var hitType = 2;
 		var roll = Math.floor(Math.random() * weightTotal);
 
@@ -387,6 +389,8 @@ var gameState = {
 				break;
 			}
 		} 
+
+		hitType = GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -445,6 +449,7 @@ var gameState = {
 
 				console.log("Ground ball, normalized distance: " + distance);
 
+				targetFielder = FIRST_BASE;
 				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
@@ -507,6 +512,9 @@ var gameState = {
 				
 				console.log("Fly ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 				
+				// TODO
+				// calculate time to fielder based off of distance and hit type
+
 				this.showUmpireDialog("Fly ball to " + GetPlayerPositionName(targetFielder) + "!" + goingToWall, function() {
 					gameState.putBallInPlay(FLY_BALL, targetFielder, difficulty, distance);
 				});
@@ -544,7 +552,7 @@ var gameState = {
 		
 		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
-			if (this.aRunners[i] == null) {
+			if (this.aRunnerLocations[i] == null) {
 				bIsForced = false;
 				continue;
 			}
@@ -555,8 +563,8 @@ var gameState = {
 				targetBase = HOME;
 			}
 			
-			this.iRunningRunners++;
-			this.aRunners[i].ballInPlay(targetBase, hitType, difficulty, targetFielder, bIsForced);
+			//this.iRunningRunners++;
+			this.aRunnerLocations[i].ballInPlay(targetBase, hitType, difficulty, targetFielder, bIsForced);
 			bIsForced = true;
 		}
 
@@ -595,33 +603,113 @@ var gameState = {
 				if (bSuccess) {
 
 					// Can make a play
-					if (this.recordOut(this.aRunners[HOME])) {
+					if (this.recordOut(this.aRunnerLocations[HOME])) {
+						this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
+						
+							// Ball is still in play, make another play?
+							if (gameState.recordOut(gameState.aRunnerLocations[HOME])) {
 
+							}
+						});
 					}
+				}
+
+				// Ball gets by, calculate a penalty time
+				//
+				else {
+					this.showUmpireDialog("Blasted into the corner!", function() {
+						gameState.delayFielderGather(gameState.activeFielder, 2000);
+					});
 				}
 				break;
 
 			case GROUND_BALL:
 				if (bSuccess) {
 					this.fielderGathersBall(this.activeFielder);
+				} else {
+					this.showUmpireDialog("It gets past the fielder!", function() {
+						gameState.delayFielderGather(gameState.activeFielder, 2000);
+					});
 				}
 				break;
 
 			case FLY_BALL:
+				// Ball is caught
 				if (bSuccess) {
+					this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
+						
+						// Ball is still in play, make another play?
+						if (gameState.recordOut(gameState.aRunnerLocations[HOME])) {
 
-					// Can make a play
-					if (this.recordOut(this.aRunners[HOME])) {
+						}
+					});
+				}
 
-					}
+				// Can't make it. Calculate how much time the runner gets
+				else {
+					this.showUmpireDialog("Ball drops safely!", function() {
+						gameState.delayFielderGather(gameState.activeFielder, 2000);
+					});
 				}
 				break;
 		}
 	},
 
+	// Delay the fielder from gathering the ball
+	delayFielderGather: function(fielder, delay) {
+		console.log("Fielder delayed " + delay);
+		var gatherTimer = game.time.create(true);
+		gatherTimer.add(delay, this.completeDelayFielderGather, this, fielder);
+		gatherTimer.start();
+	},
+
+	completeDelayFielderGather: function(fielder) {
+		this.fielderGathersBall(fielder);
+	},
+
 	// Called when the fielder has gathered the ball and can make a play
 	fielderGathersBall: function(fielder) {
+		this.showBaseOptions(fielder, function(choice) {
+			var position = gameState.fieldingTeam.getFielderPosition(fielder);
 
+			console.log("Fielder throwing to: " + choice.text + " (" + position + ", " + choice.id + ")");
+
+			// FB or TB run to their base instead of throw
+			if ((position == FIRST_BASE && choice.id == FIRST) || (position == THIRD_BASE && choice.id == THIRD)) {
+
+				// TODO Return to base, if needed
+				gameState.showUmpireDialog("Out at " + GetPlayerPositionName(position) + "!", function() {
+					gameState.recordOut(gameState.aRunnerTargets[choice.id]);
+				});
+			}
+
+			// Throw to base
+			else {
+
+			}
+		});
+	},
+
+	// Called by the runner if they decided to run
+	runnerAcceptRun: function(runner, targetBase) {
+		console.log("Runner " + runner.getName() + " is running");
+		this.aRunnerTargets[targetBase] = runner;
+		this.iRunningRunners++;
+
+		for (var i = 0; i < this.aRunnerLocations.length; i++) {
+			if (this.aRunnerLocations[i] == runner) {
+				this.aRunnerLocations[i] = null;
+			}
+		}
+	},
+
+	// Called by the runner if they declined to run
+	runnerDeclineRun: function(runner, targetBase) {
+		console.log("Runner " + runner.getName() + " declined to run");
+
+		if (this.aRunnerTargets[targetBase] == runner) {
+			this.aRunnerTargets[targetBase] = null;
+		}
 	},
 
 	// Called by runner when it's done, either when run complete or intercepted early
@@ -629,14 +717,16 @@ var gameState = {
 	runnerReportComplete: function(runner, targetBase, bAtBase) {
 		this.iRunningRunners--;
 
-		this.aRunners[targetBase] = runner;
-
-		
+		this.aRunnerLocations[targetBase] = runner;
 
 		if (this.iRunningRunners <= 0) {
 			this.callDeadBall();
 		}
 	},
+
+// ****************************************************
+//	UI Help
+// ****************************************************
 
 	// Show the umpire's dialog box
 	showUmpireDialog: function(text, onClose) {
@@ -662,11 +752,20 @@ var gameState = {
 	},
 
 	// Shows options for bases a fielder can throw to, based on runners
-	showBaseOptions: function(player) {
+	showBaseOptions: function(player, callback) {
+		var bases = [];
+		bases.push({"id": FIRST, "text": "Throw to first base"});
+		bases.push({"id": SECOND, "text": "Throw to second base"});
+		bases.push({"id": THIRD, "text": "Throw to third base"});
+		bases.push({"id": HOME, "text": "Throw to home"});
+		bases.push({"id": -1, "text": "Hold the ball"});
 
+		var dialog = new ChoiceDialog(player, true, callback);
+		dialog.setupCustomChoices("Throw to...", bases);
+		dialog.setY(30);
 	},
 
-	sendBatterToDugout: function(player) {
+	sendBatterToDugout: function(player, bRetire) {
 		var dugoutPos;
 
 		if (this.bIsTopOfInning) {
@@ -675,7 +774,11 @@ var gameState = {
 			dugoutPos = gameField.GetHomeDugoutPos();
 		}
 
-		player.returnToDugout(dugoutPos);
+		if (bRetire) {
+			player.retireBatter(dugoutPos);
+		} else {
+			player.returnToDugout(dugoutPos);
+		}
 	},
 
 	// Given a value normalized [0,1], return a normalized version modified by a sin curve

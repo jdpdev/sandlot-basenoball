@@ -72,6 +72,17 @@ function Team() {
 
 	// Returns the fielder at a specific position
 	this.getFielderForPosition = function(position) {
-		return players[fieldingPositions[fieldingPositions[position]]];
+		return players[fieldingPositions[position]];
+	}
+
+	// Return the position a given fielder is fielding at
+	this.getFielderPosition = function(fielder) {
+		for (var i = 0; i < fieldingPositions.length; i++) {
+			if (players[fieldingPositions[i]] == fielder) {
+				return fieldingPositions[i] + 1;
+			}
+		}
+
+		return -1;
 	}
 }

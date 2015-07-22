@@ -29,6 +29,7 @@ function Player(id, playerInfo, teamColor) {
 
 	this.runCompleteCallback = null;
 	this.runTarget = -1;
+	this.bIsRunning = false;
 
 	// ** Getters and setters **************************************************
 	this.setPosition = function (position) {
@@ -203,6 +204,8 @@ function Player(id, playerInfo, teamColor) {
 	
 	this.retireBatter = function(dugoutPos) {
 		this.returnToDugout(dugoutPos, true);
+		this.interruptRun();
+		this.bIsRunning = false;
 	}
 	
 
@@ -248,23 +251,54 @@ function Player(id, playerInfo, teamColor) {
 
 		var basePos = this.getBasePosition(targetBase);
 
-		this.worldIcon.update = this.runnerOnUpdate;
 		this.worldIcon.player = this;
 		this.targetBasePos = basePos;
-		this.runTarget = targetFielder;
+		this.runTarget = targetBase;
+		this.targetFielder = targetFielder;
+		this.bIsForcedRun = bForced;
+
+		// If a fly ball, hold on running immediately
+		if (hitType == FLY_BALL) {
+			console.log("Runner " + this.getName() + " holding at base");
+			this.bIsRunning = false;
+		} else if (bForced || hitType != FLY_BALL) {
+			this.startRun();
+		}
 
 		/*this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
 		this.runTarget = targetBase;
 		this.runTween.onComplete.add(this.onRunCompleted, this);*/
 	}
 
+	this.startRun = function() {
+		if (this.bIsRunning) {
+			return;
+		}
+
+		gameState.runnerAcceptRun(this, this.runTarget);
+
+		this.bIsRunning = true;
+		this.worldIcon.update = this.runnerOnUpdate;
+	}
+
+	// Stop the player from running
+	this.interruptRun = function() {
+		if (!this.bIsRunning) {
+			return;
+		}
+
+		this.worldIcon.update = function() { };
+		this.bIsRunning = false;
+	}
+
 	this.onRunCompleted = function() {
 		this.worldIcon.update = function() { };
 		gameState.runnerReportComplete(this, this.runTarget, true);
+		this.bIsRunning = false;
 	}
 
 	this.runnerOnUpdate = function() {
-		if (gameState.bGlobalUIPause) {
+		if (!this.player.bIsRunning || gameState.bGlobalUIPause) {
 			return;
 		}
 
@@ -286,11 +320,6 @@ function Player(id, playerInfo, teamColor) {
 		if (bDone) {
 			player.onRunCompleted();
 		}
-	}
-
-	// Stop the player from running
-	this.interruptRun = function() {
-		this.worldIcon.update = function() { };
 	}
 
 	// Returns the position of a base, as a point
@@ -336,7 +365,29 @@ function Player(id, playerInfo, teamColor) {
 		return gameField.basesRadius / (5 - ((this.getInfo().speed / 10) * 2));
 	}
 
+	// Notification that a fielder has obtained the ball
+	this.fielderHasBall = function(fielder, position) {
+		// If this is a forced run, don't have any choice
+		if (bIsForcedRun) {
+			this.startRun();
+		}
 
+		// Decide if, depending on fielder, we want to run
+		else {
+
+			// Sneak a run 
+			if (position >= LEFT_FIELD) {
+				if (this.runTarget != SECOND) {
+					this.startRun();
+				} else {
+					gameState.runnerDeclineRun(this, this.runTarget);
+				}	
+			} else {
+				gameState.runnerDeclineRun(this, this.runTarget);
+			}
+			
+		}
+	}
 
 
 
@@ -348,7 +399,7 @@ function Player(id, playerInfo, teamColor) {
 
 		// Simulate running to the point
 		var runTimer = game.time.create(true);
-		runTimer.add(1, this.runToFieldFinished, this, hitType, difficulty, distance);
+		runTimer.add(1000, this.runToFieldFinished, this, hitType, difficulty, distance);
 		runTimer.start();
 	}
 
