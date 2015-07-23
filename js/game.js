@@ -173,6 +173,7 @@ var gameState = {
 		this.iBatterStrikes = 0;
 		this.iBatterBalls = 0;
 
+		this.fieldingTeam.resetFielders();
 		this.doPitch();
 	},
 
@@ -578,6 +579,22 @@ var gameState = {
 		// Set the fielder fielding
 		var fielder = this.fieldingTeam.getFielderForPosition(targetFielder);
 		fielder.fieldBall(hitType, difficulty, distance);
+
+		// Rest of the fielders move to back up
+		// ...shortstop to second
+		if (targetFielder == SECOND_BASE) {
+			this.fieldingTeam.getFielderForPosition(SHORT_STOP).runToFieldingPosition(SECOND_BASE);
+		} 
+
+		// ...second to second
+		else {
+			this.fieldingTeam.getFielderForPosition(SECOND_BASE).runToFieldingPosition(SECOND_BASE);
+		}
+
+		// Pitcher backs up first
+		if (targetFielder == FIRST_BASE) {
+			this.fieldingTeam.getFielderForPosition(PITCHER).runToFieldingPosition(FIRST_BASE);
+		}
 	},
 
 	// Called by a fielder when they have selected their action

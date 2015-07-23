@@ -41,6 +41,12 @@ function Team() {
 		}
 	}
 
+	this.resetFielders = function() {
+		for (var i = 0; i < fieldingPositions.length; i++) {
+			players[fieldingPositions[i]].returnToFieldingPosition(i);
+		}
+	}
+
 	// Begin the batting half-innning
 	this.batTeam = function(bTopInning) {
 		for (var i = 0; i < fieldingPositions.length; i++) {

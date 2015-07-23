@@ -91,6 +91,10 @@ function Player(id, playerInfo, teamColor) {
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
+	this.returnToFieldingPosition = function() {
+		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
+	}
+
 	// Step the batter up to the plate
 	this.setAsBatter = function() {
 		var pos;
@@ -431,6 +435,50 @@ function Player(id, playerInfo, teamColor) {
 				fielder.consumeAP(action.getCost());
 				gameState.fielderSelectAction(fielder, action, hitType, difficulty, distance);
 			});
+	}
+
+	this.runToFieldingPosition = function(base) {
+		
+		if (base == SECOND_BASE) {
+			this.targetBasePos = gameField.GetSecondBasePos();
+		} else {
+			this.targetBasePos = this.getFieldingPosition(base);
+		}
+
+		this.bIsRunning = true;
+
+		this.worldIcon.player = this;
+		this.worldIcon.update = this.fielderOnUpdate;
+	}
+
+	this.fielderOnUpdate = function() {
+		if (!this.player.bIsRunning || gameState.bGlobalUIPause) {
+			return;
+		}
+
+		var player = this.player;
+		var delta = game.time.elapsed * 0.001;
+		var pDiff = new Phaser.Point(player.targetBasePos.x - player.worldIcon.x, player.targetBasePos.y - player.worldIcon.y);
+		var speedStep = player.getRunSpeed() * delta;
+		var bDone = false;
+
+		if (pDiff.getMagnitude() > speedStep) {
+			pDiff.setMagnitude(speedStep);
+		} else {
+			bDone = true;
+		}
+
+		player.worldIcon.x += pDiff.x;
+		player.worldIcon.y += pDiff.y;
+
+		if (bDone) {
+			player.onFieldingRunCompleted();
+		}
+	}
+
+	this.onFieldingRunCompleted = function() {
+		this.worldIcon.update = function() { };
+		this.bIsRunning = false;
 	}
 }
 
