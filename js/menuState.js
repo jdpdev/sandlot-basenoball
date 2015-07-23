@@ -2,9 +2,11 @@ var menuStateName = "Menu";
 
 var menuState = {
     modalScreen: null,
+    currentScreen: null,
     
     preload: function() {
-		
+		game.load.json('mutineers', './data/teams/mutineers.json');
+		game.load.json('spacebutts', './data/teams/spacebutts.json');
 	},
 
 	create: function() {
@@ -15,7 +17,7 @@ var menuState = {
 		this.modalScreen.drawRect(0, 0, game.width, game.height);
 		this.modalScreen.endFill();*/
 		
-		var menuScreen = new MainMenu(0, 0, game.width, game.height);
+		this.changeScreen(MainMenu);
 	},
 
 	update: function() {
@@ -24,5 +26,22 @@ var menuState = {
 	
 	shutdown: function() {
 	    //game.removeChild(modalScreen);
-	}
+	},
+	
+	changeScreen: function(screenType, param) {
+	    if (this.currentScreen != null) {
+	        
+	    }
+	    
+	    this.currentScreen = new screenType(this, param);
+	    this.currentScreen.open();
+	},
+	
+	showHomeTeamSelection: function() {
+	    this.changeScreen(ManageTeam, {home: true});
+	},
+	
+	showAwayTeamSelection: function() {
+	    this.changeScreen(ManageTeam, {home: false});
+	},
 };

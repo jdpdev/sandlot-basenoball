@@ -17,21 +17,39 @@ function Team() {
 
 	// Load information about the team from a json object
 	this.loadTeam = function(json) {
-		name = json["name"];
-		battingOrder = json["battingOrder"];
-		fieldingPositions = json["fieldingPositions"];
-		teamColor = json["teamColor"];
+		this.name = json["name"];
+		this.battingOrder = json["battingOrder"];
+		this.fieldingPositions = json["fieldingPositions"];
+		this.teamColor = json["teamColor"];
 
 		var pList = json["players"];
 		var tmpInfo;
 		var tmpPlayer;
 
-		players = new Object();
+		this.players = new Object();
 
 		for (var i = 0; i < pList.length; i++) {
 			tmpInfo = new PlayerInfo(pList[i]);
-			players[pList[i]["id"]] = new Player(pList[i]["id"], tmpInfo, teamColor);
+			this.players[pList[i]["id"]] = new Player(pList[i]["id"], tmpInfo, teamColor);
 		}
+	}
+	
+	// Returns the sum of all players' skill points
+	this.totalTeamSkillPoints = function() {
+		var total = 0;
+		
+		for (player in this.players) {
+			var info = this.players[player].getInfo();
+			total += info.power;
+			total += info.batting;
+			total += info.pitchPower;
+			total += info.pitching;
+			total += info.speed;
+			total += info.fielding;
+			total += info.imagination;
+		}
+		
+		return total;
 	}
 
 	// Begin the fielding half-inning

@@ -1,5 +1,6 @@
-var MainMenu = function(x, y, screenWidth, screenHeight) {
-    this.graphics = game.add.graphics(x, y);
+var MainMenu = function(menu, options) {
+    this.myMenu = menu;
+    this.graphics = game.add.graphics(0, 0);
     
     var signStart = new Phaser.Point(250, 120);
     var signSize = new Phaser.Point(500, 300);
@@ -51,6 +52,39 @@ var MainMenu = function(x, y, screenWidth, screenHeight) {
     gameModeText.events.onInputOver.add(mainMenuOnGameHover, gameModeText);
     gameModeText.events.onInputOut.add(mainMenuOnGameOut, gameModeText);
     gameModeText.events.onInputUp.add(mainMenuOnGameInputUp, gameModeText);
+    
+    this.graphics.pivot = new Phaser.Point(500, 720);
+    this.graphics.x = 450;
+    this.graphics.y = 750;
+    this.graphics.rotation = Math.PI;
+    
+    MainMenu.currentMainMenu = this;
+}
+
+MainMenu.prototype.open = function() {
+    this.transitionIn();
+}
+
+MainMenu.prototype.close = function() {
+    this.transitionOut();
+}
+
+MainMenu.prototype.destroy = function() {
+    this.graphics.parent.removeChild(this.graphics);
+}
+
+MainMenu.prototype.transitionIn = function() {
+    var tween = game.add.tween(this.graphics).to({rotation: 0.1}, 500, Phaser.Easing.Circular.Out, true);
+}
+
+MainMenu.prototype.transitionOut = function(onComplete) {
+    var tween = game.add.tween(this.graphics).to({rotation: Math.PI}, 500, Phaser.Easing.Circular.In, true);
+    tween.onComplete.add(this.destroy, this);
+}
+
+MainMenu.prototype.gotoSelectTeams = function() {
+    this.transitionOut();
+    this.myMenu.showHomeTeamSelection();
 }
 
 function mainMenuOnGameHover(event) {
@@ -62,5 +96,7 @@ function mainMenuOnGameOut(event) {
 }
 
 function mainMenuOnGameInputUp(event) {
-    GotoGame();
+    MainMenu.currentMainMenu.gotoSelectTeams();
 }
+
+MainMenu.currentMainMenu = null;
