@@ -67,7 +67,7 @@ var gameState = {
 		actionManager.parseActions();
 		lineManager.parse();
 
-		gameField.DrawField(game);
+		//gameField.DrawField(game);
 
 		this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
 		this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));

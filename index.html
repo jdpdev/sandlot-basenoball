@@ -3,15 +3,27 @@
     <head>
         <meta charset="UTF-8" />
         <title>Sandlot Basenoball</title>
+        
+        <link rel="stylesheet" href="css/style.css">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/hvdpeace_regular/stylesheet.css" type="text/css">
 
         <script src="//cdn.jsdelivr.net/phaser/2.3.0/phaser.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 
+        <!-- Core -->
+        <script src="js/main.js" type="text/javascript"></script>
+
+        <!-- Menu -->
+        <script src="js/menuState.js" type="text/javascript"></script>
+        <script src="js/menus/mainMenu.js" type="text/javascript"></script>
+
+        <!-- Game -->
         <script src="js/player.js" type="text/javascript"></script>
         <script src="js/playerInfo.js" type="text/javascript"></script>
         <script src="js/team.js" type="text/javascript"></script>
         <script src="js/field.js" type="text/javascript"></script>
-        <script src="js/main.js" type="text/javascript"></script>
         <script src="js/game.js" type="text/javascript"></script>
         <script src="js/actions.js" type="text/javascript"></script>
         <script src="js/lines.js" type="text/javascript"></script>
@@ -25,8 +37,6 @@
         <script src="js/ui/playerInfoHUD.js" type="text/javascript"></script>
         <script src="js/ui/pitcherInfoHUD.js" type="text/javascript"></script>
         <script src="js/ui/batterInfoHUD.js" type="text/javascript"></script>
-
-        <link rel="stylesheet" href="css/style.css">
     </head>
     <body style="background-color: #00aa00">
 
@@ -37,6 +47,8 @@
     };
 
     </script>
+    
+    <span style="font-family: hvd_peaceregular;"></span>
 
     <div id="wagerAPDialog" class="gameDialog wagerAPDialog" style="display: none">
         <h2 id="whoWagers"></h2>

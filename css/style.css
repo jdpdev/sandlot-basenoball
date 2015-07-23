@@ -1,3 +1,10 @@
+@font-face {
+	font-family: 'HappyHell';
+	src: url("../fonts/HAPPYHELL.TTF");
+	font-weight: normal;
+	font-style: normal;
+}
+
 .gameDialog {
 	position: absolute;
 	z-index: 10;
