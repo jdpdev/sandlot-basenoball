@@ -316,6 +316,13 @@ var gameState = {
 		this.iRunningRunners--;
 		console.log("Outs: " + this.iInningOuts);
 
+		for (var i = 0; i < this.aRunnerTargets.length; i++) {
+			if (this.aRunnerTargets[i] == player) {
+				this.aRunnerTargets[i] = null;
+				break;
+			}
+		}
+
 		this.sendBatterToDugout(player, true);
 
 		if (this.iInningOuts >= 3 || this.iRunningRunners <= 0) {
@@ -449,7 +456,7 @@ var gameState = {
 
 				console.log("Ground ball, normalized distance: " + distance);
 
-				targetFielder = FIRST_BASE;
+				targetFielder = THIRD_BASE;
 				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
@@ -684,10 +691,74 @@ var gameState = {
 			}
 
 			// Throw to base
-			else {
-
+			else if (choice.id >= HOME) {
+				gameState.fielderThrowToBase(fielder, choice.id);
 			}
 		});
+	},
+
+	// Fielder throws to a given base
+	fielderThrowToBase: function(fielder, base) {
+		var target = null;
+		var targetBase = null;
+		var position = gameState.fieldingTeam.getFielderPosition(fielder);
+
+		switch (base) {
+			case FIRST:
+				
+				targetBase = FIRST_BASE;
+				break;
+
+			case SECOND:
+				if (position == SECOND_BASE) {
+					targetBase = SHORT_STOP;
+				} else {
+					targetBase = SECOND_BASE;
+				}
+				break;
+
+			case THIRD:
+				targetBase = THIRD_BASE;
+				break;
+
+			case HOME:
+				targetBase = CATCHER;
+				break;
+		}
+
+		if (targetBase == null) {
+			this.callDeadBall();
+		}
+
+		target = gameState.fieldingTeam.getFielderForPosition(targetBase);
+
+		var fielderPos = fielder.getPosition();
+		var targetPos = target.getPosition();
+		var distance = Phaser.Point.distance(fielderPos, targetPos);
+		var delay = distance / fielder.getThrowSpeed();
+
+		// TODO calculate skill
+
+		console.log("Throw takes " + delay + " seconds");
+
+		var throwTimer = game.time.create(true);
+		throwTimer.add(delay * 1000, this.fielderThrowComplete, this, target, targetBase - 1);
+		throwTimer.start();
+	},
+
+	fielderThrowComplete: function(target, base) {
+		if (this.aRunnerTargets[base] != null) {
+			// TODO make this a skill check
+			this.showUmpireDialog("Runner is out at " + GetPlayerPositionName(base + 1) + "!", function() {
+				if (gameState.recordOut(gameState.aRunnerTargets[base])) {
+
+					// There are still plays to be made
+					gameState.fielderGathersBall(target);
+				}
+			});
+		} else {
+
+		}
 	},
 
 	// Called by the runner if they decided to run

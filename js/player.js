@@ -37,6 +37,10 @@ function Player(id, playerInfo, teamColor) {
 		this.worldIcon.y = position.y;
 	}
 
+	this.getPosition = function() {
+		return new Phaser.Point(this.worldIcon.x, this.worldIcon.y);
+	}
+
 	this.getName = function() {
 		return this.playerInfo.name;
 	}
@@ -363,6 +367,20 @@ function Player(id, playerInfo, teamColor) {
 		// skill 10 = 3sec
 
 		return gameField.basesRadius / (5 - ((this.getInfo().speed / 10) * 2));
+	}
+
+	// Calibrated on distance from first to third base
+	// skill 0 = 2 sec
+	// skill 5 = 1 sec
+	// skill 10 = 0.5 sec
+	this.getThrowSpeed = function() {
+		var distance = Phaser.Point.distance(gameField.GetFirstBasePos(), gameField.GetThirdBasePos());
+
+		if (this.getInfo().fielding > 5) {
+			return distance / (1 - ((this.getInfo().fielding / 10)));
+		} else {
+			return distance / (2 - ((this.getInfo().fielding / 5)));
+		}
 	}
 
 	// Notification that a fielder has obtained the ball
