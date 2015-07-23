@@ -10,8 +10,8 @@ var menuState = {
 	create: function() {
 		gameField.DrawField(game);
 		
-		this.modalScreen = game.add.graphics(0, 0);
-		/*this.modalScreen.beginFill(0, 0.7);
+		/*this.modalScreen = game.add.graphics(0, 0);
+		this.modalScreen.beginFill(0, 0.7);
 		this.modalScreen.drawRect(0, 0, game.width, game.height);
 		this.modalScreen.endFill();*/
 		
@@ -23,6 +23,6 @@ var menuState = {
 	},
 	
 	shutdown: function() {
-	    game.removeChild(modalScreen);
+	    //game.removeChild(modalScreen);
 	}
 };

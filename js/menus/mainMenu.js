@@ -34,14 +34,33 @@ var MainMenu = function(x, y, screenWidth, screenHeight) {
         ]);
     this.graphics.endFill();
     
+    // Text
     var titleText = game.add.text(0, 0, "SANDLOT\n      BASENOBALL", { font: "50px hvd_peaceregular", fill: "#ffffff", align: "left"});
     this.graphics.addChild(titleText);
     titleText.x = signStart.x + 25;
     titleText.y = signStart.y + 45;
     titleText.rotation = Math.PI / -40;
     
+    // Play options
     var gameModeText = game.add.text(0, 0, "Local Multiplayer", { font: "20px hvd_peaceregular", fill: "#ffffff", align: "center"});
     this.graphics.addChild(gameModeText);
     gameModeText.x = signStart.x + signSize.x * 0.5 - 100;
     gameModeText.y = signStart.y + signSize.y * 0.5 + 60;
+    
+    gameModeText.inputEnabled = true;
+    gameModeText.events.onInputOver.add(mainMenuOnGameHover, gameModeText);
+    gameModeText.events.onInputOut.add(mainMenuOnGameOut, gameModeText);
+    gameModeText.events.onInputUp.add(mainMenuOnGameInputUp, gameModeText);
+}
+
+function mainMenuOnGameHover(event) {
+    this.fill = "#ff0";
+}
+
+function mainMenuOnGameOut(event) {
+    this.fill = "#fff";
+}
+
+function mainMenuOnGameInputUp(event) {
+    GotoGame();
 }

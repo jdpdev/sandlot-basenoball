@@ -20,6 +20,8 @@ var gameField = {
 
 		this.fieldGraphics = game.add.graphics(0, 0);
 		var graphics = this.fieldGraphics;
+		//game.stage.addChild(graphics);
+		//graphics.z = -100;
 
 		// Grass
 	    graphics.beginFill(0x00aa00, 1);

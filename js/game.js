@@ -12,8 +12,8 @@ var FLY_BALL = 2;
 var gameState = {
 
 	// The teams
-	homeTeam: new Team(),
-	awayTeam: new Team(),
+	homeTeam: null,
+	awayTeam: null,
 
 	battingTeam: null,
 	fieldingTeam: null,
@@ -54,6 +54,12 @@ var gameState = {
 	batterInfoHUD: null,
 
 	bGlobalUIPause: false,
+	
+	init: function(homeTeam, awayTeam) {
+		if (homeTeam != undefined || awayTeam != undefined) {
+			this.setTeams(homeTeam, awayTeam);
+		}	
+	},
 
 	preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
@@ -66,22 +72,40 @@ var gameState = {
 	create: function() {
 		actionManager.parseActions();
 		lineManager.parse();
+		gameField.DrawField(game);
 
-		//gameField.DrawField(game);
+		if (this.homeTeam == null) {
+			this.homeTeam = new Team();
+			this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));	
+		}
 
-		this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
-		this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));
-
+		if (this.awayTeam == null) {
+			this.awayTeam = new Team();
+			this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));	
+		}
+		
 		this.startGame();
-
-		//this.iconTest();
-
-		/*var dialog = new DialogBox(this.homeTeam.getPitcher(), true);
-		dialog.setY(40);*/
 	},
 
 	update: function() {
 
+	},
+	
+	// Set the teams to be used for the game.
+	// If a team object, uses that directly.
+	// Anything else uses one of the default teams
+	setTeams: function(home, away) {
+		if (home == undefined) {
+			this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));
+		} else {
+			this.homeTeam = home;
+		}
+		
+		if (away == undefined) {
+			this.awayTeam.loadTeam(game.cache.getJSON("spacebutts"));
+		} else {
+			this.awayTeam = away;
+		}
 	},
 
 	startGame: function() {
