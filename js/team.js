@@ -1,38 +1,47 @@
 function Team() {
-	var name = "";
+	var name = "New Team";
 
 	// List of the team's players. Indexed by player uid.
-	var players;
+	var players = new Object;
 
 	// The order players bat in, using player uid
-	var battingOrder;
+	var battingOrder = [];
 	
 	// Where the players field at, using player uid
-	var fieldingPositions;
+	var fieldingPositions = [];
 
-	var teamColor;
+	var teamColor = 0;
 
 	// Index of the batter currently at the plate
 	var iCurrentBatterIndex = -1;
 
 	// Load information about the team from a json object
 	this.loadTeam = function(json) {
-		this.name = json["name"];
-		this.battingOrder = json["battingOrder"];
-		this.fieldingPositions = json["fieldingPositions"];
-		this.teamColor = json["teamColor"];
-		this.iCurrentBatterIndex = -1;
-
-		var pList = json["players"];
-		var tmpInfo;
-		var tmpPlayer;
-
-		this.players = new Object();
-
-		for (var i = 0; i < pList.length; i++) {
-			tmpInfo = new PlayerInfo(pList[i]);
-			this.players[pList[i]["id"]] = new Player(pList[i]["id"], tmpInfo, this.teamColor);
+		if (json != undefined) {
+			this.name = json["name"];
+			this.battingOrder = json["battingOrder"];
+			this.fieldingPositions = json["fieldingPositions"];
+			this.teamColor = json["teamColor"];
+	
+			var pList = json["players"];
+			var tmpInfo;
+			var tmpPlayer;
+	
+			this.players = new Object();
+	
+			for (var i = 0; i < pList.length; i++) {
+				tmpInfo = new PlayerInfo(pList[i]);
+				this.players[pList[i]["id"]] = new Player(pList[i]["id"], tmpInfo, this.teamColor);
+			}
+		} else {
+			this.name = "Random Team";
+			this.battingOrder = [];
+			this.fieldingPositions = [];
+			this.players = new Object();
+			this.teamColor = 0;
 		}
+			
+		this.iCurrentBatterIndex = -1;
 	}
 	
 	this.setTeamColor = function(color) {
@@ -118,4 +127,19 @@ function Team() {
 
 		return -1;
 	}
+}
+
+
+// Points is number of points to give a single player
+function GenerateRandomTeam(points) {
+	var team = new Team();
+	team.loadTeam();
+	
+	for (var i = 0; i < 9; i++) {
+		team.players[i] = GenerateRandomPlayer(i, "Player " + (i + 1), points);
+	}
+	
+	team.battingOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+	team.fieldingPositions = [8, 0, 1, 2, 3, 4, 5, 6, 7];
+	return team;
 }

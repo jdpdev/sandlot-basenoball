@@ -71,6 +71,7 @@ var ManageTeam = function(menu, options) {
     // Buttons
     this.createButton(signStart.x + 10, signStart.y + 10, "New", function(event) {
         console.log("make new team");
+        this.displayTeam(this.createRandomTeam());
     });
     
     this.createButton(signStart.x + 10, signStart.y + 35, "Load", function(event) {
@@ -131,7 +132,8 @@ ManageTeam.prototype.loadTeamFromJSON = function(json) {
 
 // Creates a team with random properties
 ManageTeam.prototype.createRandomTeam = function() {
-    
+    var team = GenerateRandomTeam(20);
+    return team;
 }
 
 ManageTeam.prototype.displayTeam = function(team) {

@@ -519,3 +519,7 @@ function GetPlayerPositionName(positionIndex) {
 		case RIGHT_FIELD: 	return "Right Field";
 	}
 }
+
+function GenerateRandomPlayer(id, name, points) {
+	return new Player(id, GenerateRandomPlayerInfo(name, points), "0xff00ff");
+}
