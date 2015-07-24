@@ -1,3 +1,12 @@
+var FACE_SHAPE = 0;
+var FACE_DECO = 1;
+var HEAD_DECO = 2;
+var SHIRT = 3;
+var SKIN_COLOR = 4;
+var FACE_COLOR = 5;
+var HEAD_COLOR = 6;
+var SHIRT_COLOR = 7;
+
 var iconGenerator = {
     
     iconWidth: 125,
@@ -15,15 +24,6 @@ var iconGenerator = {
     //  H: shirt color
     // Returns an object containing the icon
     generateIcon: function(iconString, teamColor) {
-        var FACE_SHAPE = 0;
-        var FACE_DECO = 1;
-        var HEAD_DECO = 2;
-        var SHIRT = 3;
-        var SKIN_COLOR = 4;
-        var FACE_COLOR = 5;
-        var HEAD_COLOR = 6;
-        var SHIRT_COLOR = 7;
-        
         var codes = iconString.split(".");
         var icon = game.add.graphics(0, 0);
         
@@ -68,6 +68,62 @@ var iconGenerator = {
         }
         
         return array[random];
+    },
+    
+    // Given an icon string, return the string after cycling a given slot by a given amount.
+    cycleIconSlot: function(string, slot, amount) {
+        var codes = string.split(".");
+        var options;
+        var index;
+        
+        switch (slot) {
+            case FACE_SHAPE:
+                options = this.getFaceKeys();
+                break;
+                
+            case FACE_DECO:
+                return string;
+                
+            case HEAD_DECO:
+                options = this.getHeadDecoKeys();
+                break;
+                
+            case SHIRT:
+                options = this.getShirtKeys();
+                break;
+                
+            case SKIN_COLOR:
+                options = this.getSkinColorKeys();
+                break;
+                
+            case FACE_COLOR:
+                return string;
+                
+            case HEAD_COLOR:
+                options = this.getHeadDecoColorKeys();
+                break;
+                
+            case SHIRT_COLOR:
+                options = this.getShirtColorKeys();
+                break;
+        }
+        
+        index = options.indexOf(parseInt(codes[slot], 16));
+        index += amount;
+        
+        if (index >= options.length) {
+            index -= options.length;
+        } else if (index < 0) {
+            index += options.length;
+        }
+        
+        //console.log("new index: " + index + " (" + options[index] + ")");
+        
+        codes[slot] = options[index].toString(16);
+        var newString = codes.toString();
+        
+        var pattern = /,/g;
+        return newString.replace(pattern, ".");
     },
     
     // ******************************************************************************

@@ -40,6 +40,10 @@ function Player(id, playerInfo, teamColor) {
 	this.getPosition = function() {
 		return new Phaser.Point(this.worldIcon.x, this.worldIcon.y);
 	}
+	
+	this.getId = function() {
+		return this.playerInfo.id;
+	}
 
 	this.getName = function() {
 		return this.playerInfo.name;
@@ -47,6 +51,10 @@ function Player(id, playerInfo, teamColor) {
 
 	this.getPortraitDesc = function() {
 		return this.playerInfo.icon;
+	}
+	
+	this.setPortraitDesc = function(desc) {
+		this.playerInfo.icon = desc;
 	}
 
 	this.getAP = function() {

@@ -4,6 +4,7 @@ var ManageTeam = function(menu, options) {
     this.myMenu = menu;
     this.graphics = game.add.graphics(0, 0);
     this.teamGroup = new Phaser.Group(game, this.graphics, "teamGroup");
+    this.playerList = [];
     this.bIsSelectingHomeTeam = options.home;
     
     var signStart = new Phaser.Point(100, 100);
@@ -155,6 +156,7 @@ ManageTeam.prototype.displayTeam = function(team) {
 
     // ******** Players
     var players = team.players;
+    var group;
     var player;
     var i = 0;
     var icon;
@@ -162,22 +164,38 @@ ManageTeam.prototype.displayTeam = function(team) {
     var positionLabel;
     var position;
 
+    this.playerList = [];
+
     //for (var i = 0; i < players.length; i++) {
     for (var key in players) {
         player = players[key];
+        group = new Phaser.Group(game, this.teamGroup, "player" + key);
+        
         icon = player.getPortrait();
-
-        this.teamGroup.addChild(icon);
         icon.width = 60;
         icon.height = 60;
-        icon.x = 10 + (i % 2) * 250;
-        icon.y = 60 + Math.floor(i / 2) * 65;
+        icon.x = 0;
+        icon.y = 0;
+
+        group.addChild(icon);
+        group.x = 10 + (i % 2) * 250;
+        group.y = 60 + Math.floor(i / 2) * 65;
 
         position = team.getFielderPosition(player) - 1;
 
-        nameLabel = this.addPlainText(this.teamGroup, player.getName(), smallText, icon.x + 65, icon.y);
-        positionLabel = this.addPlainText(this.teamGroup, "" + GetPlayerPositionName(position), smallText, icon.x + 65, icon.y + 20);
+        nameLabel = this.addPlainText(group, player.getName(), smallText, icon.x + 65, icon.y);
+        positionLabel = this.addPlainText(group, "" + GetPlayerPositionName(position), smallText, icon.x + 65, icon.y + 20);
         i++;
+        
+        icon.inputEnabled = true;
+        icon.menu = this;
+        icon.player = player;
+        icon.events.onInputUp.add(function() {
+            this.menu.openPlayerViewer(this.player);
+        }, icon);
+        
+        group.player = player;
+        this.playerList.push(group);
     }
 
     // *********** Continue buttons
@@ -231,3 +249,7 @@ ManageTeam.prototype.transitionOut = function(onComplete) {
 }
 
 // *****************************************************************************
+
+ManageTeam.prototype.openPlayerViewer = function(player) {
+    this.playerViewer = new ManagePlayer(this, player);
+}
