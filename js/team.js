@@ -55,23 +55,23 @@ function Team() {
 	// Begin the fielding half-inning
 	this.fieldTeam = function() {
 		for (var i = 0; i < fieldingPositions.length; i++) {
-			players[fieldingPositions[i]].setAsFielder(i);
+			this.players[this.fieldingPositions[i]].setAsFielder(i);
 		}
 	}
 
 	this.resetFielders = function() {
 		for (var i = 0; i < fieldingPositions.length; i++) {
-			players[fieldingPositions[i]].returnToFieldingPosition(i);
+			this.players[this.fieldingPositions[i]].returnToFieldingPosition(i);
 		}
 	}
 
 	// Begin the batting half-innning
 	this.batTeam = function(bTopInning) {
-		for (var i = 0; i < fieldingPositions.length; i++) {
+		for (var i = 0; i < this.fieldingPositions.length; i++) {
 			if (bTopInning) {
-				players[fieldingPositions[i]].returnToDugout(gameField.GetAwayDugoutPos(), true);
+				this.players[this.fieldingPositions[i]].returnToDugout(gameField.GetAwayDugoutPos(), true);
 			} else {
-				players[fieldingPositions[i]].returnToDugout(gameField.GetHomeDugoutPos(), true);
+				this.players[this.fieldingPositions[i]].returnToDugout(gameField.GetHomeDugoutPos(), true);
 			}
 		}
 	}
@@ -85,8 +85,8 @@ function Team() {
 			iCurrentBatterIndex = 0;
 		}
 
-		players[battingOrder[iCurrentBatterIndex]].setAsBatter();
-		return players[battingOrder[iCurrentBatterIndex]];
+		this.players[this.battingOrder[iCurrentBatterIndex]].setAsBatter();
+		return this.players[this.battingOrder[iCurrentBatterIndex]];
 	},
 
 	// Returns the pitcher player
@@ -96,14 +96,14 @@ function Team() {
 
 	// Returns the fielder at a specific position
 	this.getFielderForPosition = function(position) {
-		return players[fieldingPositions[position]];
+		return this.players[this.fieldingPositions[position]];
 	}
 
 	// Return the position a given fielder is fielding at
 	this.getFielderPosition = function(fielder) {
-		for (var i = 0; i < fieldingPositions.length; i++) {
-			if (players[fieldingPositions[i]] == fielder) {
-				return fieldingPositions[i] + 1;
+		for (var i = 0; i < this.fieldingPositions.length; i++) {
+			if (this.players[this.fieldingPositions[i]] == fielder) {
+				return i + 1;
 			}
 		}
 

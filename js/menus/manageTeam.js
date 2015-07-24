@@ -85,9 +85,12 @@ var ManageTeam = function(menu, options) {
     });
 }
 
-ManageTeam.prototype.createButton = function(x, y, text, onSelected) {
+ManageTeam.prototype.createButton = function(x, y, text, onSelected, parent) {
+    if (parent == undefined) {
+        parent = this.graphics;
+    }
+
     var button = game.add.text(x, y, text, { font: "20px hvd_peaceregular", fill: "#ffffff", align: "left"});
-    this.graphics.addChild(button);
     button.inputEnabled = true;
     
     button.events.onInputOver.add(function(event) {
@@ -99,6 +102,7 @@ ManageTeam.prototype.createButton = function(x, y, text, onSelected) {
     }, button);
     
     button.events.onInputUp.add(onSelected, this);
+    parent.addChild(button);
     
     return button;
 }
@@ -133,6 +137,42 @@ ManageTeam.prototype.displayTeam = function(team) {
     
     // ******** Team name
     var teamName = this.addPlainText(this.teamGroup, team.name + " (" + team.totalTeamSkillPoints() + " pts)", bigText, 0, 10);
+
+    // ******** Players
+    var players = team.players;
+    var player;
+    var i = 0;
+    var icon;
+    var nameLabel;
+    var positionLabel;
+    var position;
+
+    //for (var i = 0; i < players.length; i++) {
+    for (var key in players) {
+        player = players[key];
+        icon = player.getPortrait();
+
+        this.teamGroup.addChild(icon);
+        icon.width = 60;
+        icon.height = 60;
+        icon.x = 10 + (i % 2) * 250;
+        icon.y = 60 + Math.floor(i / 2) * 65;
+
+        position = team.getFielderPosition(player) - 1;
+
+        nameLabel = this.addPlainText(this.teamGroup, player.getName(), smallText, icon.x + 65, icon.y);
+        positionLabel = this.addPlainText(this.teamGroup, "" + GetPlayerPositionName(position), smallText, icon.x + 65, icon.y + 20);
+        i++;
+    }
+
+    // *********** Continue buttons
+    var jsonButton = this.createButton(170, 350, "Save Team", function(event) {
+        
+    }, this.teamGroup);
+
+    var selectButton = this.createButton(320, 350, "Select", function(event) {
+        
+    }, this.teamGroup);
 }
 
 ManageTeam.prototype.addPlainText = function(parent, string, style, x, y) {
