@@ -21,6 +21,7 @@ function Team() {
 		this.battingOrder = json["battingOrder"];
 		this.fieldingPositions = json["fieldingPositions"];
 		this.teamColor = json["teamColor"];
+		this.iCurrentBatterIndex = -1;
 
 		var pList = json["players"];
 		var tmpInfo;
@@ -30,7 +31,15 @@ function Team() {
 
 		for (var i = 0; i < pList.length; i++) {
 			tmpInfo = new PlayerInfo(pList[i]);
-			this.players[pList[i]["id"]] = new Player(pList[i]["id"], tmpInfo, teamColor);
+			this.players[pList[i]["id"]] = new Player(pList[i]["id"], tmpInfo, this.teamColor);
+		}
+	}
+	
+	this.setTeamColor = function(color) {
+		this.teamColor = color;
+		
+		for (id in this.players) {
+			this.players[id].teamColor = color;
 		}
 	}
 	
@@ -54,13 +63,13 @@ function Team() {
 
 	// Begin the fielding half-inning
 	this.fieldTeam = function() {
-		for (var i = 0; i < fieldingPositions.length; i++) {
+		for (var i = 0; i < this.fieldingPositions.length; i++) {
 			this.players[this.fieldingPositions[i]].setAsFielder(i);
 		}
 	}
 
 	this.resetFielders = function() {
-		for (var i = 0; i < fieldingPositions.length; i++) {
+		for (var i = 0; i < this.fieldingPositions.length; i++) {
 			this.players[this.fieldingPositions[i]].returnToFieldingPosition(i);
 		}
 	}
@@ -79,14 +88,14 @@ function Team() {
 	// Present the next batter in the lineup to the plate
 	// Returns the player object
 	this.presentNextBatter = function() {
-		iCurrentBatterIndex++;
+		this.iCurrentBatterIndex++;
 
-		if (iCurrentBatterIndex >= 8) {
-			iCurrentBatterIndex = 0;
+		if (this.iCurrentBatterIndex >= 8) {
+			this.iCurrentBatterIndex = 0;
 		}
 
-		this.players[this.battingOrder[iCurrentBatterIndex]].setAsBatter();
-		return this.players[this.battingOrder[iCurrentBatterIndex]];
+		this.players[this.battingOrder[this.iCurrentBatterIndex]].setAsBatter();
+		return this.players[this.battingOrder[this.iCurrentBatterIndex]];
 	},
 
 	// Returns the pitcher player

@@ -1,7 +1,10 @@
 var ManageTeam = function(menu, options) {
+    this.selectedTeam = null;
+    this.otherTeam = options.otherTeam;
     this.myMenu = menu;
     this.graphics = game.add.graphics(0, 0);
     this.teamGroup = new Phaser.Group(game, this.graphics, "teamGroup");
+    this.bIsSelectingHomeTeam = options.home;
     
     var signStart = new Phaser.Point(100, 100);
     var signSize = new Phaser.Point(600, 400);
@@ -24,7 +27,7 @@ var ManageTeam = function(menu, options) {
     this.graphics.endFill();
     
     var text = game.add.text(signStart.x + 310, signStart.y - 65, 
-                    (options.home ? "HOME" : "AWAY"), { font: "60px hvd_peaceregular", fill: "#ffffff", align: "left"});
+                    (this.bIsSelectingHomeTeam ? "HOME" : "AWAY"), { font: "60px hvd_peaceregular", fill: "#ffffff", align: "left"});
     this.graphics.addChild(text);
     
     // Main panel
@@ -107,6 +110,9 @@ ManageTeam.prototype.createButton = function(x, y, text, onSelected, parent) {
     return button;
 }
 
+ManageTeam.prototype.homeTeamColor = 0xfff200;
+ManageTeam.prototype.awayTeamColor = 0xf50a38;
+
 // *****************************************************************************
 // Draw team information
 
@@ -130,6 +136,13 @@ ManageTeam.prototype.createRandomTeam = function() {
 
 ManageTeam.prototype.displayTeam = function(team) {
     this.teamGroup.removeChildren();
+    this.selectedTeam = team;
+    
+    if (this.bIsSelectingHomeTeam) {
+        team.setTeamColor(this.homeTeamColor);
+    } else {
+        team.setTeamColor(this.awayTeamColor);
+    }
     
     var bigText = { font: "30px hvd_peaceregular", fill: "#ffffff", align: "left"};
     var middleText = { font: "20px hvd_peaceregular", fill: "#ffffff", align: "left"}
@@ -171,7 +184,7 @@ ManageTeam.prototype.displayTeam = function(team) {
     }, this.teamGroup);
 
     var selectButton = this.createButton(320, 350, "Select", function(event) {
-        
+        this.selectCurrentTeam();
     }, this.teamGroup);
 }
 
@@ -180,6 +193,17 @@ ManageTeam.prototype.addPlainText = function(parent, string, style, x, y) {
     parent.addChild(text);
     
     return text;
+}
+
+// Select the team currently loaded to play with
+ManageTeam.prototype.selectCurrentTeam = function() {
+    if (this.bIsSelectingHomeTeam) {
+        this.selectedTeam.setTeamColor(this.homeTeamColor);
+        this.myMenu.showAwayTeamSelection(this.selectedTeam);
+    } else {
+        this.selectedTeam.setTeamColor(this.awayTeamColor);
+        this.myMenu.startGame(this.otherTeam, this.selectedTeam);
+    }
 }
 
 // *****************************************************************************

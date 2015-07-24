@@ -30,7 +30,7 @@ var menuState = {
 	
 	changeScreen: function(screenType, param) {
 	    if (this.currentScreen != null) {
-	        
+	        this.currentScreen.close();
 	    }
 	    
 	    this.currentScreen = new screenType(this, param);
@@ -38,10 +38,14 @@ var menuState = {
 	},
 	
 	showHomeTeamSelection: function() {
-	    this.changeScreen(ManageTeam, {home: true});
+	    this.changeScreen(ManageTeam, {home: true, otherTeam: null});
 	},
 	
-	showAwayTeamSelection: function() {
-	    this.changeScreen(ManageTeam, {home: false});
+	showAwayTeamSelection: function(homeTeam) {
+	    this.changeScreen(ManageTeam, {home: false, otherTeam: homeTeam});
 	},
+	
+	startGame: function(homeTeam, awayTeam) {
+		GotoGame(homeTeam, awayTeam);
+	}
 };

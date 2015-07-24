@@ -70,7 +70,9 @@ MainMenu.prototype.close = function() {
 }
 
 MainMenu.prototype.destroy = function() {
-    this.graphics.parent.removeChild(this.graphics);
+    if (this.graphics.parent != undefined) {
+        this.graphics.parent.removeChild(this.graphics);
+    }
 }
 
 MainMenu.prototype.transitionIn = function() {
