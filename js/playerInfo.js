@@ -28,6 +28,25 @@ function PlayerInfo(json) {
 		this.arguing = 0;
 	}
 
+	// Return a simple representation of this object built for json output
+	this.toJson = function() {
+		var json = new Object();
+		
+		json.name = this.name;
+		json.handedness = this.hand;
+		json.icon = this.icon;
+		json.power = this.power;
+		json.batting = this.batting;
+		json.pitchPower = this.pitchPower;
+		json.pitching = this.pitching;
+		json.speed = this.speed;
+		json.fielding = this.fielding;
+		json.imagination = this.imagination;
+		json.arguing = 0;
+
+		return json;
+	}
+
 	this.getValueForSkill = function(skill, amount) {
 		switch (skill) {
 			case STAT_POWER:

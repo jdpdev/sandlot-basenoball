@@ -78,6 +78,16 @@ var ManageTeam = function(menu, options) {
     
     this.createButton(signStart.x + 10, signStart.y + 35, "Load", function(event) {
         console.log("load team from json");
+        var manager = this;
+
+        var dialog = $("#saveTeamDialog");
+        $(dialog).show();
+        $(dialog).find("a").click(function(event) {
+            var textArea = $(this).closest("div").find("textarea");
+            var json = $(textArea).val();
+            manager.loadTeamFromJSON(json);
+            $(this).closest('div').hide();
+        });
     });
     
     this.createButton(signStart.x + 10, signStart.y + 80, "Mutineers", function(event) {
@@ -129,7 +139,11 @@ ManageTeam.prototype.loadTeamFromFile = function(name) {
 
 // Create a team object from a json string
 ManageTeam.prototype.loadTeamFromJSON = function(json) {
-    
+    var jsonObj = JSON.parse(json);
+    var team = new Team();
+    team.loadTeam(jsonObj);
+
+    this.displayTeam(team);
 }
 
 // Creates a team with random properties
@@ -207,7 +221,14 @@ ManageTeam.prototype.displayTeam = function(team) {
 
     // *********** Continue buttons
     var jsonButton = this.createButton(170, 350, "Save Team", function(event) {
-        
+        var json = JSON.stringify(this.selectedTeam.toJson());
+
+        var dialog = $("#saveTeamDialog");
+        $(dialog).find("textarea").val(json);
+        $(dialog).show();
+        $(dialog).find("a").click(function() {
+            $(dialog).hide();
+        })
     }, this.teamGroup);
 
     var selectButton = this.createButton(320, 350, "Select", function(event) {

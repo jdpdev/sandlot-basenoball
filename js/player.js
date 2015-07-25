@@ -92,6 +92,13 @@ function Player(id, playerInfo, teamColor) {
 		return this.playerInfo;
 	}
 
+	// Represent the player as an object for json encoding
+	this.toJson = function() {
+		var json = this.playerInfo.toJson();
+		json["id"] = this.id;
+		return json;
+	}
+
 	// ** Methods **************************************************************
 	this.setAsFielder = function(position) {
 		this.fieldingPosition = position;

@@ -43,6 +43,23 @@ function Team() {
 			
 		this.iCurrentBatterIndex = -1;
 	}
+
+	// Return an object suitable for json encoding
+	this.toJson = function() {
+		var json = new Object();
+
+		json.name = this.name;
+		json.teamColor = 0;
+		json.battingOrder = this.battingOrder;
+		json.fieldingPositions = this.fieldingPositions;
+		json.players = [];
+
+		for (id in this.players) {
+			json.players.push(this.players[id].toJson());
+		}
+
+		return json;
+	}
 	
 	this.setTeamColor = function(color) {
 		this.teamColor = color;

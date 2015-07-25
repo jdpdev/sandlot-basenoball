@@ -47,3 +47,13 @@
 	font-family: hvd_peaceregular;
 	color: white;
 }
+
+#saveTeamDialog {
+	left: 150px;
+	top: 100px;
+	width: 500px;
+	height: 500px;
+
+	border: 10px solid #6e531e;
+	background-color: BurlyWood;
+}
