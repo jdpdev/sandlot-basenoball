@@ -42,11 +42,15 @@ function Player(id, playerInfo, teamColor) {
 	}
 	
 	this.getId = function() {
-		return this.playerInfo.id;
+		return this.id;
 	}
 
 	this.getName = function() {
 		return this.playerInfo.name;
+	}
+
+	this.setName = function(value) {
+		return this.playerInfo.name = value;
 	}
 
 	this.getPortraitDesc = function() {

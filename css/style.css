@@ -32,3 +32,18 @@
 	width: 50px;
 	font-size: 24px;
 }
+
+#changeNameDialog {
+	left: 250px;
+	top: 200px;
+	width: 300px;
+	height: 200px;
+
+	border: 10px solid #6e531e;
+	background-color: BurlyWood;
+}
+
+#changeNameDialog h2 {
+	font-family: hvd_peaceregular;
+	color: white;
+}

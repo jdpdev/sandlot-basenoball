@@ -6,6 +6,7 @@ var ManageTeam = function(menu, options) {
     this.teamGroup = new Phaser.Group(game, this.graphics, "teamGroup");
     this.playerList = [];
     this.bIsSelectingHomeTeam = options.home;
+    this.playerViewer = null;
     
     var signStart = new Phaser.Point(100, 100);
     var signSize = new Phaser.Point(600, 400);
@@ -152,7 +153,7 @@ ManageTeam.prototype.displayTeam = function(team) {
     var smallText = { font: "15px hvd_peaceregular", fill: "#ffffff", align: "left"}
     
     // ******** Team name
-    var teamName = this.addPlainText(this.teamGroup, team.name + " (" + team.totalTeamSkillPoints() + " pts)", bigText, 0, 10);
+    this.teamNameLabel = this.addPlainText(this.teamGroup, team.name + " (" + team.totalTeamSkillPoints() + " pts)", bigText, 0, 10);
 
     // ******** Players
     var players = team.players;
@@ -164,7 +165,7 @@ ManageTeam.prototype.displayTeam = function(team) {
     var positionLabel;
     var position;
 
-    this.playerList = [];
+    this.playerList = new Object();
 
     //for (var i = 0; i < players.length; i++) {
     for (var key in players) {
@@ -191,11 +192,17 @@ ManageTeam.prototype.displayTeam = function(team) {
         icon.menu = this;
         icon.player = player;
         icon.events.onInputUp.add(function() {
+            if (this.menu.isPlayerViewerOpen()) {
+                return;
+            }
+
             this.menu.openPlayerViewer(this.player);
         }, icon);
         
         group.player = player;
-        this.playerList.push(group);
+        group.icon = icon;
+        group.nameLabel = nameLabel;
+        this.playerList[player.getId()] = group;
     }
 
     // *********** Continue buttons
@@ -208,6 +215,26 @@ ManageTeam.prototype.displayTeam = function(team) {
     }, this.teamGroup);
 }
 
+// Update the display for a player
+ManageTeam.prototype.updatePlayerDetails = function(player) {
+    var group = this.playerList[player.getId()];
+
+    if (group == undefined) {
+        return;
+    }
+
+    group.nameLabel.text = player.getName();
+
+    var newIcon = player.getPortrait();
+    newIcon.x = group.icon.x;
+    newIcon.y = group.icon.y;
+    newIcon.width = group.icon.width;
+    newIcon.height = group.icon.height;
+
+    group.removeChild(group.icon);
+    group.addChild(newIcon);
+}
+
 ManageTeam.prototype.addPlainText = function(parent, string, style, x, y) {
     var text = game.add.text(x, y, string, style);
     parent.addChild(text);
@@ -217,6 +244,10 @@ ManageTeam.prototype.addPlainText = function(parent, string, style, x, y) {
 
 // Select the team currently loaded to play with
 ManageTeam.prototype.selectCurrentTeam = function() {
+    if (this.isPlayerViewerOpen()) {
+        return;
+    }
+
     if (this.bIsSelectingHomeTeam) {
         this.selectedTeam.setTeamColor(this.homeTeamColor);
         this.myMenu.showAwayTeamSelection(this.selectedTeam);
@@ -224,6 +255,10 @@ ManageTeam.prototype.selectCurrentTeam = function() {
         this.selectedTeam.setTeamColor(this.awayTeamColor);
         this.myMenu.startGame(this.otherTeam, this.selectedTeam);
     }
+}
+
+ManageTeam.prototype.updateTeamPoints = function() {
+    this.teamNameLabel.text = this.selectedTeam.name + " (" + this.selectedTeam.totalTeamSkillPoints() + " pts)";
 }
 
 // *****************************************************************************
@@ -250,6 +285,17 @@ ManageTeam.prototype.transitionOut = function(onComplete) {
 
 // *****************************************************************************
 
+ManageTeam.prototype.isPlayerViewerOpen = function() {
+    return this.playerViewer != null;
+}
+
 ManageTeam.prototype.openPlayerViewer = function(player) {
     this.playerViewer = new ManagePlayer(this, player);
+}
+
+ManageTeam.prototype.closePlayerViewer = function(player) {
+    if (this.playerViewer != null) {
+        this.playerViewer.close();
+        this.playerViewer = null;
+    }
 }

@@ -16,7 +16,7 @@ function PlayerInfo(json) {
 		this.speed = json.speed;
 		this.fielding = json.fielding;
 		this.imagination = json.imagination;
-		this.arguing = json.arguing;
+		this.arguing = 0; //json.arguing;
 	} else {
 		this.power = 0;
 		this.batting = 0;
@@ -26,6 +26,109 @@ function PlayerInfo(json) {
 		this.fielding = 0;
 		this.imagination = 0;
 		this.arguing = 0;
+	}
+
+	this.getValueForSkill = function(skill, amount) {
+		switch (skill) {
+			case STAT_POWER:
+				return this.power;
+
+			case STAT_BATTING:
+				return this.batting;
+				
+			case STAT_PITCH_POWER:
+				return this.pitchPower;
+				
+			case STAT_PITCHING:
+				return this.pitching;
+				
+			case STAT_SPEED:
+				return this.speed;
+				
+			case STAT_FIELDING:
+				return this.fielding;
+				
+			case STAT_IMAGINATION:
+				return this.imagination;
+				
+			case STAT_ARGUING:
+				return this.arguing;
+				
+		}
+	}
+
+	this.incrementSkill = function(skill, amount) {
+		switch (skill) {
+			case STAT_POWER:
+				this.power = Math.min(Math.max(this.power + amount, 0), 10);
+				return this.power;
+
+			case STAT_BATTING:
+				this.batting = Math.min(Math.max(this.batting + amount, 0), 10);
+				return this.batting;
+				
+			case STAT_PITCH_POWER:
+				this.pitchPower = Math.min(Math.max(this.pitchPower + amount, 0), 10);
+				return this.pitchPower;
+				
+			case STAT_PITCHING:
+				this.pitching = Math.min(Math.max(this.pitching + amount, 0), 10);
+				return this.pitching;
+				
+			case STAT_SPEED:
+				this.speed = Math.min(Math.max(this.speed + amount, 0), 10);
+				return this.speed;
+				
+			case STAT_FIELDING:
+				this.fielding = Math.min(Math.max(this.fielding + amount, 0), 10);
+				return this.fielding;
+				
+			case STAT_IMAGINATION:
+				this.imagination = Math.min(Math.max(this.imagination + amount, 0), 10);
+				return this.imagination;
+				
+			case STAT_ARGUING:
+				this.arguing = Math.min(Math.max(this.arguing + amount, 0), 10);
+				return this.arguing;
+				
+		}
+
+		return this.sumSkillPoints();
+	}
+
+	this.sumSkillPoints = function() {
+		return this.power + this.batting + this.pitchPower + this.pitching + this.speed
+				+ this.fielding + this.imagination + this.arguing;
+	}
+}
+
+// Convert enum to text
+function GetSkillName(skill) {
+	switch (skill) {
+		case STAT_POWER:
+			return "Power";
+
+		case STAT_BATTING:
+			return "Batting";
+			
+		case STAT_PITCH_POWER:
+			return "Pitch Power";
+			
+		case STAT_PITCHING:
+			return "Pitching";
+			
+		case STAT_SPEED:
+			return "Speed";
+			
+		case STAT_FIELDING:
+			return "Fielding";
+			
+		case STAT_IMAGINATION:
+			return "Imagination";
+			
+		case STAT_ARGUING:
+			return "Arguing";
+			
 	}
 }
 
