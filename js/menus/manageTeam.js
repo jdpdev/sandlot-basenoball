@@ -5,7 +5,7 @@ var ManageTeam = function(menu, options) {
     this.graphics = game.add.graphics(0, 0);
     this.teamGroup = new Phaser.Group(game, this.graphics, "teamGroup");
     this.playerList = [];
-    this.bIsSelectingHomeTeam = options.home;
+    this.bIsSelectingHomeTeam = (options.home == undefined ? true : options.home);
     this.playerViewer = null;
     
     var signStart = new Phaser.Point(100, 100);
@@ -99,6 +99,12 @@ var ManageTeam = function(menu, options) {
         console.log("load the Spacebutts");
         this.displayTeam(this.loadTeamFromFile("spacebutts"));
     });
+
+    if (this.bIsSelectingHomeTeam) {
+        this.displayTeam(this.loadTeamFromFile("mutineers"));
+    } else {
+        this.displayTeam(this.loadTeamFromFile("spacebutts"));
+    }
 }
 
 ManageTeam.prototype.createButton = function(x, y, text, onSelected, parent) {
