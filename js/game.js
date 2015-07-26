@@ -280,10 +280,17 @@ var gameState = {
 		var pitcher = this.fieldingTeam.getPitcher();
 		var batter = this.aRunnerLocations[HOME];
 
+		// Modify by their own actions
 		var pitchSkill = this.selectedPitcherAction.modStat(STAT_PITCHING, pitcher.getInfo().pitching);
 		var pitchPower = this.selectedPitcherAction.modStat(STAT_PITCH_POWER, pitcher.getInfo().pitchPower);
 		var battingSkill = this.selectedBatterAction.modStat(STAT_BATTING, batter.getInfo().batting);
 		var battingPower = this.selectedBatterAction.modStat(STAT_POWER, batter.getInfo().power);
+
+		// Modify by opponent's actions
+		pitchSkill = this.selectedBatterAction.modStat(STAT_PITCHING, pitchSkill);
+		pitchPower = this.selectedBatterAction.modStat(STAT_PITCH_POWER, pitchPower);
+		battingSkill = this.selectedPitcherAction.modStat(STAT_BATTING, battingSkill);
+		battingPower = this.selectedPitcherAction.modStat(STAT_POWER, battingPower);
 		
 		var roll = Math.random();
 		var bInStrikeZone = roll <= pitchSkill / 10;
