@@ -9,6 +9,20 @@ var LINE_DRIVE = 0;
 var GROUND_BALL = 1;
 var FLY_BALL = 2;
 
+var BALL_DEAD = 0;
+
+// When the ball is not yet controlled by a fielder
+var BALL_UNCONTROLLED = 1;
+
+// Fielder had chance to control but missed
+var BALL_FUMBLED = 2;
+
+// When the ball has been aquired by a fielder
+var BALL_CONTROLLED = 3;
+
+// When the ball has been controlled and thrown to another fielder
+var BALL_THROWN = 4;
+
 var gameState = {
 
 	// The teams
@@ -24,6 +38,13 @@ var gameState = {
 	selectedPitcherAction: null,
 	selectedFielderAction: null,
 
+	// What state the ball is in
+	ballState: BALL_DEAD,
+
+	// The fielding position of the fielder to whom the ball is traveling, or is with
+	targetFielderPos: null,
+
+	// The fielder with control of the ball
 	activeFielder: null,
 
 	// Game state
@@ -377,6 +398,7 @@ var gameState = {
 		console.log("Dead ball!");
 		this.fieldingTeam.resetFielders();
 		this.bIsBallInPlay = false;
+		this.ballState = BALL_DEAD;
 
 		if (this.throwTimer != undefined) {
 			this.throwTimer.destroy();
@@ -606,6 +628,7 @@ var gameState = {
 		var startBase = HOME;
 		var bIsForced = true;
 		this.bIsBallInPlay = true;
+		this.ballState = BALL_UNCONTROLLED;
 		
 		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
@@ -628,6 +651,7 @@ var gameState = {
 		// Set the fielder fielding
 		var fielder = this.fieldingTeam.getFielderForPosition(targetFielder);
 		fielder.fieldBall(hitType, difficulty, distance);
+		this.targetFielderPos = targetFielder;
 
 		// Rest of the fielders move to back up
 		// ...shortstop to second
@@ -722,10 +746,13 @@ var gameState = {
 
 						if (fieldingPos == FIRST_BASE) {
 							outfielder = this.fieldingTeam.getFielderForPosition(RIGHT_FIELD);
+							this.targetFielderPos = RIGHT_FIELD;
 						} else if (fieldingPos == THIRD_BASE) {
 							outfielder = this.fieldingTeam.getFielderForPosition(LEFT_FIELD);
+							this.targetFielderPos = LEFT_FIELD;
 						} else {
 							outfielder = this.fieldingTeam.getFielderForPosition(CENTER_FIELD);
+							this.targetFielderPos = CENTER_FIELD;
 						}
 
 						this.showUmpireDialog("It screams past the fielder!", function() {
@@ -781,6 +808,7 @@ var gameState = {
 		gatherTimer.start();
 
 		this.gatherTimer = gatherTimer;
+		this.ballState = BALL_FUMBLED;
 	},
 
 	completeDelayFielderGather: function(fielder) {
@@ -792,6 +820,9 @@ var gameState = {
 		if (!this.bIsBallInPlay) {
 			return;
 		}
+
+		this.ballState = BALL_CONTROLLED;
+		this.onBallFielded(fielder, this.fieldingTeam.getFielderPosition(fielder));
 
 		this.showBaseOptions(fielder, function(choice) {
 			var position = gameState.fieldingTeam.getFielderPosition(fielder);
@@ -812,6 +843,15 @@ var gameState = {
 				gameState.fielderThrowToBase(fielder, choice.id);
 			}
 		});
+	},
+
+	// Notify all runners that a fielder has aquired the ball
+	onBallFielded: function(fielder, position) {
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] != null) {
+				this.aRunnerTargets[base].fielderHasBall(fielder, position);
+			}
+		}
 	},
 
 	// Fielder throws to a given base
@@ -847,6 +887,9 @@ var gameState = {
 			this.callDeadBall();
 		}
 
+		this.ballState = BALL_THROWN;
+		this.targetFielderPos = targetBase;
+
 		target = gameState.fieldingTeam.getFielderForPosition(targetBase);
 
 		var fielderPos = fielder.getPosition();
@@ -867,6 +910,18 @@ var gameState = {
 		throwTimer.start();
 
 		this.throwTimer = throwTimer;
+		this.onBallThrown(position, this.targetFielderPos);
+	},
+
+	// Notify all runners that a fielder has aquired the ball
+	onBallThrown: function(from, to) {
+		console.log("Ball is thrown from " + from + " to " + to);
+
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] != null) {
+				this.aRunnerTargets[base].ballThrownTo(from, to);
+			}
+		}
 	},
 
 	fielderThrowComplete: function(target, base) {
@@ -914,6 +969,7 @@ var gameState = {
 	// bAtBase true if reached base on its own
 	runnerReportComplete: function(runner, targetBase, bAtBase) {
 		this.iRunningRunners--;
+		this.aRunnerTargets[targetBase] = null;
 
 		if (targetBase == HOME) {
 			this.recordRun(runner);
@@ -924,6 +980,29 @@ var gameState = {
 		if (this.iRunningRunners <= 0) {
 			this.callDeadBall();
 		}
+	},
+
+	// A runner has decided to change where it's running to 
+	runnerChangeRunTarget: function(runner, targetBase) {	
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] == runner) { 
+				this.aRunnerTargets[base] = null;
+				break;
+			}
+		}
+
+		this.aRunnerTargets[targetBase] = runner;
+	},
+
+	// Returns information about the ball's current status 
+	getBallStatus: function() {
+		return {"state": this.ballState, "target": this.targetFielderPos};
+	},
+
+	// Returns if the base can be run to. A base can be run to if it's empty
+	// and no other runner has claimed it as a target
+	canRunToBase: function(base) {
+		return this.aRunnerTargets[base] == null && this.aRunnerLocations[base] == null;
 	},
 
 // ****************************************************

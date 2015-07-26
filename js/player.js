@@ -290,7 +290,7 @@ function Player(id, playerInfo, teamColor) {
 			console.log("Runner " + this.getName() + " holding at base");
 			this.bIsRunning = false;
 		} else if (bForced || hitType != FLY_BALL) {
-			this.startRun();
+			this.startRun(targetBase);
 		}
 
 		/*this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
@@ -298,11 +298,12 @@ function Player(id, playerInfo, teamColor) {
 		this.runTween.onComplete.add(this.onRunCompleted, this);*/
 	}
 
-	this.startRun = function() {
+	this.startRun = function(target) {
 		if (this.bIsRunning) {
 			return;
 		}
 
+		this.runTarget = target;
 		gameState.runnerAcceptRun(this, this.runTarget);
 
 		this.bIsRunning = true;
@@ -321,6 +322,71 @@ function Player(id, playerInfo, teamColor) {
 
 	this.onRunCompleted = function() {
 		this.worldIcon.update = function() { };
+
+		// Done no matter what
+		if (this.runTarget == HOME) {
+			console.log(this.getName() + " has reached home");
+			this.completeRun();
+			return;
+		}
+
+		// Check if we want to go for extra
+		var status = gameState.getBallStatus();
+		var nextBase = this.runTarget + 1;
+
+		if (!gameState.canRunToBase(nextBase)) {
+			console.log(this.getName() + " can't continue running");
+			this.completeRun();
+			return;
+		}
+
+		console.log(this.getName() + " thinking about whether to continue running");
+
+		switch (status.state) {
+			case BALL_UNCONTROLLED:
+				switch (nextBase) {
+					default:
+					case SECOND:
+						this.completeRun();
+						break;
+
+					case THIRD:
+					case HOME:
+						this.startRun(nextBase);
+						break;
+				}
+				break;
+
+			case BALL_FUMBLED:
+				switch (nextBase) {
+					default:
+					case SECOND:
+						this.completeRun();
+						break;
+
+					case THIRD:
+					case HOME:
+						this.startRun(nextBase);
+						break;
+				}
+				break;
+
+			case BALL_THROWN:
+				if (status.target == CATCHER && nextBase == SECOND) {
+					this.startRun(SECOND);
+				} else {
+					this.completeRun();
+				}
+				break;
+
+			default:
+				this.completeRun();
+				break;
+		}
+	}
+
+	// Tell the game that we're done running
+	this.completeRun = function() {
 		gameState.runnerReportComplete(this, this.runTarget, true);
 		this.bIsRunning = false;
 	}
@@ -379,11 +445,6 @@ function Player(id, playerInfo, teamColor) {
 		return basePos;
 	}
 
-	// Returns how long it takes this runner to get to a base, in ms
-	this.getRunSpeedTime = function() {
-		return 3000;
-	}
-
 	this.getRunSpeed = function() {
 		// Run speed, used when running and fielding, is calibrated on time to get to base
 		// skill 0 = 4sec
@@ -391,44 +452,6 @@ function Player(id, playerInfo, teamColor) {
 		// skill 10 = 2sec
 
 		return gameField.basesRadius / (4 - ((this.getInfo().speed / 10) * 2));
-	}
-
-	// Calibrated on distance from first to third base
-	// skill 0 = 2 sec
-	// skill 5 = 1 sec
-	// skill 10 = 0.5 sec
-	this.getThrowSpeed = function() {
-		var distance = Phaser.Point.distance(gameField.GetFirstBasePos(), gameField.GetThirdBasePos());
-
-		if (this.getInfo().fielding > 5) {
-			return distance / (1 - ((this.getInfo().fielding / 10)));
-		} else {
-			return distance / (2 - ((this.getInfo().fielding / 5)));
-		}
-	}
-
-	// Notification that a fielder has obtained the ball
-	this.fielderHasBall = function(fielder, position) {
-		// If this is a forced run, don't have any choice
-		if (bIsForcedRun) {
-			this.startRun();
-		}
-
-		// Decide if, depending on fielder, we want to run
-		else {
-
-			// Sneak a run 
-			if (position >= LEFT_FIELD) {
-				if (this.runTarget != SECOND) {
-					this.startRun();
-				} else {
-					gameState.runnerDeclineRun(this, this.runTarget);
-				}	
-			} else {
-				gameState.runnerDeclineRun(this, this.runTarget);
-			}
-			
-		}
 	}
 
 	this.abortRun = function() {
@@ -444,6 +467,32 @@ function Player(id, playerInfo, teamColor) {
 
 		var target = this.getBasePosition(this.runTarget);
 		this.targetBasePos = target;
+	}
+
+	// ** Running AI ******************************************************
+
+	// Global notification that a fielder has obtained the ball
+	this.fielderHasBall = function(fielder, position) {
+		if (this.bIsRunning) {
+			return;
+		}
+
+		// Assume that we're waiting for a fly ball catch?
+		// If on second or third, try to advance
+		if (this.runTarget > SECOND) {
+			this.startRun();
+		}
+	}
+
+	// Global notification that the ball has been thrown to a base
+	// From is a fielder position, defined in player.js
+	// To is a base index, defined in game.js
+	this.ballThrownTo = function(from, to) {
+
+		// On a throw to home, sneak to second, maybe third?
+		if (to == HOME && from >= LEFT_FIELD && this.runTarget == SECOND) {
+			this.startRun();
+		}
 	}
 
 
@@ -536,6 +585,20 @@ function Player(id, playerInfo, teamColor) {
 	this.onFieldingRunCompleted = function() {
 		this.worldIcon.update = function() { };
 		this.bIsRunning = false;
+	}
+
+	// Calibrated on distance from first to third base
+	// skill 0 = 2 sec
+	// skill 5 = 1 sec
+	// skill 10 = 0.5 sec
+	this.getThrowSpeed = function() {
+		var distance = Phaser.Point.distance(gameField.GetFirstBasePos(), gameField.GetThirdBasePos());
+
+		if (this.getInfo().fielding > 5) {
+			return distance / (1 - ((this.getInfo().fielding / 10)));
+		} else {
+			return distance / (2 - ((this.getInfo().fielding / 5)));
+		}
 	}
 }
 
