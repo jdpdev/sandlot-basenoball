@@ -277,11 +277,7 @@ function Player(id, playerInfo, teamColor) {
 			return;
 		}
 
-		var basePos = this.getBasePosition(targetBase);
-
 		this.worldIcon.player = this;
-		this.targetBasePos = basePos;
-		this.runTarget = targetBase;
 		this.targetFielder = targetFielder;
 		this.bIsForcedRun = bForced;
 
@@ -303,7 +299,11 @@ function Player(id, playerInfo, teamColor) {
 			return;
 		}
 
+		console.log(this.getName() + " is starting run to " + target);
+
+		this.targetBasePos = this.getBasePosition(target);
 		this.runTarget = target;
+
 		gameState.runnerAcceptRun(this, this.runTarget);
 
 		this.bIsRunning = true;
@@ -322,6 +322,7 @@ function Player(id, playerInfo, teamColor) {
 
 	this.onRunCompleted = function() {
 		this.worldIcon.update = function() { };
+		this.bIsRunning = false;
 
 		// Done no matter what
 		if (this.runTarget == HOME) {
@@ -361,7 +362,7 @@ function Player(id, playerInfo, teamColor) {
 				switch (nextBase) {
 					default:
 					case SECOND:
-						this.completeRun();
+						this.startRun(nextBase);
 						break;
 
 					case THIRD:
@@ -455,7 +456,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.abortRun = function() {
-		if (!this.bIsRunning) {
+		if (!this.bIsRunning || this.runTarget == FIRST) {
 			return;
 		}
 
@@ -467,6 +468,7 @@ function Player(id, playerInfo, teamColor) {
 
 		var target = this.getBasePosition(this.runTarget);
 		this.targetBasePos = target;
+		gameState.runnerChangeRunTarget(this, this.runTarget);
 	}
 
 	// ** Running AI ******************************************************
@@ -474,13 +476,21 @@ function Player(id, playerInfo, teamColor) {
 	// Global notification that a fielder has obtained the ball
 	this.fielderHasBall = function(fielder, position) {
 		if (this.bIsRunning) {
-			return;
-		}
+			var distanceFromBase = Phaser.Point.distance(
+										this.getPosition(),
+										gameField.GetBasePosition(this.runTarget)
+									);
 
-		// Assume that we're waiting for a fly ball catch?
-		// If on second or third, try to advance
-		if (this.runTarget > SECOND) {
-			this.startRun();
+			if (this.runTarget == SECOND && gameState.canRunToBase(FIRST) && distanceFromBase >= 120) {
+				this.abortRun();
+			}			
+		} else {
+
+			// Assume that we're waiting for a fly ball catch?
+			// If on second or third, try to advance
+			if (this.runTarget > SECOND) {
+				this.startRun();
+			}
 		}
 	}
 

@@ -1,7 +1,7 @@
 {
 	"actions": [
 		{
-			"text": "Mine!",
+			"text": "I got it!",
 			"type": 0,
 			"cost": 0,
 			"requires": [ ],
@@ -10,24 +10,31 @@
 		{
 			"text": "I got it!",
 			"type": 0,
-			"cost": 5,
+			"cost": 0,
+			"requires": [ ],
+			"mods": [ ]
+		},
+		{
+			"text": "MIIIINEEE!!",
+			"type": 0,
+			"cost": 10,
 			"requires": [
 				{ 
 					"stat": "fie",
-					"min": 2
+					"min": 4
 				}
 			],
 			"mods": [ 
 				{
 					"stat": "fie",
-					"amount": 1
+					"amount": 2
 				}
 			]
 		},
 		{
 			"text": "Gotta go fast!",
 			"type": 0,
-			"cost": 15,
+			"cost": 20,
 			"requires": [
 				{ 
 					"stat": "fie",
@@ -37,18 +44,14 @@
 			"mods": [ 
 				{
 					"stat": "fie",
-					"amount": 1
-				},
-				{
-					"stat": "spe",
-					"amount": 2
+					"amount": 3
 				}
 			]
 		},
 		{
 			"text": "Angels lift me!",
 			"type": 0,
-			"cost": 20,
+			"cost": 15,
 			"requires": [
 				{ 
 					"stat": "fie",

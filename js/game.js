@@ -73,6 +73,7 @@ var gameState = {
 
 	pitcherInfoHUD: null,
 	batterInfoHUD: null,
+	countHUD: null,
 
 	bGlobalUIPause: false,
 	currentDialog: null,
@@ -169,11 +170,17 @@ var gameState = {
 
 		if (this.batterInfoHUD == null) {
 			this.batterInfoHUD = new BatterInfoHUD();
-			this.batterInfoHUD.setPosition(795, 510);
+			this.batterInfoHUD.setPosition(325, 510);
+		}
+
+		if (this.countHUD == null) {
+			this.countHUD = new CountHUD(this.awayTeam, this.homeTeam);
+			this.countHUD.setPosition(625, 510);
 		}
 
 		this.pitcherInfoHUD.setPlayer(this.fieldingTeam.getPitcher());
 		this.callNewBatter();
+		this.countHUD.resetInning(this.iCurrentInning, this.bIsTopOfInning);
 	},
 
 	endInning: function() {
@@ -368,21 +375,22 @@ var gameState = {
 	// Returns true if the ball is in play and is still alive
 	recordOut: function(player) {
 		this.iInningOuts++;
-		this.iRunningRunners--;
+		//this.iRunningRunners--;
 		console.log("Outs: " + this.iInningOuts + " (" + player + ")");
+
+		this.sendBatterToDugout(player, true);
+		this.countHUD.addOut();
+
+		if (this.iInningOuts >= 3 || !this.areRunnersRunning()) {
+			this.callDeadBall();
+			return false;
+		}
 
 		for (var i = 0; i < this.aRunnerTargets.length; i++) {
 			if (this.aRunnerTargets[i] == player) {
 				this.aRunnerTargets[i] = null;
 				break;
 			}
-		}
-
-		this.sendBatterToDugout(player, true);
-
-		if (this.iInningOuts >= 3 || this.iRunningRunners <= 0) {
-			this.callDeadBall();
-			return false;
 		}
 
 		return this.bIsBallInPlay;
@@ -737,14 +745,14 @@ var gameState = {
 				// Ball gets by, calculate a penalty time
 				//
 				else {
+					var fielderDistance = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
+
 					if (fieldingPos == LEFT_FIELD || fieldingPos == RIGHT_FIELD) {
 						this.showUmpireDialog("Blasted into the corner!", function() {
-							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
 							gameState.delayFielderGather(gameState.activeFielder, 4000);
 						});
 					} else if (fieldingPos == CENTER_FIELD) {
 						this.showUmpireDialog("Sails past to the wall!", function() {
-							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
 							gameState.delayFielderGather(gameState.activeFielder, 4000);
 						});
 					} else if (fieldingPos < LEFT_FIELD) {
@@ -763,7 +771,6 @@ var gameState = {
 						}
 
 						this.showUmpireDialog("It screams past the fielder!", function() {
-							var delta = Phaser.Point.distance(outfielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
 							gameState.delayFielderGather(outfielder, 3000);
 						});
 					}
@@ -984,7 +991,7 @@ var gameState = {
 			this.aRunnerLocations[targetBase] = runner;
 		}
 
-		if (this.iRunningRunners <= 0) {
+		if (!this.areRunnersRunning()) {
 			this.callDeadBall();
 		}
 	},
@@ -1010,6 +1017,17 @@ var gameState = {
 	// and no other runner has claimed it as a target
 	canRunToBase: function(base) {
 		return this.aRunnerTargets[base] == null && this.aRunnerLocations[base] == null;
+	},
+
+	// Returns if there are any runners active
+	areRunnersRunning: function() {
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] != null) {
+				return true;
+			}
+		}
+
+		return false;
 	},
 
 // ****************************************************
@@ -1086,6 +1104,19 @@ var gameState = {
 
 		if (player == null) {
 			return;
+		}
+
+		// Clear run targets
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] == player) {
+				this.aRunnerTargets[base] = null;
+			}
+		}
+
+		for (base in this.aRunnerLocations) {
+			if (this.aRunnerLocations[base] == player) {
+				this.aRunnerLocations[base] = null;
+			}
 		}
 
 		if (this.bIsTopOfInning) {
@@ -1205,4 +1236,8 @@ var gameState = {
 
 function pitchTimerResolvePitch() {
 	gameState.resolvePitch();
+}
+
+Math.clamp = function(value, min, max) {
+	return Math.min(Math.max(value, min), max);
 }

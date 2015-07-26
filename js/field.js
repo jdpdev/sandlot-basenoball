@@ -94,6 +94,22 @@ var gameField = {
 	},
 
 	// ** Positions in the world ******************************************************
+	GetBasePosition: function(base) {
+		switch (base) {
+			case HOME:
+				return this.GetHomePlatePos();
+
+			case FIRST:
+				return this.GetFirstBasePos();
+
+			case SECOND:
+				return this.GetSecondBasePos();
+
+			case THIRD:
+				return this.GetThirdBasePos();
+		}
+	},
+
 	GetMoundPos: function() {
 		return new Phaser.Point(this.homePlateX, this.homePlateY - this.basesRadius);
 	},
