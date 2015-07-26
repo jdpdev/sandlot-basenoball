@@ -54,6 +54,7 @@ var gameState = {
 	batterInfoHUD: null,
 
 	bGlobalUIPause: false,
+	currentDialog: null,
 	
 	init: function(homeTeam, awayTeam) {
 		if (homeTeam != undefined || awayTeam != undefined) {
@@ -214,7 +215,7 @@ var gameState = {
 	// Have the pitcher select their action
 	selectPitcherAction: function() {
 		var pitcher = this.fieldingTeam.getPitcher();
-		this.showChoiceDialog(pitcher, "Pitcher select action:", actionManager.getAvailablePitcherActions(pitcher, pitcher.getAP()), 
+		this.showChoiceDialog(pitcher, pitcher.getName() + " (Pitcher)", actionManager.getAvailablePitcherActions(pitcher, pitcher.getAP()), 
 			function(action) {
 				console.log("Pitcher selected action: " + action.text);
 				pitcher.consumeAP(action.getCost());
@@ -227,7 +228,7 @@ var gameState = {
 	// Have the batter select their action
 	selectBatterAction: function() {
 		var batter = this.aRunnerLocations[HOME];
-		this.showChoiceDialog(batter, "Batter select action:", actionManager.getAvailableBatterActions(batter, batter.getAP()), 
+		this.showChoiceDialog(batter, batter.getName() + " (Batter)", actionManager.getAvailableBatterActions(batter, batter.getAP()), 
 			function(action) {
 				console.log("Batter selected action: " + action.text);
 				batter.consumeAP(action.getCost());
@@ -374,6 +375,16 @@ var gameState = {
 		console.log("Dead ball!");
 		this.fieldingTeam.resetFielders();
 		this.bIsBallInPlay = false;
+
+		if (this.throwTimer != undefined) {
+			this.throwTimer.destroy();
+			this.throwTimer = undefined;
+		}
+
+		if (this.gatherTimer != undefined) {
+			this.gatherTimer.destroy();
+			this.gatherTimer = undefined;
+		}
 
 		if (this.iInningOuts >= 3) {
 			this.endInning();
@@ -643,7 +654,7 @@ var gameState = {
 
 	// Resolve the result of the fielder attempting to get the ball
 	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
-		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder);
+		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder) - 1;
 
 		if (fieldingPos >= LEFT_FIELD) {
 			difficulty /= 2;
@@ -677,14 +688,14 @@ var gameState = {
 							if (gameState.recordOut(hitter)) {
 
 								// If anybody's running, tell them go to back
-								for (var i = 0; i < this.aRunnerTargets.length; i++) {
-									if (this.aRunnerTargets[i] != null) {
-										this.aRunnerTargets[i].abortRun();
+								for (var i = 0; i < gameState.aRunnerTargets.length; i++) {
+									if (gameState.aRunnerTargets[i] != null) {
+										gameState.aRunnerTargets[i].abortRun();
 									}
 								}
 
 								// Throw options
-								this.fielderGathersBall(fielder);
+								gameState.fielderGathersBall(fielder);
 							}
 						});
 					//}
@@ -696,17 +707,28 @@ var gameState = {
 					if (fieldingPos == LEFT_FIELD || fieldingPos == RIGHT_FIELD) {
 						this.showUmpireDialog("Blasted into the corner!", function() {
 							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
-							gameState.delayFielderGather(gameState.activeFielder, 3000);
+							gameState.delayFielderGather(gameState.activeFielder, 4000);
 						});
 					} else if (fieldingPos == CENTER_FIELD) {
 						this.showUmpireDialog("Sails past to the wall!", function() {
 							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
-							gameState.delayFielderGather(gameState.activeFielder, 3000);
+							gameState.delayFielderGather(gameState.activeFielder, 4000);
 						});
 					} else if (fieldingPos < LEFT_FIELD) {
+						// Outfield collects
+						var outfielder;
+
+						if (fieldingPos == FIRST_BASE) {
+							outfielder = this.fieldingTeam.getFielderForPosition(RIGHT_FIELD);
+						} else if (fieldingPos == THIRD_BASE) {
+							outfielder = this.fieldingTeam.getFielderForPosition(LEFT_FIELD);
+						} else {
+							outfielder = this.fieldingTeam.getFielderForPosition(CENTER_FIELD);
+						}
+
 						this.showUmpireDialog("It screams past the fielder!", function() {
-							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
-							gameState.delayFielderGather(gameState.activeFielder, 3000);
+							var delta = Phaser.Point.distance(outfielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
+							gameState.delayFielderGather(outfielder, 3000);
 						});
 					}
 				}
@@ -747,9 +769,16 @@ var gameState = {
 	// Delay the fielder from gathering the ball
 	delayFielderGather: function(fielder, delay) {
 		console.log("Fielder delayed " + delay);
+
+		if (this.gatherTimer != undefined) {
+			this.gatherTimer.destroy();
+		}
+
 		var gatherTimer = game.time.create(true);
 		gatherTimer.add(delay, this.completeDelayFielderGather, this, fielder);
 		gatherTimer.start();
+
+		this.gatherTimer = gatherTimer;
 	},
 
 	completeDelayFielderGather: function(fielder) {
@@ -827,12 +856,22 @@ var gameState = {
 
 		console.log("Throw takes " + delay + " seconds");
 
+		if (this.throwTimer != undefined) {
+			this.throwTimer.destroy();
+		}
+
 		var throwTimer = game.time.create(true);
 		throwTimer.add(delay * 1000, this.fielderThrowComplete, this, target, targetBase - 1);
 		throwTimer.start();
+
+		this.throwTimer = throwTimer;
 	},
 
 	fielderThrowComplete: function(target, base) {
+		if (!this.bIsBallInPlay) {
+			return;
+		}
+
 		if (this.aRunnerTargets[base] != null) {
 			// TODO make this a skill check
 			this.showUmpireDialog("Runner is out at " + GetPlayerPositionName(base + 1) + "!", function() {
@@ -922,8 +961,24 @@ var gameState = {
 		bases.push({"id": -1, "text": "Hold the ball"});
 
 		var dialog = new ChoiceDialog(player, true, callback);
-		dialog.setupCustomChoices("Throw to...", bases);
+		dialog.setupCustomChoices(player.getName() + " (" + GetPlayerPositionAbbr(player.fieldingPosition) + ")", bases);
 		dialog.setY(30);
+	},
+
+	dialogOpened: function(dialog) {
+		if (this.currentDialog != null) {
+			this.currentDialog.close();
+		}
+
+		this.bGlobalUIPause = true;
+		this.currentDialog = dialog;
+	},
+
+	dialogClosed: function(dialog) {
+		if (dialog == this.currentDialog) {
+			this.bGlobalUIPause = false;
+			this.currentDialog = null;
+		}
 	},
 
 	sendBatterToDugout: function(player, bRetire) {

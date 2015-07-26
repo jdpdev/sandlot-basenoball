@@ -486,7 +486,7 @@ function Player(id, playerInfo, teamColor) {
 	this.runToFieldFinished = function(hitType, difficulty, distance) {
 		var fielder = this;
 
-		gameState.showChoiceDialog(this, "Fielder select action:", actionManager.getAvailableFielderActions(this, this.getAP()), 
+		gameState.showChoiceDialog(this, this.getName() + " (" + GetPlayerPositionAbbr(this.fieldingPosition) + ")", actionManager.getAvailableFielderActions(this, this.getAP()), 
 			function(action) {
 				console.log("Fielder selected action: " + action.text);
 				fielder.consumeAP(action.getCost());
@@ -574,6 +574,25 @@ function GetPlayerPositionName(positionIndex) {
 		case LEFT_FIELD: 	return "Left Field";
 		case CENTER_FIELD: 	return "Center Field";
 		case RIGHT_FIELD: 	return "Right Field";
+	}
+}
+
+// Returns human-friendly name for a fielding index
+function GetPlayerPositionAbbr(positionIndex) {
+	if (positionIndex < PITCHER || positionIndex > RIGHT_FIELD) {
+		return "---";
+	}
+
+	switch (positionIndex) {
+		case PITCHER: 		return "P";
+		case CATCHER: 		return "C";
+		case FIRST_BASE: 	return "1B";
+		case SECOND_BASE: 	return "2B";
+		case THIRD_BASE: 	return "3B";
+		case SHORT_STOP: 	return "SS";
+		case LEFT_FIELD: 	return "LF";
+		case CENTER_FIELD: 	return "CF";
+		case RIGHT_FIELD: 	return "RF";
 	}
 }
 
