@@ -124,6 +124,24 @@ function Team() {
 		return this.players[this.battingOrder[this.iCurrentBatterIndex]];
 	},
 
+	// Return the next three batters up to bat
+	this.getBattersUpNext = function() {
+		var batters = [];
+		var index;
+
+		for (var i = 1; i <= 3; i++) {
+			index = this.iCurrentBatterIndex + i;
+
+			if (index >= 8) {
+				index -= 8;
+			}
+
+			batters.push(this.players[this.battingOrder[index]]);
+		}
+
+		return batters;
+	},
+
 	// Returns the pitcher player
 	this.getPitcher = function() {
 		return this.getFielderForPosition(PITCHER);

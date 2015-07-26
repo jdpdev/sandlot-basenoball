@@ -113,11 +113,11 @@ var gameState = {
 		var umpireInfo = {name: "Umpire Cat", icon: "FFF.FF.20.FF.AA0.FF.0F.FF"};
 		this.umpire = new Player(0, umpireInfo, 0x222299);
 
+		//this.showInningsChangeScreen();
+
 		this.showUmpireDialog("Play ball!", function(option) {
 			gameState.startInning();
 		});
-
-		//this.startInning();
 	},
 
 	startInning: function() {
@@ -166,7 +166,9 @@ var gameState = {
 		}
 
 		this.bIsTopOfInning = !this.bIsTopOfInning;
-		this.startInning();
+		//this.startInning();
+
+		this.showInningsChangeScreen();
 	},
 
 	endGame: function() {
@@ -491,7 +493,7 @@ var gameState = {
 
 				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 
-				this.showUmpireDialog("Line drive to " + GetPlayerPositionName(targetFielder) + "!", function() {
+				this.showUmpireDialog("Fe-line drive to " + GetPlayerPositionName(targetFielder) + "!", function() {
 					gameState.putBallInPlay(LINE_DRIVE, targetFielder, difficulty, distance);
 				});
 				break;
@@ -963,6 +965,18 @@ var gameState = {
 		var dialog = new ChoiceDialog(player, true, callback);
 		dialog.setupCustomChoices(player.getName() + " (" + GetPlayerPositionAbbr(player.fieldingPosition) + ")", bases);
 		dialog.setY(30);
+	},
+
+	showInningsChangeScreen: function() {
+		var batting = this.bIsTopOfInning ? this.awayTeam : this.homeTeam;
+		var fielding = this.bIsTopOfInning ? this.homeTeam : this.awayTeam;
+
+		var dialog = new InningsChangeScreen(this.aHomeInnings, this.aAwayInnings, this.iCurrentInning, this.bIsTopOfInning,
+												batting, fielding);
+	},
+
+	closeInningsChangeScreen: function() {
+		this.startInning();
 	},
 
 	dialogOpened: function(dialog) {
