@@ -111,6 +111,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.returnToFieldingPosition = function() {
+		this.worldIcon.update = function() { };
 		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
 	}
 
@@ -385,11 +386,11 @@ function Player(id, playerInfo, teamColor) {
 
 	this.getRunSpeed = function() {
 		// Run speed, used when running and fielding, is calibrated on time to get to base
-		// skill 0 = 5sec
-		// skill 5 = 4sec
-		// skill 10 = 3sec
+		// skill 0 = 4sec
+		// skill 5 = 3sec
+		// skill 10 = 2sec
 
-		return gameField.basesRadius / (5 - ((this.getInfo().speed / 10) * 2));
+		return gameField.basesRadius / (4 - ((this.getInfo().speed / 10) * 2));
 	}
 
 	// Calibrated on distance from first to third base
@@ -430,17 +431,54 @@ function Player(id, playerInfo, teamColor) {
 		}
 	}
 
+	this.abortRun = function() {
+		if (!this.bIsRunning) {
+			return;
+		}
 
+		this.runTarget--;
+
+		if (this.runTarget < HOME) {
+			this.runTarget = HOME;
+		}
+
+		var target = this.getBasePosition(this.runTarget);
+		this.targetBasePos = target;
+	}
 
 
 
 	// ** Fielding ******************************************************
 	this.fieldBall = function(hitType, difficulty, distance) {
 		var myDist = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY).getMagnitude();
+		var fieldTime = 0; 
+
+		switch (hitType) {
+			case LINE_DRIVE:
+				if (this.fieldingPosition < LEFT_FIELD) {
+					fieldTime = 750;
+				} else {
+					fieldTime = 1250;
+				}
+				break;
+
+			case GROUND_BALL:
+				fieldTime = 1250;
+				break;
+
+			case FLY_BALL:
+				if (this.fieldingPosition < LEFT_FIELD) {
+					fieldTime = 4000;
+				} else {
+					fieldTime = 3000;
+				}
+				break;
+		}
+
 
 		// Simulate running to the point
 		var runTimer = game.time.create(true);
-		runTimer.add(1000, this.runToFieldFinished, this, hitType, difficulty, distance);
+		runTimer.add(fieldTime, this.runToFieldFinished, this, hitType, difficulty, distance);
 		runTimer.start();
 	}
 

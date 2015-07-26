@@ -197,7 +197,6 @@ var gameState = {
 		this.iBatterStrikes = 0;
 		this.iBatterBalls = 0;
 
-		this.fieldingTeam.resetFielders();
 		this.doPitch();
 	},
 
@@ -339,7 +338,7 @@ var gameState = {
 	recordOut: function(player) {
 		this.iInningOuts++;
 		this.iRunningRunners--;
-		console.log("Outs: " + this.iInningOuts);
+		console.log("Outs: " + this.iInningOuts + " (" + player + ")");
 
 		for (var i = 0; i < this.aRunnerTargets.length; i++) {
 			if (this.aRunnerTargets[i] == player) {
@@ -358,9 +357,22 @@ var gameState = {
 		return this.bIsBallInPlay;
 	},
 
+	recordRun: function(player) {
+		console.log("Record run");
+
+		if (this.bIsTopOfInning) {
+			this.aAwayInnings[this.iCurrentInning]++;
+		} else {
+			this.aHomeInnings[this.iCurrentInning]++;
+		}
+
+		this.sendBatterToDugout(runner, false);
+	},
+
 	// Call dead ball after a ball put into play is resolved
 	callDeadBall: function() {
 		console.log("Dead ball!");
+		this.fieldingTeam.resetFielders();
 		this.bIsBallInPlay = false;
 
 		if (this.iInningOuts >= 3) {
@@ -422,7 +434,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = GROUND_BALL;
+		hitType = LINE_DRIVE; //GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -460,7 +472,7 @@ var gameState = {
 					difficulty = battingSkill * margin * 2 + battingPower;
 				}
 
-				distance = (battingSkill * margin + battingPower * margin) / 15;
+				distance = (battingSkill * margin + battingPower * margin) / 7;
 
 				console.log("Line drive, normalized distance: " + distance);
 
@@ -631,9 +643,16 @@ var gameState = {
 
 	// Resolve the result of the fielder attempting to get the ball
 	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
+		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder);
+
+		if (fieldingPos >= LEFT_FIELD) {
+			difficulty /= 2;
+		}
+
 		var delta = fielder.getInfo().fielding - difficulty;
 		var roll = Math.random();
 		var bSuccess = false;
+		var hitter = this.aRunnerTargets[FIRST];
 
 		// Delta 0 is even odds. Effective range is [-10, +5].
 		if (delta >= 0) {
@@ -651,23 +670,45 @@ var gameState = {
 				if (bSuccess) {
 
 					// Can make a play
-					if (this.recordOut(this.aRunnerLocations[HOME])) {
+					//if (this.recordOut(hitter)) {
 						this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
 						
 							// Ball is still in play, make another play?
-							if (gameState.recordOut(gameState.aRunnerLocations[HOME])) {
+							if (gameState.recordOut(hitter)) {
 
+								// If anybody's running, tell them go to back
+								for (var i = 0; i < this.aRunnerTargets.length; i++) {
+									if (this.aRunnerTargets[i] != null) {
+										this.aRunnerTargets[i].abortRun();
+									}
+								}
+
+								// Throw options
+								this.fielderGathersBall(fielder);
 							}
 						});
-					}
+					//}
 				}
 
 				// Ball gets by, calculate a penalty time
 				//
 				else {
-					this.showUmpireDialog("Blasted into the corner!", function() {
-						gameState.delayFielderGather(gameState.activeFielder, 2000);
-					});
+					if (fieldingPos == LEFT_FIELD || fieldingPos == RIGHT_FIELD) {
+						this.showUmpireDialog("Blasted into the corner!", function() {
+							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
+							gameState.delayFielderGather(gameState.activeFielder, 3000);
+						});
+					} else if (fieldingPos == CENTER_FIELD) {
+						this.showUmpireDialog("Sails past to the wall!", function() {
+							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
+							gameState.delayFielderGather(gameState.activeFielder, 3000);
+						});
+					} else if (fieldingPos < LEFT_FIELD) {
+						this.showUmpireDialog("It screams past the fielder!", function() {
+							var delta = Phaser.Point.distance(fielder.getPosition(), new Phaser.Point(gameField.homePlateX, gameField.homePlateY));
+							gameState.delayFielderGather(gameState.activeFielder, 3000);
+						});
+					}
 				}
 				break;
 
@@ -687,7 +728,7 @@ var gameState = {
 					this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
 						
 						// Ball is still in play, make another play?
-						if (gameState.recordOut(gameState.aRunnerLocations[HOME])) {
+						if (gameState.recordOut(hitter)) {
 
 						}
 					});
@@ -717,6 +758,10 @@ var gameState = {
 
 	// Called when the fielder has gathered the ball and can make a play
 	fielderGathersBall: function(fielder) {
+		if (!this.bIsBallInPlay) {
+			return;
+		}
+
 		this.showBaseOptions(fielder, function(choice) {
 			var position = gameState.fieldingTeam.getFielderPosition(fielder);
 
@@ -829,7 +874,11 @@ var gameState = {
 	runnerReportComplete: function(runner, targetBase, bAtBase) {
 		this.iRunningRunners--;
 
-		this.aRunnerLocations[targetBase] = runner;
+		if (targetBase == HOME) {
+			this.recordRun(runner);
+		} else {
+			this.aRunnerLocations[targetBase] = runner;
+		}
 
 		if (this.iRunningRunners <= 0) {
 			this.callDeadBall();
@@ -879,6 +928,10 @@ var gameState = {
 
 	sendBatterToDugout: function(player, bRetire) {
 		var dugoutPos;
+
+		if (player == null) {
+			return;
+		}
 
 		if (this.bIsTopOfInning) {
 			dugoutPos = gameField.GetAwayDugoutPos();
