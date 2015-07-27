@@ -704,7 +704,8 @@ var gameState = {
 			difficulty /= 2;
 		}
 
-		var delta = fielder.getInfo().fielding - difficulty;
+		var fieldingSkill = this.selectedFielderAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
+		var delta = fieldingSkill - difficulty;
 		var roll = Math.random();
 		var bSuccess = false;
 		var hitter = this.aRunnerTargets[FIRST];
