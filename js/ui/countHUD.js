@@ -5,6 +5,7 @@ var CountHUD = function(away, home) {
 	this.hudPositionX = 0;
 	this.hudPositionY = 0;
 	this.graphics = game.add.graphics(0, 0);
+	this.isTopOfInning = true;
 
 	this.homeScore = 0;
 	this.awayScore = 0;
@@ -43,6 +44,7 @@ CountHUD.prototype.setPosition = function(x, y) {
 // Reset for a new inning
 CountHUD.prototype.resetInning = function(inning, bTop) {
 	this.inningLabel.text = (bTop ? "Top" : "Bot") + " " + (inning + 1);
+	this.isTopOfInning = bTop;
 
 	this.resetCount();
 }
@@ -59,19 +61,67 @@ CountHUD.prototype.resetCount = function() {
 }
 
 CountHUD.prototype.addStrike = function() {
-
+	this.strikeCount++;
+	this.drawStrikes();
 }
 
 CountHUD.prototype.drawStrikes = function() {
+	// First out
+	if (this.strikeCount > 0) {
+		this.graphics.beginFill(0xffff00);
+	} else {
+		this.graphics.beginFill(0xff7700);
+	}
 
+	this.graphics.drawCircle(95, 70, 15);
+	this.graphics.endFill();
+
+	// Second out
+	if (this.strikeCount > 1) {
+		this.graphics.beginFill(0xffff00);
+	} else {
+		this.graphics.beginFill(0xff7700);
+	}
+
+	this.graphics.drawCircle(115, 70, 15);
+	this.graphics.endFill();
 }
 
 CountHUD.prototype.addBall = function() {
-
+	this.ballCount++;
+	this.drawBalls();
 }
 
 CountHUD.prototype.drawBalls = function() {
+	// First out
+	if (this.ballCount > 0) {
+		this.graphics.beginFill(0x00aaFF);
+	} else {
+		this.graphics.beginFill(0x005aae);
+	}
 
+	this.graphics.drawCircle(25, 70, 15);
+	this.graphics.endFill();
+
+	// Second out
+	if (this.ballCount > 1) {
+		this.graphics.beginFill(0x00aaFF);
+	} else {
+		this.graphics.beginFill(0x005aae);
+	}
+
+	this.graphics.drawCircle(45, 70, 15);
+	this.graphics.endFill();
+
+	// Second out
+	if (this.ballCount > 2) {
+		this.graphics.beginFill(0x00aaFF);
+	} else {
+		this.graphics.beginFill(0x005aae);
+	}
+
+	this.graphics.drawCircle(65, 70, 15);
+	this.graphics.endFill();
 }
 
 CountHUD.prototype.addOut = function() {
@@ -102,7 +152,13 @@ CountHUD.prototype.drawOuts = function() {
 }
 
 CountHUD.prototype.addRun = function() {
-
+	if (this.isTopOfInning) {
+		this.awayScore++;
+		this.awayScoreLabel.text = this.awayScore.toString();
+	} else {
+		this.homeScore++;
+		this.homeScoreLabel.text = this.homeScore.toString();
+	}
 }
 
 CountHUD.prototype.addPlainText = function(parent, string, style, x, y) {
