@@ -74,7 +74,7 @@ var ManageTeam = function(menu, options) {
     this.createButton(signStart.x + 10, signStart.y + 10, "New", function(event) {
         console.log("make new team");
         this.displayTeam(this.createRandomTeam());
-    });
+    }, null, { font: "20px elliotsixregular", fill: "#ffffff", align: "left"});
     
     this.createButton(signStart.x + 10, signStart.y + 35, "Load", function(event) {
         console.log("load team from json");
@@ -88,17 +88,17 @@ var ManageTeam = function(menu, options) {
             manager.loadTeamFromJSON(json);
             $(this).closest('div').hide();
         });
-    });
+    }, null, { font: "20px elliotsixregular", fill: "#ffffff", align: "left"});
     
     this.createButton(signStart.x + 10, signStart.y + 80, "Mutineers", function(event) {
         console.log("load the Mutineers");
         this.displayTeam(this.loadTeamFromFile("mutineers"));
-    });
+    }, null, { font: "20px elliotsixregular", fill: "#ffffff", align: "left"});
     
     this.createButton(signStart.x + 10, signStart.y + 105, "Spacebutts", function(event) {
         console.log("load the Spacebutts");
         this.displayTeam(this.loadTeamFromFile("spacebutts"));
-    });
+    }, null, { font: "20px elliotsixregular", fill: "#ffffff", align: "left"});
 
     if (this.bIsSelectingHomeTeam) {
         this.displayTeam(this.loadTeamFromFile("mutineers"));
@@ -107,12 +107,16 @@ var ManageTeam = function(menu, options) {
     }
 }
 
-ManageTeam.prototype.createButton = function(x, y, text, onSelected, parent) {
-    if (parent == undefined) {
+ManageTeam.prototype.createButton = function(x, y, text, onSelected, parent, style) {
+    if (parent == undefined || parent == null) {
         parent = this.graphics;
     }
 
-    var button = game.add.text(x, y, text, { font: "20px hvd_peaceregular", fill: "#ffffff", align: "left"});
+    if (style == undefined) {
+        style = { font: "20px hvd_peaceregular", fill: "#ffffff", align: "left"};
+    }
+
+    var button = game.add.text(x, y, text, style);
     button.inputEnabled = true;
     
     button.events.onInputOver.add(function(event) {
@@ -170,7 +174,7 @@ ManageTeam.prototype.displayTeam = function(team) {
     
     var bigText = { font: "30px hvd_peaceregular", fill: "#ffffff", align: "left"};
     var middleText = { font: "20px hvd_peaceregular", fill: "#ffffff", align: "left"}
-    var smallText = { font: "15px hvd_peaceregular", fill: "#ffffff", align: "left"}
+    var smallText = { font: "15px elliotsixregular", fill: "#ffffff", align: "left"}
     
     // ******** Team name
     this.teamNameLabel = this.addPlainText(this.teamGroup, team.name + " (" + team.totalTeamSkillPoints() + " pts)", bigText, 0, 10);

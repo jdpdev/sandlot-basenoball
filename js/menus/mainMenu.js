@@ -43,7 +43,7 @@ var MainMenu = function(menu, options) {
     titleText.rotation = Math.PI / -40;
     
     // Play options
-    var gameModeText = game.add.text(0, 0, "Local Multiplayer", { font: "20px hvd_peaceregular", fill: "#ffffff", align: "center"});
+    var gameModeText = game.add.text(0, 0, "Local Multiplayer", { font: "26px elliotsixregular", fill: "#ffffff", align: "center"});
     this.graphics.addChild(gameModeText);
     gameModeText.x = signStart.x + signSize.x * 0.5 - 100;
     gameModeText.y = signStart.y + signSize.y * 0.5 + 60;

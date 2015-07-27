@@ -51,7 +51,7 @@ var ManagePlayer = function(teamManager, player) {
     
     // Name
     this.playerName = this.addPlainText(this.graphics, player.getName(), 
-                        { font: "20px hvd_peaceregular", fill: "#ffffff", align: "left"},
+                        { font: "20px elliotsixregular", fill: "#ffffff", align: "left"},
                         signStart.x + 10, signStart.y + 145);
 
     this.playerName.inputEnabled = true;
@@ -130,7 +130,7 @@ ManagePlayer.prototype.addPlainText = function(parent, string, style, x, y) {
 }
 
 ManagePlayer.prototype.addIconCycler = function(parent, name, slot, x, y) {
-    var title = this.addPlainText(parent, name, { font: "18px Arial", fill: "#ffffff", align: "left"}, x + 30, y);
+    var title = this.addPlainText(parent, name, { font: "18px elliotsixregular", fill: "#ffffff", align: "left"}, x + 30, y);
     
     var leftButton = this.drawLeftArrow(parent, x, y);
     var rightButton = this.drawRightArrow(parent, x + iconGenerator.iconWidth, y);
@@ -155,7 +155,7 @@ ManagePlayer.prototype.cycleSlot = function(slot, direction) {
 }
 
 ManagePlayer.prototype.addSkillBar = function(parent, name, skill, x, y) {
-    var title = this.addPlainText(parent, name, { font: "18px Arial", fill: "#ffffff", align: "left"}, x, y);
+    var title = this.addPlainText(parent, name, { font: "15px elliotsixregular", fill: "#ffffff", align: "left"}, x, y);
     var leftButton = this.drawLeftArrow(parent, x + 100, y);
     var rightButton = this.drawLeftArrow(parent, x + 270, y);
 
