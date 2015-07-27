@@ -1,7 +1,7 @@
 var game;
 
 function InitializeGame() {
-	game = new Phaser.Game(800, 600, Phaser.AUTO, '');
+	game = new Phaser.Game(800, 600, Phaser.AUTO, "appParent");
 
 	// menuState is defined in menuState.js
 	game.state.add(menuStateName, menuState);

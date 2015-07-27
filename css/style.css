@@ -57,3 +57,40 @@
 	border: 10px solid #6e531e;
 	background-color: BurlyWood;
 }
+
+/*canvas {
+	border: 10px solid #DEB887;
+}*/
+
+#appParent {
+	
+}
+
+.webWood {
+	background-color: #DEB887;
+	padding: 10px;
+	font-family: Arial;
+}
+
+.webWood h1 {
+	color: black;
+	font-family: hvd_peaceregular;
+	font-size: 30pt;
+	margin-left: 20px;
+}
+
+.webWood img {
+	margin-right: 10px;
+	margin-top: 10px;
+}
+
+.quote {
+	background-color: #efdcc3;
+	margin: 10px;
+	padding: 10px;
+	border-radius: 20px;
+}
+
+h4 {
+	font-family: elliotsixregular;
+}
