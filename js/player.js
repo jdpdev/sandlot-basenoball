@@ -21,8 +21,8 @@ function Player(id, playerInfo, teamColor) {
 
 	this.teamColor = parseInt(teamColor);
 
-	this.currentAP = 50;
-	this.maxAP = 50;
+	this.currentAP = 20 + this.playerInfo.imagination * 8;
+	this.maxAP = this.currentAP;
 
 	// Tween used when running
 	this.runTween = null;
@@ -282,10 +282,12 @@ function Player(id, playerInfo, teamColor) {
 		this.bIsForcedRun = bForced;
 
 		// If a fly ball, hold on running immediately
-		if (hitType == FLY_BALL) {
+		if (bForced) {
+			this.startRun(targetBase);
+		} else if (hitType == FLY_BALL) {
 			console.log("Runner " + this.getName() + " holding at base");
 			this.bIsRunning = false;
-		} else if (bForced || hitType != FLY_BALL) {
+		} else {
 			this.startRun(targetBase);
 		}
 

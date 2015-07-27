@@ -344,6 +344,7 @@ var gameState = {
 	// Records a strike. Returns true on strike out.
 	recordStrike: function(bLooking) {
 		this.iBatterStrikes++;
+		this.countHUD.addStrike();
 
 		if (this.iBatterStrikes >= 3) {
 			this.showUmpireDialog("Strike three! You're MEOW-t!", function() {
@@ -359,6 +360,7 @@ var gameState = {
 	// Records a ball. Returns true on a walk.
 	recordBall: function() {
 		this.iBatterBalls++;
+		this.countHUD.addBall();
 
 		if (this.iBatterBalls >= 4) {
 			this.showUmpireDialog("Ball four!", function() {
@@ -405,6 +407,7 @@ var gameState = {
 			this.aHomeInnings[this.iCurrentInning]++;
 		}
 
+		this.countHUD.addRun();
 		this.sendBatterToDugout(runner, false);
 	},
 
@@ -469,10 +472,10 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [3, 7, 5];
+		var weights = [3, 7, 0];
 		//var weights = [0, 1, 0];
-		var weightTotal = 1;
-		var hitType = 2;
+		var weightTotal = 10;
+		var hitType = 1;
 		var roll = Math.floor(Math.random() * weightTotal);
 
 		for (var i = 0; i < weights.length; i++) {
@@ -484,7 +487,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = LINE_DRIVE; //GROUND_BALL;
+		//hitType = FLY_BALL; //GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
