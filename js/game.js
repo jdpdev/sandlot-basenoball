@@ -231,6 +231,7 @@ var gameState = {
 	beginAtBat: function(batter, pitcher) {
 		this.iBatterStrikes = 0;
 		this.iBatterBalls = 0;
+		this.countHUD.resetCount();
 
 		this.doPitch();
 	},
@@ -412,7 +413,7 @@ var gameState = {
 		}
 
 		this.countHUD.addRun();
-		this.sendBatterToDugout(runner, false);
+		this.sendBatterToDugout(player, false);
 	},
 
 	// Call dead ball after a ball put into play is resolved
@@ -856,10 +857,12 @@ var gameState = {
 
 	// Called when the fielder has gathered the ball and can make a play
 	fielderGathersBall: function(fielder, bCatch) {
+		console.log(fielder.getName() + " gathers ball (in play? " + this.bIsBallInPlay + ")");
+		
 		if (!this.bIsBallInPlay) {
 			return;
 		}
-
+		
 		this.ballState = BALL_CONTROLLED;
 		this.onBallFielded(fielder, this.fieldingTeam.getFielderPosition(fielder), bCatch);
 
@@ -886,6 +889,8 @@ var gameState = {
 
 	// Notify all runners that a fielder has aquired the ball
 	onBallFielded: function(fielder, position, bCatch) {
+		console.log(fielder.getName() + " fields the ball");
+		
 		for (base in this.aRunnerTargets) {
 			if (this.aRunnerTargets[base] != null) {
 				this.aRunnerTargets[base].fielderHasBall(fielder, position, bCatch);
@@ -1012,6 +1017,8 @@ var gameState = {
 	// Called by runner when it's done, either when run complete or intercepted early
 	// bAtBase true if reached base on its own
 	runnerReportComplete: function(runner, targetBase, bAtBase) {
+		console.log(runner.getName() + " reports run complete");
+		
 		this.iRunningRunners--;
 		this.aRunnerTargets[targetBase] = null;
 
@@ -1030,6 +1037,8 @@ var gameState = {
 
 	// A runner has decided to change where it's running to 
 	runnerChangeRunTarget: function(runner, targetBase) {	
+		console.log(runner.getName() + " has changed to running to " + targetBase);
+		
 		for (base in this.aRunnerTargets) {
 			if (this.aRunnerTargets[base] == runner) { 
 				this.aRunnerTargets[base] = null;

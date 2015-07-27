@@ -350,10 +350,19 @@ function Player(id, playerInfo, teamColor) {
 		// Check if we want to go for extra
 		var status = gameState.getBallStatus();
 		var nextBase = this.runTarget + 1;
+		
+		if (nextBase > THIRD) {
+			nextBase = HOME;
+		}
 
 		if (!gameState.canRunToBase(nextBase)) {
-			console.log(this.getName() + " can't continue running");
-			this.completeRun();
+			console.log(this.getName() + " can't continue running to " + nextBase);
+			
+			try {
+				this.completeRun();
+			} catch (err) {
+				console.log("caught error: " + err);
+			}
 			return;
 		}
 
@@ -482,6 +491,8 @@ function Player(id, playerInfo, teamColor) {
 		if (!this.bIsRunning || this.runTarget == FIRST) {
 			return;
 		}
+		
+		console.log(this.getName() + " is aborting the run to " + this.runTarget);
 
 		this.runTarget--;
 
@@ -499,6 +510,7 @@ function Player(id, playerInfo, teamColor) {
 	// Global notification that a fielder has obtained the ball
 	// 
 	this.fielderHasBall = function(fielder, position, bOnCatch) {
+		console.log(this.getName() + " >> fielder " + fielder.getName() + " has the ball");
 		
 		// Have to return to base
 		if (this.bIsHoldingShort && bOnCatch) {
@@ -507,10 +519,16 @@ function Player(id, playerInfo, teamColor) {
 
 		// Decide if we want to abort
 		else if (this.bIsRunning) {
-			var distanceFromBase = Phaser.Point.distance(
-										this.getPosition(),
-										gameField.GetBasePosition(this.runTarget)
+			try {
+				var myPos = this.getPosition();
+				var basePos = this.getBasePosition(this.runTarget);
+				var distanceFromBase = Phaser.Point.distance(
+										myPos,
+										basePos
 									);
+			} catch (err) {
+				console.log("!!! caught error");
+			}
 
 			if (!this.bIsForcedRun) {
 
@@ -525,8 +543,13 @@ function Player(id, playerInfo, teamColor) {
 						break;
 
 					case THIRD:
-					case HOME:
 						if (position < LEFT_FIELD && gameState.canRunToBase(SECOND) && distanceFromBase >= 90) {
+							this.abortRun();
+						}
+						break;
+						
+					case HOME:
+						if (position < LEFT_FIELD && gameState.canRunToBase(THIRD) && distanceFromBase >= 90) {
 							this.abortRun();
 						}
 						break;

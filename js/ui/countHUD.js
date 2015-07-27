@@ -45,6 +45,8 @@ CountHUD.prototype.setPosition = function(x, y) {
 CountHUD.prototype.resetInning = function(inning, bTop) {
 	this.inningLabel.text = (bTop ? "Top" : "Bot") + " " + (inning + 1);
 	this.isTopOfInning = bTop;
+	this.outCount = 0;
+	this.drawOuts();
 
 	this.resetCount();
 }
@@ -53,11 +55,9 @@ CountHUD.prototype.resetInning = function(inning, bTop) {
 CountHUD.prototype.resetCount = function() {
 	this.ballCount = 0;
 	this.strikeCount = 0;
-	this.outCount = 0;
 
 	this.drawStrikes();
 	this.drawBalls();
-	this.drawOuts();
 }
 
 CountHUD.prototype.addStrike = function() {
@@ -68,9 +68,9 @@ CountHUD.prototype.addStrike = function() {
 CountHUD.prototype.drawStrikes = function() {
 	// First out
 	if (this.strikeCount > 0) {
-		this.graphics.beginFill(0xffff00);
+		this.graphics.beginFill(0xffff00, 1);
 	} else {
-		this.graphics.beginFill(0xff7700);
+		this.graphics.beginFill(0x333300, 1);
 	}
 
 	this.graphics.drawCircle(95, 70, 15);
@@ -78,9 +78,9 @@ CountHUD.prototype.drawStrikes = function() {
 
 	// Second out
 	if (this.strikeCount > 1) {
-		this.graphics.beginFill(0xffff00);
+		this.graphics.beginFill(0xffff00, 1);
 	} else {
-		this.graphics.beginFill(0xff7700);
+		this.graphics.beginFill(0x333300, 1);
 	}
 
 	this.graphics.drawCircle(115, 70, 15);
@@ -95,9 +95,9 @@ CountHUD.prototype.addBall = function() {
 CountHUD.prototype.drawBalls = function() {
 	// First out
 	if (this.ballCount > 0) {
-		this.graphics.beginFill(0x00aaFF);
+		this.graphics.beginFill(0x00aaFF, 1);
 	} else {
-		this.graphics.beginFill(0x005aae);
+		this.graphics.beginFill(0x005aae, 1);
 	}
 
 	this.graphics.drawCircle(25, 70, 15);
@@ -105,9 +105,9 @@ CountHUD.prototype.drawBalls = function() {
 
 	// Second out
 	if (this.ballCount > 1) {
-		this.graphics.beginFill(0x00aaFF);
+		this.graphics.beginFill(0x00aaFF, 1);
 	} else {
-		this.graphics.beginFill(0x005aae);
+		this.graphics.beginFill(0x005aae, 1);
 	}
 
 	this.graphics.drawCircle(45, 70, 15);
@@ -115,9 +115,9 @@ CountHUD.prototype.drawBalls = function() {
 
 	// Second out
 	if (this.ballCount > 2) {
-		this.graphics.beginFill(0x00aaFF);
+		this.graphics.beginFill(0x00aaFF, 1);
 	} else {
-		this.graphics.beginFill(0x005aae);
+		this.graphics.beginFill(0x005aae, 1);
 	}
 
 	this.graphics.drawCircle(65, 70, 15);
@@ -132,9 +132,9 @@ CountHUD.prototype.addOut = function() {
 CountHUD.prototype.drawOuts = function() {
 	// First out
 	if (this.outCount > 0) {
-		this.graphics.beginFill(0xff0000);
+		this.graphics.beginFill(0xff0000, 1);
 	} else {
-		this.graphics.beginFill(0x880000);
+		this.graphics.beginFill(0x880000, 1);
 	}
 
 	this.graphics.drawCircle(95, 45, 15);
@@ -142,9 +142,9 @@ CountHUD.prototype.drawOuts = function() {
 
 	// Second out
 	if (this.outCount > 1) {
-		this.graphics.beginFill(0xff0000);
+		this.graphics.beginFill(0xff0000, 1);
 	} else {
-		this.graphics.beginFill(0x880000);
+		this.graphics.beginFill(0x880000, 1);
 	}
 
 	this.graphics.drawCircle(115, 45, 15);
