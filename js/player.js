@@ -99,6 +99,11 @@ function Player(id, playerInfo, teamColor) {
 		return json;
 	}
 
+	// Returns if the run the player is doing is forced
+	this.isRunForced = function() {
+		return this.bIsForcedRun == true;
+	}
+
 	// ** Methods **************************************************************
 	this.setAsFielder = function(position) {
 		this.fieldingPosition = position;
@@ -279,16 +284,15 @@ function Player(id, playerInfo, teamColor) {
 
 		this.worldIcon.player = this;
 		this.targetFielder = targetFielder;
-		this.bIsForcedRun = bForced;
 
 		// If a fly ball, hold on running immediately
 		if (bForced) {
-			this.startRun(targetBase);
+			this.startRun(targetBase, bForced);
 		} else if (hitType == FLY_BALL) {
 			console.log("Runner " + this.getName() + " holding at base");
 			this.bIsRunning = false;
 		} else {
-			this.startRun(targetBase);
+			this.startRun(targetBase, bForced);
 		}
 
 		/*this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
@@ -296,13 +300,15 @@ function Player(id, playerInfo, teamColor) {
 		this.runTween.onComplete.add(this.onRunCompleted, this);*/
 	}
 
-	this.startRun = function(target) {
+	// Start running fully to a base
+	this.startRun = function(target, bForced) {
 		if (this.bIsRunning) {
 			return;
 		}
 
 		console.log(this.getName() + " is starting run to " + target);
 
+		this.bIsForcedRun = bForced;
 		this.targetBasePos = this.getBasePosition(target);
 		this.runTarget = target;
 
@@ -310,6 +316,14 @@ function Player(id, playerInfo, teamColor) {
 
 		this.bIsRunning = true;
 		this.worldIcon.update = this.runnerOnUpdate;
+	}
+
+	// Move some distance to the next base, but hold up for result of the fielder.
+	// Used for fly balls.
+	this.startHoldUpRun = function(target, bForced) {
+		this.bIsHoldingShort = true;
+
+		this.startRun(target, bForced);
 	}
 
 	// Stop the player from running
@@ -355,7 +369,7 @@ function Player(id, playerInfo, teamColor) {
 
 					case THIRD:
 					case HOME:
-						this.startRun(nextBase);
+						this.startRun(nextBase, false);
 						break;
 				}
 				break;
@@ -364,19 +378,19 @@ function Player(id, playerInfo, teamColor) {
 				switch (nextBase) {
 					default:
 					case SECOND:
-						this.startRun(nextBase);
+						this.startRun(nextBase, false);
 						break;
 
 					case THIRD:
 					case HOME:
-						this.startRun(nextBase);
+						this.startRun(nextBase, false);
 						break;
 				}
 				break;
 
 			case BALL_THROWN:
 				if (status.target == CATCHER && nextBase == SECOND) {
-					this.startRun(SECOND);
+					this.startRun(SECOND, false);
 				} else {
 					this.completeRun();
 				}
@@ -404,8 +418,15 @@ function Player(id, playerInfo, teamColor) {
 		var pDiff = new Phaser.Point(player.targetBasePos.x - player.worldIcon.x, player.targetBasePos.y - player.worldIcon.y);
 		var speedStep = player.getRunSpeed() * delta;
 		var bDone = false;
+		var distanceLeft = pDiff.getMagnitude();
 
-		if (pDiff.getMagnitude() > speedStep) {
+		// Hold short
+		if (this.bIsHoldingShort && distanceLeft <= 125) {
+			return;
+		} 
+
+		// Gotta go fast
+		else if (distanceLeft > speedStep) {
 			pDiff.setMagnitude(speedStep);
 		} else {
 			bDone = true;
@@ -476,15 +497,40 @@ function Player(id, playerInfo, teamColor) {
 	// ** Running AI ******************************************************
 
 	// Global notification that a fielder has obtained the ball
-	this.fielderHasBall = function(fielder, position) {
-		if (this.bIsRunning) {
+	// 
+	this.fielderHasBall = function(fielder, position, bOnCatch) {
+		
+		// Have to return to base
+		if (this.bIsHoldingShort && bOnCatch) {
+			this.abortRun();
+		} 
+
+		// Decide if we want to abort
+		else if (this.bIsRunning) {
 			var distanceFromBase = Phaser.Point.distance(
 										this.getPosition(),
 										gameField.GetBasePosition(this.runTarget)
 									);
 
-			if (this.runTarget == SECOND && gameState.canRunToBase(FIRST) && distanceFromBase >= 120) {
-				this.abortRun();
+			if (!this.bIsForcedRun) {
+
+				// Whether we want to continue is based on where we're going and where the
+				// fielder is.
+				switch (this.runTarget) {
+					case SECOND:
+						// Stop no matter who the fielder is
+						if (gameState.canRunToBase(FIRST) && distanceFromBase >= 90) {
+							this.abortRun();
+						}
+						break;
+
+					case THIRD:
+					case HOME:
+						if (position < LEFT_FIELD && gameState.canRunToBase(SECOND) && distanceFromBase >= 90) {
+							this.abortRun();
+						}
+						break;
+				}
 			}			
 		} else {
 
@@ -494,6 +540,8 @@ function Player(id, playerInfo, teamColor) {
 				this.startRun();
 			}
 		}
+
+		this.bIsHoldingShort = false;
 	}
 
 	// Global notification that the ball has been thrown to a base
