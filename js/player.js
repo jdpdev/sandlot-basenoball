@@ -21,13 +21,15 @@ function Player(id, playerInfo, teamColor) {
 
 	this.teamColor = parseInt(teamColor);
 
-	this.currentAP = 50;
+	this.currentAP = 20 + this.playerInfo.imagination * 8;
+	this.maxAP = this.currentAP;
 
 	// Tween used when running
 	this.runTween = null;
 
 	this.runCompleteCallback = null;
 	this.runTarget = -1;
+	this.bIsRunning = false;
 
 	// ** Getters and setters **************************************************
 	this.setPosition = function (position) {
@@ -35,29 +37,66 @@ function Player(id, playerInfo, teamColor) {
 		this.worldIcon.y = position.y;
 	}
 
+	this.getPosition = function() {
+		return new Phaser.Point(this.worldIcon.x, this.worldIcon.y);
+	}
+	
+	this.getId = function() {
+		return this.id;
+	}
+
 	this.getName = function() {
 		return this.playerInfo.name;
 	}
 
+	this.setName = function(value) {
+		return this.playerInfo.name = value;
+	}
+
 	this.getPortraitDesc = function() {
 		return this.playerInfo.icon;
+	}
+	
+	this.setPortraitDesc = function(desc) {
+		this.playerInfo.icon = desc;
 	}
 
 	this.getAP = function() {
 		return this.currentAP;
 	}
 
+	this.getMaxAP = function() {
+		return this.maxAP;
+	}
+
+	this.consumeAP = function(amount) {
+		this.currentAP -= amount;
+
+		if (this.currentAP < 0) {
+			this.currentAP = 0;
+		}
+	}
+
 	this.getPortrait = function() {
-		if (this.portrait == null) {
+		/*if (this.portrait == null) {
 			this.portrait = iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
 			this.portrait.parent.removeChild(this.portrait);
 		}
 
-		return this.portrait;
+		return this.portrait;*/
+
+		return iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
 	}
 
 	this.getInfo = function() {
 		return this.playerInfo;
+	}
+
+	// Represent the player as an object for json encoding
+	this.toJson = function() {
+		var json = this.playerInfo.toJson();
+		json["id"] = this.id;
+		return json;
 	}
 
 	// ** Methods **************************************************************
@@ -69,6 +108,11 @@ function Player(id, playerInfo, teamColor) {
 		}
 
 		this.setPosition(this.getFieldingPosition(position));
+	}
+
+	this.returnToFieldingPosition = function() {
+		this.worldIcon.update = function() { };
+		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
 	}
 
 	// Step the batter up to the plate
@@ -177,15 +221,206 @@ function Player(id, playerInfo, teamColor) {
 		this.teamNumber.y = 0;
 	}
 
-	// ** Batting ******************************************************
+
+
+
+
+
+
+
+	// ** Batter ******************************************************
 	
 	this.retireBatter = function(dugoutPos) {
 		this.returnToDugout(dugoutPos, true);
+		this.interruptRun();
+		this.bIsRunning = false;
 	}
 	
-	// Advance the runner to a base
+
+
+
+
+
+
+
+
+
+	// ** Runner ******************************************************
+
+	// Advance the runner to a base unopposed.
 	// base is the id of the base to advance to
 	this.advanceToBase = function(base) {
+		var basePos = this.getBasePosition(base);
+
+		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
+		this.runTarget = base;
+		this.runTween.onComplete.add(this.onAdvanceCompleted, this);
+	}
+
+	// Runner has advanced to their base
+	this.onAdvanceCompleted = function(target, tween) {
+		target.myPlayer.runTween = null;
+		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
+	}
+
+	// The ball has been put in play, the batter has to decide what to do.
+	//	targetBase is the base the runner would run to, defined in game.js
+	//	hitType is defined in game.js
+	//	difficulty is how well it's hit
+	//	targetFielder is the fielder it's going to
+	//	bForced is if the run is forced
+	this.ballInPlay = function(targetBase, hitType, difficulty, targetFielder, bForced) {
+
+		// Not forced, decide if we really want to run
+		if (!bForced) {
+			console.log("Batter " + this.getName() +  " decides not to run");
+			return;
+		}
+
+		this.worldIcon.player = this;
+		this.targetFielder = targetFielder;
+		this.bIsForcedRun = bForced;
+
+		// If a fly ball, hold on running immediately
+		if (bForced) {
+			this.startRun(targetBase);
+		} else if (hitType == FLY_BALL) {
+			console.log("Runner " + this.getName() + " holding at base");
+			this.bIsRunning = false;
+		} else {
+			this.startRun(targetBase);
+		}
+
+		/*this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
+		this.runTarget = targetBase;
+		this.runTween.onComplete.add(this.onRunCompleted, this);*/
+	}
+
+	this.startRun = function(target) {
+		if (this.bIsRunning) {
+			return;
+		}
+
+		console.log(this.getName() + " is starting run to " + target);
+
+		this.targetBasePos = this.getBasePosition(target);
+		this.runTarget = target;
+
+		gameState.runnerAcceptRun(this, this.runTarget);
+
+		this.bIsRunning = true;
+		this.worldIcon.update = this.runnerOnUpdate;
+	}
+
+	// Stop the player from running
+	this.interruptRun = function() {
+		if (!this.bIsRunning) {
+			return;
+		}
+
+		this.worldIcon.update = function() { };
+		this.bIsRunning = false;
+	}
+
+	this.onRunCompleted = function() {
+		this.worldIcon.update = function() { };
+		this.bIsRunning = false;
+
+		// Done no matter what
+		if (this.runTarget == HOME) {
+			console.log(this.getName() + " has reached home");
+			this.completeRun();
+			return;
+		}
+
+		// Check if we want to go for extra
+		var status = gameState.getBallStatus();
+		var nextBase = this.runTarget + 1;
+
+		if (!gameState.canRunToBase(nextBase)) {
+			console.log(this.getName() + " can't continue running");
+			this.completeRun();
+			return;
+		}
+
+		console.log(this.getName() + " thinking about whether to continue running");
+
+		switch (status.state) {
+			case BALL_UNCONTROLLED:
+				switch (nextBase) {
+					default:
+					case SECOND:
+						this.completeRun();
+						break;
+
+					case THIRD:
+					case HOME:
+						this.startRun(nextBase);
+						break;
+				}
+				break;
+
+			case BALL_FUMBLED:
+				switch (nextBase) {
+					default:
+					case SECOND:
+						this.startRun(nextBase);
+						break;
+
+					case THIRD:
+					case HOME:
+						this.startRun(nextBase);
+						break;
+				}
+				break;
+
+			case BALL_THROWN:
+				if (status.target == CATCHER && nextBase == SECOND) {
+					this.startRun(SECOND);
+				} else {
+					this.completeRun();
+				}
+				break;
+
+			default:
+				this.completeRun();
+				break;
+		}
+	}
+
+	// Tell the game that we're done running
+	this.completeRun = function() {
+		gameState.runnerReportComplete(this, this.runTarget, true);
+		this.bIsRunning = false;
+	}
+
+	this.runnerOnUpdate = function() {
+		if (!this.player.bIsRunning || gameState.bGlobalUIPause) {
+			return;
+		}
+
+		var player = this.player;
+		var delta = game.time.elapsed * 0.001;
+		var pDiff = new Phaser.Point(player.targetBasePos.x - player.worldIcon.x, player.targetBasePos.y - player.worldIcon.y);
+		var speedStep = player.getRunSpeed() * delta;
+		var bDone = false;
+
+		if (pDiff.getMagnitude() > speedStep) {
+			pDiff.setMagnitude(speedStep);
+		} else {
+			bDone = true;
+		}
+
+		player.worldIcon.x += pDiff.x;
+		player.worldIcon.y += pDiff.y;
+
+		if (bDone) {
+			player.onRunCompleted();
+		}
+	}
+
+	// Returns the position of a base, as a point
+	this.getBasePosition = function(base) {
 		var basePos;
 		
 		switch (base) {
@@ -209,26 +444,233 @@ function Player(id, playerInfo, teamColor) {
 
 		basePos.x -= this.playerWidth * 0.5;
 		basePos.y -= this.playerHeight;
-		
-		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 3000, Phaser.Easing.Default, true);
-		this.runTarget = base;
-		this.runTween.onComplete.add(this.onRunCompleted, this);
+
+		return basePos;
 	}
 
-	this.onRunCompleted = function(target, tween) {
-		target.myPlayer.runTween = null;
-		gameState.runnerReportComplete(this, target.myPlayer.runTarget, true);
+	this.getRunSpeed = function() {
+		// Run speed, used when running and fielding, is calibrated on time to get to base
+		// skill 0 = 4sec
+		// skill 5 = 3sec
+		// skill 10 = 2sec
 
-		/*if (target.myPlayer.runCompleteCallback != null && target.myPlayer.runCompleteCallback != undefined) {
-			target.myPlayer.runCompleteCallback(this.runTarget);
-		}*/
+		return gameField.basesRadius / (4 - ((this.getInfo().speed / 10) * 2));
+	}
+
+	this.abortRun = function() {
+		if (!this.bIsRunning || this.runTarget == FIRST) {
+			return;
+		}
+
+		this.runTarget--;
+
+		if (this.runTarget < HOME) {
+			this.runTarget = HOME;
+		}
+
+		var target = this.getBasePosition(this.runTarget);
+		this.targetBasePos = target;
+		gameState.runnerChangeRunTarget(this, this.runTarget);
+	}
+
+	// ** Running AI ******************************************************
+
+	// Global notification that a fielder has obtained the ball
+	this.fielderHasBall = function(fielder, position) {
+		if (this.bIsRunning) {
+			var distanceFromBase = Phaser.Point.distance(
+										this.getPosition(),
+										gameField.GetBasePosition(this.runTarget)
+									);
+
+			if (this.runTarget == SECOND && gameState.canRunToBase(FIRST) && distanceFromBase >= 120) {
+				this.abortRun();
+			}			
+		} else {
+
+			// Assume that we're waiting for a fly ball catch?
+			// If on second or third, try to advance
+			if (this.runTarget > SECOND) {
+				this.startRun();
+			}
+		}
+	}
+
+	// Global notification that the ball has been thrown to a base
+	// From is a fielder position, defined in player.js
+	// To is a base index, defined in game.js
+	this.ballThrownTo = function(from, to) {
+
+		// On a throw to home, sneak to second, maybe third?
+		if (to == HOME && from >= LEFT_FIELD && this.runTarget == SECOND) {
+			this.startRun();
+		}
+	}
+
+
+
+	// ** Fielding ******************************************************
+	this.fieldBall = function(hitType, difficulty, distance) {
+		var myDist = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY).getMagnitude();
+		var fieldTime = 0; 
+
+		switch (hitType) {
+			case LINE_DRIVE:
+				if (this.fieldingPosition < LEFT_FIELD) {
+					fieldTime = 750;
+				} else {
+					fieldTime = 1250;
+				}
+				break;
+
+			case GROUND_BALL:
+				fieldTime = 1250;
+				break;
+
+			case FLY_BALL:
+				if (this.fieldingPosition < LEFT_FIELD) {
+					fieldTime = 4000;
+				} else {
+					fieldTime = 3000;
+				}
+				break;
+		}
+
+
+		// Simulate running to the point
+		var runTimer = game.time.create(true);
+		runTimer.add(fieldTime, this.runToFieldFinished, this, hitType, difficulty, distance);
+		runTimer.start();
+	}
+
+	// Present fielding choices
+	this.runToFieldFinished = function(hitType, difficulty, distance) {
+		var fielder = this;
+
+		gameState.showChoiceDialog(this, this.getName() + " (" + GetPlayerPositionAbbr(this.fieldingPosition) + ")", actionManager.getAvailableFielderActions(this, this.getAP()), 
+			function(action) {
+				console.log("Fielder selected action: " + action.text);
+				fielder.consumeAP(action.getCost());
+				gameState.fielderSelectAction(fielder, action, hitType, difficulty, distance);
+			});
+	}
+
+	this.runToFieldingPosition = function(base) {
+		
+		if (base == SECOND_BASE) {
+			this.targetBasePos = gameField.GetSecondBasePos();
+		} else {
+			this.targetBasePos = this.getFieldingPosition(base);
+		}
+
+		this.bIsRunning = true;
+
+		this.worldIcon.player = this;
+		this.worldIcon.update = this.fielderOnUpdate;
+	}
+
+	this.fielderOnUpdate = function() {
+		if (!this.player.bIsRunning || gameState.bGlobalUIPause) {
+			return;
+		}
+
+		var player = this.player;
+		var delta = game.time.elapsed * 0.001;
+		var pDiff = new Phaser.Point(player.targetBasePos.x - player.worldIcon.x, player.targetBasePos.y - player.worldIcon.y);
+		var speedStep = player.getRunSpeed() * delta;
+		var bDone = false;
+
+		if (pDiff.getMagnitude() > speedStep) {
+			pDiff.setMagnitude(speedStep);
+		} else {
+			bDone = true;
+		}
+
+		player.worldIcon.x += pDiff.x;
+		player.worldIcon.y += pDiff.y;
+
+		if (bDone) {
+			player.onFieldingRunCompleted();
+		}
+	}
+
+	this.onFieldingRunCompleted = function() {
+		this.worldIcon.update = function() { };
+		this.bIsRunning = false;
+	}
+
+	// Calibrated on distance from first to third base
+	// skill 0 = 2 sec
+	// skill 5 = 1 sec
+	// skill 10 = 0.5 sec
+	this.getThrowSpeed = function() {
+		var distance = Phaser.Point.distance(gameField.GetFirstBasePos(), gameField.GetThirdBasePos());
+
+		if (this.getInfo().fielding > 5) {
+			return distance / (1 - ((this.getInfo().fielding / 10)));
+		} else {
+			return distance / (2 - ((this.getInfo().fielding / 5)));
+		}
 	}
 }
 
-function playerOnRunCompleted(target, tween) {
-	target.myPlayer.runTween = null;
 
-	if (target.myPlayer.runCompleteCallback != null && target.myPlayer.runCompleteCallback != undefined) {
-		target.myPlayer.runCompleteCallback(this.runTarget);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// **********************************************************************
+//	"Static" methods
+// **********************************************************************
+
+// Returns human-friendly name for a fielding index
+function GetPlayerPositionName(positionIndex) {
+	if (positionIndex < PITCHER || positionIndex > RIGHT_FIELD) {
+		return "Imaginary Fielder";
 	}
+
+	switch (positionIndex) {
+		case PITCHER: 		return "Pitcher";
+		case CATCHER: 		return "Catcher";
+		case FIRST_BASE: 	return "First Base";
+		case SECOND_BASE: 	return "Second Base";
+		case THIRD_BASE: 	return "Third Base";
+		case SHORT_STOP: 	return "Shortstop";
+		case LEFT_FIELD: 	return "Left Field";
+		case CENTER_FIELD: 	return "Center Field";
+		case RIGHT_FIELD: 	return "Right Field";
+	}
+}
+
+// Returns human-friendly name for a fielding index
+function GetPlayerPositionAbbr(positionIndex) {
+	if (positionIndex < PITCHER || positionIndex > RIGHT_FIELD) {
+		return "---";
+	}
+
+	switch (positionIndex) {
+		case PITCHER: 		return "P";
+		case CATCHER: 		return "C";
+		case FIRST_BASE: 	return "1B";
+		case SECOND_BASE: 	return "2B";
+		case THIRD_BASE: 	return "3B";
+		case SHORT_STOP: 	return "SS";
+		case LEFT_FIELD: 	return "LF";
+		case CENTER_FIELD: 	return "CF";
+		case RIGHT_FIELD: 	return "RF";
+	}
+}
+
+function GenerateRandomPlayer(id, name, points) {
+	return new Player(id, GenerateRandomPlayerInfo(name, points), "0xff00ff");
 }

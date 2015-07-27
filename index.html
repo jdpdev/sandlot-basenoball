@@ -3,15 +3,32 @@
     <head>
         <meta charset="UTF-8" />
         <title>Sandlot Basenoball</title>
+        
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/hvdpeace_regular/stylesheet.css" type="text/css">
+        <link rel="stylesheet" href="fonts/idolwild_regular_macroman/stylesheet.css" type="text/css">
+        <link rel="stylesheet" href="fonts/elliotsix_regular_macroman/stylesheet.css" type="text/css">
 
         <script src="//cdn.jsdelivr.net/phaser/2.3.0/phaser.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 
+        <!-- Core -->
+        <script src="js/main.js" type="text/javascript"></script>
+
+        <!-- Menu -->
+        <script src="js/menuState.js" type="text/javascript"></script>
+        <script src="js/menus/mainMenu.js" type="text/javascript"></script>
+        <script src="js/menus/manageTeam.js" type="text/javascript"></script>
+        <script src="js/menus/managePlayer.js" type="text/javascript"></script>
+
+        <!-- Game -->
         <script src="js/player.js" type="text/javascript"></script>
         <script src="js/playerInfo.js" type="text/javascript"></script>
         <script src="js/team.js" type="text/javascript"></script>
         <script src="js/field.js" type="text/javascript"></script>
-        <script src="js/main.js" type="text/javascript"></script>
         <script src="js/game.js" type="text/javascript"></script>
         <script src="js/actions.js" type="text/javascript"></script>
         <script src="js/lines.js" type="text/javascript"></script>
@@ -21,10 +38,14 @@
         <script src="js/htmlui.js" type="text/javascript"></script>
         <script src="js/ui/dialogBox.js" type="text/javascript"></script>
         <script src="js/choiceDialog.js" type="text/javascript"></script>
+        <script src="js/ui/inningsChangeScreen.js" type="text/javascript"></script>
 
-        <link rel="stylesheet" href="css/style.css">
+        <script src="js/ui/playerInfoHUD.js" type="text/javascript"></script>
+        <script src="js/ui/pitcherInfoHUD.js" type="text/javascript"></script>
+        <script src="js/ui/batterInfoHUD.js" type="text/javascript"></script>
+        <script src="js/ui/countHUD.js" type="text/javascript"></script>
     </head>
-    <body>
+    <body style="background-color: #00aa00">
 
     <script type="text/javascript">
 
@@ -33,12 +54,98 @@
     };
 
     </script>
+    
+    <span style="font-family: hvd_peaceregular;"></span>
+    <span style="font-family: elliotsixregular;"></span>
+    <span style="font-family: idolwildregular;"></span>
+
+    <div id="appParent">
+
+    </div>
+
+    <div class="webWood">
+        <h1>Sandlot Base-no-ball</h1>
+
+        <div class="quote">
+            <p style="float: left; margin: 5px;">
+                <img src="images/umpire.png" width="75px" />
+            </p>
+
+            <!--<p style="float: left; margin: 5px;">
+                <i class="fa fa-2x fa-quote-left"></i>
+            </p>-->
+
+            <p>
+                The kids forgot to bring the ball -- and the catnip -- to the lot today, so we're gonna have
+                to wing it. I know these kids pretty well, and I think I can figure out what would have happened
+                if they had the ball. They won't know any better.
+            </p>
+
+            <p>
+                So put on your caps, grab your bats, and let's <b>PLAY BALL!</b>
+            </p>
+        </div>
+
+        <div>
+            <h4>Basic Idea</h4>
+
+            <p>
+                Sandlot Base-no-ball isn't about playing a game, but pretending you're playing. Make choices
+                about what to do, and the umpire rolls the die and decides what happened. Just imaginary bats
+                and balls instead of goblins and wizards, and an imaginary cat instead of a cruel and merciless DM.
+            </p>
+
+            <h4>Stats</h4>
+
+            <p>
+                Each player on a team is assigned a series of stats.
+            </p>
+
+            <ul>
+                <li><b>Pitching</b> The player's pitching ability.</li>
+                <li><b>Pitch Power</b> The player's pitching strength.</li>
+                <li><b>Batting</b> The player's batting skill.</li>
+                <li><b>Power</b> The player's batting strength.</li>
+                <li><b>Speed</b> The player's speed when baserunning.</li>
+                <li><b>Fielding</b> The player's fielding ability.</li>
+                <li><b>Imagination</b> The player's imagination, measures how much AP they have.</li>
+            </ul>
+
+            <h4>Dev Notes</h4>
+
+            <p>
+                The basic game is here, with some caveats. The stat math needs some testing, and is probably weighted
+                a bit heavily towards the defense, even for baseball. One big system missing so far are interjections,
+                where players can respond to other players. And more commentary and actions.
+            </p>
+
+            <h4>Setting Things Up</h4>
+
+            <p>
+                A couple of demonstration teams are given, with all player stats set to five. You work from there to
+                create your own, or work from a randomized team. I suspect the sweet spot for total points spread amongst
+                a team is around 250.
+            </p>
+        </div>
+    </div>
 
     <div id="wagerAPDialog" class="gameDialog wagerAPDialog" style="display: none">
         <h2 id="whoWagers"></h2>
         <h4>Place Your Wager</h4>
         <input type="text" name="wagerAmount"> of <span id="maxAP"></span> Imagination<br/>
         <p><a class="submitBtn">Confirm</a></p>
+    </div>
+
+    <div id="changeNameDialog" class="gameDialog" style="display: none">
+        <h2>Change Player Name</h2>
+        <p><input type="text" name="newName"></p>
+        <p>&nbsp;</p>
+        <p><a class="submitBtn">Select</a> <a class="cancelBtn">Cancel</a></p>
+    </div>
+
+    <div id="saveTeamDialog" class="gameDialog saveTeamDialog" style="display: none">
+        <textarea name="text" style="width: 95%;" rows="32"></textarea>
+        <p><a class="submitBtn">Close</a></p>
     </div>
 
     </body>

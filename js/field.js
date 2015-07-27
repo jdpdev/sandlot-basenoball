@@ -2,10 +2,13 @@ var gameField = {
 
 	fieldWidth: 800,
 	fieldHeight: 800,
-	backWallLength: 400,
+	backWallLength: 385,
 	infieldRadius: 250,
     basesRadius: 150,
-    outfieldRadius: 450,
+    outfieldRadius: 420,
+    
+    // The distance between the infield and the fence
+    outfieldGap: 0,
     
     homePlateX: 400,
     homePlateY: 550,
@@ -13,8 +16,12 @@ var gameField = {
     fieldGraphics: null,
 
 	DrawField: function(game) {
+		this.outfieldGap = this.backWallLength - this.infieldRadius;
+
 		this.fieldGraphics = game.add.graphics(0, 0);
 		var graphics = this.fieldGraphics;
+		//game.stage.addChild(graphics);
+		//graphics.z = -100;
 
 		// Grass
 	    graphics.beginFill(0x00aa00, 1);
@@ -87,6 +94,22 @@ var gameField = {
 	},
 
 	// ** Positions in the world ******************************************************
+	GetBasePosition: function(base) {
+		switch (base) {
+			case HOME:
+				return this.GetHomePlatePos();
+
+			case FIRST:
+				return this.GetFirstBasePos();
+
+			case SECOND:
+				return this.GetSecondBasePos();
+
+			case THIRD:
+				return this.GetThirdBasePos();
+		}
+	},
+
 	GetMoundPos: function() {
 		return new Phaser.Point(this.homePlateX, this.homePlateY - this.basesRadius);
 	},

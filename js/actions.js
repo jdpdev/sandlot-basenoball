@@ -12,6 +12,7 @@ var actionManager = {
 	loadActions: function() {
 		game.load.json("batterActions", './data/actions/batter.json');
 		game.load.json("pitcherActions", './data/actions/pitcher.json');
+		game.load.json("fielderActions", './data/actions/fielding.json');
 	},
 
 	parseActions: function() {
@@ -30,6 +31,14 @@ var actionManager = {
 		for (var i = 0; i < actions.length; i++) {
 			this.pitcherActions.push(new Action(actions[i]));
 		}
+
+		// Fielding
+		actions = game.cache.getJSON("fielderActions")["actions"];
+		this.fielderActions = [];
+
+		for (var i = 0; i < actions.length; i++) {
+			this.fielderActions.push(new Action(actions[i]));
+		}
 	},
 
 	// Returns a list of batter actions that are available to the given player with an amount of ap to spend
@@ -40,6 +49,11 @@ var actionManager = {
 	// Returns a list of pitcher actions that are available to the given player with an amount of ap to spend
 	getAvailablePitcherActions: function(playerInfo, ap) {
 		return this.getAvailableActions(this.pitcherActions, playerInfo, ap);
+	},
+
+	// Returns a list of pitcher actions that are available to the given player with an amount of ap to spend
+	getAvailableFielderActions: function(playerInfo, ap) {
+		return this.getAvailableActions(this.fielderActions, playerInfo, ap);
 	},
 
 	getAvailableActions: function(actions, playerInfo, ap) {
@@ -85,6 +99,8 @@ var ACTION_START_PITCHER_CHANGEUP = 5;
 
 var ACTION_START_PITCHER_BREAKING = 6;
 
+var ACTION_START_PITCHER_LOB = 7;
+
 // REPONSE ACTIONS
 // Actions that happen in response to other actions. These modify or nullify action that has happened.
 
@@ -93,7 +109,7 @@ var ACTION_START_PITCHER_BREAKING = 6;
 // Player stats
 var STAT_POWER = "pow";
 var STAT_BATTING = "bat";
-var STAT_PITCH_POWER = "ppo";
+var STAT_PITCH_POWER = "ppow";
 var STAT_PITCHING = "pit";
 var STAT_SPEED = "spe";
 var STAT_FIELDING = "fie";
@@ -124,6 +140,10 @@ var Action = function(json) {
 			this.requirements[i].max = 10;
 		}
 	}
+}
+
+Action.prototype.getCost = function() {
+	return this.cost;
 }
 
 Action.prototype.getActionType = function() {
@@ -207,4 +227,50 @@ Action.prototype.modStat = function(stat, value) {
 	}
 
 	return value;
+}
+
+Action.prototype.getModDisplay = function(mod) {
+	var display = "";
+
+	switch (mod.stat) {
+		case STAT_POWER:
+			display = "Power";
+			break;
+
+		case STAT_BATTING:
+			display = "Batting";
+			break;
+
+		case STAT_PITCH_POWER:
+			display = "Pitch Power";
+			break;
+
+		case STAT_PITCHING:
+			display = "Pitching";
+			break;
+
+		case STAT_SPEED:
+			display = "Speed";
+			break;
+
+		case STAT_FIELDING:
+			display = "Fielding";
+			break;
+
+		case STAT_IMAGINATION:
+			display = "Imagination";
+			break;
+
+		case STAT_ARGUING:
+			display = "Arguing";
+			break;
+	}
+
+	if (mod.amount >= 0) {
+		display += " +" + mod.amount;
+	} else {
+		display += " " + mod.amount;
+	}
+
+	return display;
 }

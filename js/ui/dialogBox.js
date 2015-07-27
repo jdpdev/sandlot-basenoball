@@ -1,20 +1,29 @@
 // player - is the Player that the dialog is open for
 // bLeft - Whether to put the player icon on the left (true) or right (false)
 // onClose - function(option) called when dialog is closed
-var DialogBox = function(player, bLeft, onClose) {
+var DialogBox = function(player, bLeft, onClose, height) {
 	dialogCloseCallback = onClose;
 
 	this.surface = game.add.graphics(0, 0);
 	this.icon = player.getPortrait();
+	this.player = player;
 
 	this.surface.addChild(this.icon);
 
-	// Draw the frame
-	var width = game.width - 100;
-	var height = 150;
+	if (height == undefined) {
+		height = 150;
+	}
 
+	// Draw the frame
+	this.windowWidth = game.width - 100;
+	this.windowHeight = height;
+
+	this.setupWindow();
+}
+
+DialogBox.prototype.setupWindow = function() {
 	this.surface.beginFill(0xD2B48C, 1);
-	this.surface.drawRect(0, 0, width, height);
+	this.surface.drawRect(0, 0, this.windowWidth, this.windowHeight);
 	this.surface.endFill();
 
 	this.icon.x = 15;
@@ -28,6 +37,8 @@ var DialogBox = function(player, bLeft, onClose) {
 	// Click to close
 	this.surface.inputEnabled = true;
 	this.surface.events.onInputUp.add(dialogBoxInputUp, this);
+
+	gameState.dialogOpened(this);
 }
 
 // Cleans up and closes the dialog
@@ -36,7 +47,10 @@ DialogBox.prototype.close = function() {
 }
 
 DialogBox.prototype.clearDialog = function() {
-	this.surface.parent.removeChild(this.surface);
+	if (this.surface.parent != undefined) {
+		this.surface.parent.removeChild(this.surface);
+		gameState.dialogClosed(this);
+	}
 }
 
 DialogBox.prototype.setY = function(y) {

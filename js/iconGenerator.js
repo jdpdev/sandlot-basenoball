@@ -1,3 +1,12 @@
+var FACE_SHAPE = 0;
+var FACE_DECO = 1;
+var HEAD_DECO = 2;
+var SHIRT = 3;
+var SKIN_COLOR = 4;
+var FACE_COLOR = 5;
+var HEAD_COLOR = 6;
+var SHIRT_COLOR = 7;
+
 var iconGenerator = {
     
     iconWidth: 125,
@@ -15,15 +24,6 @@ var iconGenerator = {
     //  H: shirt color
     // Returns an object containing the icon
     generateIcon: function(iconString, teamColor) {
-        var FACE_SHAPE = 0;
-        var FACE_DECO = 1;
-        var HEAD_DECO = 2;
-        var SHIRT = 3;
-        var SKIN_COLOR = 4;
-        var FACE_COLOR = 5;
-        var HEAD_COLOR = 6;
-        var SHIRT_COLOR = 7;
-        
         var codes = iconString.split(".");
         var icon = game.add.graphics(0, 0);
         
@@ -39,9 +39,106 @@ var iconGenerator = {
         return icon;
     },
     
+    generateRandomIcon: function(teamColor) {
+        var face = this.getFaceKeys();
+        var headDeco = this.getHeadDecoKeys();
+        var shirt = this.getShirtKeys();
+        var skin = this.getSkinColorKeys();
+        var headColor = this.getHeadDecoColorKeys();
+        var shirtColor = this.getShirtColorKeys();
+        
+        var string = "";
+        string += this.getRandomValueFromArray(face).toString(16);
+        string += ".00";
+        string += "." + this.getRandomValueFromArray(headDeco).toString(16);
+        string += "." + this.getRandomValueFromArray(shirt).toString(16);
+        string += "." + this.getRandomValueFromArray(skin).toString(16);
+        string += ".00";
+        string += "." + this.getRandomValueFromArray(headColor).toString(16);
+        string += "." + this.getRandomValueFromArray(shirtColor).toString(16);
+        
+        return string;
+    },
+    
+    getRandomValueFromArray: function(array) {
+        var random = Math.floor(Math.random() * array.length);
+        
+        if (random == array.length) {
+            random--;
+        }
+        
+        return array[random];
+    },
+    
+    // Given an icon string, return the string after cycling a given slot by a given amount.
+    cycleIconSlot: function(string, slot, amount) {
+        var codes = string.split(".");
+        var options;
+        var index;
+        
+        switch (slot) {
+            case FACE_SHAPE:
+                options = this.getFaceKeys();
+                break;
+                
+            case FACE_DECO:
+                return string;
+                
+            case HEAD_DECO:
+                options = this.getHeadDecoKeys();
+                break;
+                
+            case SHIRT:
+                options = this.getShirtKeys();
+                break;
+                
+            case SKIN_COLOR:
+                options = this.getSkinColorKeys();
+                break;
+                
+            case FACE_COLOR:
+                return string;
+                
+            case HEAD_COLOR:
+                options = this.getHeadDecoColorKeys();
+                break;
+                
+            case SHIRT_COLOR:
+                options = this.getShirtColorKeys();
+                break;
+        }
+        
+        index = options.indexOf(parseInt(codes[slot], 16));
+        index += amount;
+        
+        if (index >= options.length) {
+            index -= options.length;
+        } else if (index < 0) {
+            index += options.length;
+        }
+        
+        //console.log("new index: " + index + " (" + options[index] + ")");
+        
+        codes[slot] = options[index].toString(16);
+        var newString = codes.toString();
+        
+        var pattern = /,/g;
+        return newString.replace(pattern, ".");
+    },
+    
     // ******************************************************************************
     //  Head
     // ******************************************************************************
+    
+    // Return a list of keys for valid skin colors
+    getFaceKeys: function() {
+        return [0x00, 0x01, 0x02, 0x03, 0x04, 0x05];  
+    },
+    
+    // Return a list of keys for valid skin colors
+    getSkinColorKeys: function() {
+        return [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08];  
+    },
     
     drawHead: function(icon, type, colorCode, teamColor) {
         var color = this.getSkinColor(colorCode);
@@ -224,6 +321,17 @@ var iconGenerator = {
     //  Shirt
     // ******************************************************************************
     
+    // Return a list of keys for valid shirt styles
+    getShirtKeys: function() {
+        return [0x00];  
+    },
+    
+    // Return a list of keys for valid shirt colors
+    getShirtColorKeys: function() {
+        return [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 
+                0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13];  
+    },
+    
     // Draw the shirt component
     drawShirt: function(icon, type, color, teamColor) {
         icon.lineStyle(0, 0, 0);
@@ -315,6 +423,17 @@ var iconGenerator = {
     // ******************************************************************************
     //  Hats/hair
     // ******************************************************************************
+
+    // Return a list of keys for valid head deco styles
+    getHeadDecoKeys: function() {
+        return [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x20, 0x21, 0x22];  
+    },
+    
+    // Return a list of keys for valid shirt colors
+    getHeadDecoColorKeys: function() {
+        return [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 
+                0x0C, 0x0D, 0x0E, 0x0F];  
+    },
 
     drawHeadDeco: function(icon, type, color, teamColor) {
         var primaryColor = this.getHeadDecoPrimaryColor(color);

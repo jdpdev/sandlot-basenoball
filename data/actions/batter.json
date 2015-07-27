@@ -10,7 +10,7 @@
 		{
 			"text": "(Take a swing)",
 			"type": 1,
-			"cost": 0,
+			"cost": 2,
 			"requires": [ ],
 			"mods": [ ]
 		},

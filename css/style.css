@@ -1,3 +1,10 @@
+@font-face {
+	font-family: 'HappyHell';
+	src: url("../fonts/HAPPYHELL.TTF");
+	font-weight: normal;
+	font-style: normal;
+}
+
 .gameDialog {
 	position: absolute;
 	z-index: 10;
@@ -24,4 +31,66 @@
 .wagerAPDialog input {
 	width: 50px;
 	font-size: 24px;
+}
+
+#changeNameDialog {
+	left: 250px;
+	top: 200px;
+	width: 300px;
+	height: 200px;
+
+	border: 10px solid #6e531e;
+	background-color: BurlyWood;
+}
+
+#changeNameDialog h2 {
+	font-family: hvd_peaceregular;
+	color: white;
+}
+
+#saveTeamDialog {
+	left: 150px;
+	top: 100px;
+	width: 500px;
+	height: 500px;
+
+	border: 10px solid #6e531e;
+	background-color: BurlyWood;
+}
+
+/*canvas {
+	border: 10px solid #DEB887;
+}*/
+
+#appParent {
+	
+}
+
+.webWood {
+	background-color: #DEB887;
+	padding: 10px;
+	font-family: Arial;
+}
+
+.webWood h1 {
+	color: black;
+	font-family: hvd_peaceregular;
+	font-size: 30pt;
+	margin-left: 20px;
+}
+
+.webWood img {
+	margin-right: 10px;
+	margin-top: 10px;
+}
+
+.quote {
+	background-color: #efdcc3;
+	margin: 10px;
+	padding: 10px;
+	border-radius: 20px;
+}
+
+h4 {
+	font-family: elliotsixregular;
 }

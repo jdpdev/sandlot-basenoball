@@ -1,6 +1,22 @@
 {
 	"actions": [
 		{
+			"text": "Just lob it somewhere",
+			"type": 7,
+			"cost": 0,
+			"requires": [ ],
+			"mods": [ 
+				{
+					"stat": "ppow",
+					"amount": -2
+				},
+				{
+					"stat": "pit",
+					"amount": -2
+				}
+			]
+		},
+		{
 			"text": "(Fastball)",
 			"type": 4,
 			"cost": 4,
