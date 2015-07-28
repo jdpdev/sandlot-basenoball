@@ -156,10 +156,11 @@ Action.prototype.isAffordable = function(playerInfo, ap) {
 }
 
 // Returns if the action is usable by the given player
-Action.prototype.isUsable = function(playerInfo) {
+Action.prototype.isUsable = function(player) {
 	var bUsable = true;
+	var playerInfo = player.getInfo();
 
-	for (var i = 0; i < this.requirements; i++) {
+	for (var i = 0; i < this.requirements.length; i++) {
 		switch (this.requirements[i].stat) {
 			case STAT_POWER:
 				if (!this.isValueInRange(playerInfo.power, this.requirements[i].min, this.requirements[i].max)) {
