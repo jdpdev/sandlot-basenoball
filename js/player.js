@@ -614,6 +614,23 @@ function Player(id, playerInfo, teamColor) {
 		runTimer.start();
 	}
 
+	// Fielder did not successfully field the ball, so pick a direction to run in while waiting
+	this.ballFumbled = function(time) {
+		var generator = new Phaser.RandomDataGenerator(1234567890);
+
+		// Pick random direction
+		var roll = generator.realInRange(game.math.PI2 / -8, game.math.PI2 / 8);
+		var normal = new Phaser.Point(0, -1);
+		normal = Phaser.Point.rotate(normal, 0, 0, roll);
+		normal.setMagnitude(70);
+
+		var position = this.getPosition();
+		position = Phaser.Point.add(position, normal);
+
+		this.worldIcon.x = position.x;
+		this.worldIcon.y = position.y;
+	}
+
 	// Present fielding choices
 	this.runToFieldFinished = function(hitType, difficulty, distance) {
 		var fielder = this;

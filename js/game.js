@@ -691,6 +691,8 @@ var gameState = {
 		// Pitcher backs up first
 		if (targetFielder == FIRST_BASE) {
 			this.fieldingTeam.getFielderForPosition(PITCHER).runToFieldingPosition(FIRST_BASE);
+		} else if (targetFielder == THIRD_BASE) {
+			this.fieldingTeam.getFielderForPosition(PITCHER).runToFieldingPosition(THIRD_BASE);
 		}
 	},
 
@@ -849,6 +851,7 @@ var gameState = {
 
 		this.gatherTimer = gatherTimer;
 		this.ballState = BALL_FUMBLED;
+		fielder.ballFumbled(delay);
 	},
 
 	completeDelayFielderGather: function(fielder) {
