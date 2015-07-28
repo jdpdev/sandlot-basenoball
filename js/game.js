@@ -82,6 +82,8 @@ var gameState = {
 	bGlobalUIPause: false,
 	currentDialog: null,
 	
+	randomizer: null,
+	
 	init: function(homeTeam, awayTeam) {
 		if (homeTeam != undefined || awayTeam != undefined) {
 			this.setTeams(homeTeam, awayTeam);
@@ -100,6 +102,7 @@ var gameState = {
 		actionManager.parseActions();
 		lineManager.parse();
 		gameField.DrawField(game);
+		this.randomizer = new Phaser.RandomDataGenerator();
 
 		if (this.homeTeam == null) {
 			this.homeTeam = new Team();
@@ -304,7 +307,7 @@ var gameState = {
 		battingSkill = this.selectedPitcherAction.modStat(STAT_BATTING, battingSkill);
 		battingPower = this.selectedPitcherAction.modStat(STAT_POWER, battingPower);
 		
-		var roll = Math.random();
+		var roll = this.randomizer.frac(); //Math.random();
 		var bInStrikeZone = roll <= pitchSkill / 10;
 
 		// Unopposed pitch strike chance: pskill / 10
@@ -333,7 +336,7 @@ var gameState = {
 			var delta = pitchTotal - battingSkill + 10;
 			var pitchPct = .2 + .6 * (delta / 25);
 			var batPct = .8 - .6 * (delta / 25);
-			var batRoll = Math.random();
+			var batRoll = this.randomizer.frac(); //Math.random();
 
 			// Made contact
 			if (batRoll <= batPct) {
@@ -483,9 +486,9 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [3, 7, 0];
+		var weights = [3, 7, 5];
 		//var weights = [0, 1, 0];
-		var weightTotal = 10;
+		var weightTotal = 15;
 		var hitType = 1;
 		var roll = Math.floor(Math.random() * weightTotal);
 
@@ -498,7 +501,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = GROUND_BALL;
+		//hitType = GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -557,7 +560,7 @@ var gameState = {
 
 				console.log("Ground ball, normalized distance: " + distance);
 
-				targetFielder = THIRD_BASE;
+				//targetFielder = THIRD_BASE;
 				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
@@ -599,7 +602,8 @@ var gameState = {
 				}
 
 				if (distance >= gameField.backWallLength) {
-					switch (Math.round(Math.random() * 3)) {
+					//switch (Math.round(Math.random() * 3)) {
+					switch (this.randomizer.integerInRange(0, 3)) {
 						case 0:
 							goingToWall = " It's going to the wall!";
 							break;
@@ -633,7 +637,8 @@ var gameState = {
 	// Pick a random fielder
 	// startPos and endPos are the range of fielders to get, inclusive
 	getRandomFielder: function(startPos, endPos, bExcludeCatcher) {
-		var targetFielder = startPos + Math.floor(Math.random() * (endPos - startPos + 1));
+		//var targetFielder = startPos + Math.floor(Math.random() * (endPos - startPos + 1));
+		var targetFielder = this.randomizer.integerInRange(startPos, endPos);
 
 		if (targetFielder >= endPos + 1) {
 			targetFielder = endPos;
@@ -720,7 +725,7 @@ var gameState = {
 
 		var fieldingSkill = this.selectedFielderAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
 		var delta = fieldingSkill - difficulty;
-		var roll = Math.random();
+		var roll = this.randomizer.frac(); //Math.random();
 		var bSuccess = false;
 		var hitter = this.aRunnerTargets[FIRST];
 
