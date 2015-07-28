@@ -372,8 +372,14 @@ var gameState = {
 				gameState.walkBatter();
 			});
 		} else {
-			this.showUmpireDialog(lineManager.getBallLine().text, function() {
-				gameState.doPitch();
+			var line = lineManager.getBallLine();
+			this.showUmpireDialog(line.text, function() {
+				
+				if (line.special != 1) {
+					gameState.doPitch();	
+				} else {
+					gameState.showBellyRubs();
+				}
 			});
 		}
 	},
@@ -1121,6 +1127,35 @@ var gameState = {
 
 		var dialog = new InningsChangeScreen(this.aHomeInnings, this.aAwayInnings, this.iCurrentInning, this.bIsTopOfInning,
 												batting, fielding);
+	},
+	
+	// Tempt the batter with the danger of belly rubs
+	showBellyRubs: function() {
+		var player = this.aRunnerLocations[HOME];
+		var choices = [];
+		choices.push({"id": 0, "text": "Rub dat tummy"});
+		choices.push({"id": 1, "text": "Oh hell no"});
+
+		var dialog = new ChoiceDialog(player, true, function(choice) {
+			if (choice.id == 0) {
+				var roll = game.rnd.frac();
+				console.log("Batter rubs dat tummy: " + roll);
+				
+				if (roll >= 0.75) {
+					gameState.showUmpireDialog("(Hisses and claws) You're outta here!", function() {
+						gameState.recordOut(gameState.aRunnerLocations[HOME]);
+					});
+				} else {
+					gameState.showUmpireDialog("(Purrrrrrrrrr) Huh, what? Oh, uh... ball four!", function() {
+						gameState.walkBatter();
+					});
+				}
+			} else {
+				gameState.doPitch();
+			}
+		});
+		dialog.setupCustomChoices(player.getName() + " (" + GetPlayerPositionAbbr(player.fieldingPosition) + ")", choices);
+		dialog.setY(30);
 	},
 
 	closeInningsChangeScreen: function() {

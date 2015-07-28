@@ -257,9 +257,11 @@ function Player(id, playerInfo, teamColor) {
 	this.advanceToBase = function(base) {
 		var basePos = this.getBasePosition(base);
 
-		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, this.getRunSpeedTime(), Phaser.Easing.Default, true);
+		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 3000, Phaser.Easing.Default, true);
 		this.runTarget = base;
 		this.runTween.onComplete.add(this.onAdvanceCompleted, this);
+		
+		gameState.runnerAcceptRun(this, base);
 	}
 
 	// Runner has advanced to their base
@@ -485,6 +487,10 @@ function Player(id, playerInfo, teamColor) {
 		// skill 10 = 2sec
 
 		return gameField.basesRadius / (4 - ((this.getInfo().speed / 10) * 2));
+	}
+	
+	this.getRunSpeedTime = function() {
+		return gameField.basesRadius / this.getRunSpeed();
 	}
 
 	this.abortRun = function() {

@@ -1,4 +1,6 @@
 var MainMenu = function(menu, options) {
+    game.stage.backgroundColor = 0x00aa00;
+    
     this.myMenu = menu;
     this.graphics = game.add.graphics(0, 0);
     
@@ -45,7 +47,7 @@ var MainMenu = function(menu, options) {
     // Play options
     var gameModeText = game.add.text(0, 0, "Local Multiplayer", { font: "26px elliotsixregular", fill: "#ffffff", align: "center"});
     this.graphics.addChild(gameModeText);
-    gameModeText.x = signStart.x + signSize.x * 0.5 - 100;
+    gameModeText.x = signStart.x + signSize.x * 0.5 - 200;
     gameModeText.y = signStart.y + signSize.y * 0.5 + 60;
     
     gameModeText.inputEnabled = true;
@@ -59,6 +61,15 @@ var MainMenu = function(menu, options) {
     this.graphics.rotation = Math.PI;
     
     MainMenu.currentMainMenu = this;
+    
+    // Logos
+    var sagdc = game.add.sprite(signStart.x + signSize.x - 140, signStart.y + signSize.y - 80, "sagdc");
+    sagdc.scale = new Phaser.Point(0.15, 0.15);
+    this.graphics.addChild(sagdc);
+    
+    var phaser = game.add.sprite(sagdc.x + 50, sagdc.y, "phaser");
+    phaser.scale = new Phaser.Point(0.2, 0.2);
+    this.graphics.addChild(phaser);
 }
 
 MainMenu.prototype.open = function() {
