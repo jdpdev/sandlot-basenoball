@@ -37,6 +37,7 @@ var gameState = {
 	selectedBatterAction: null,
 	selectedPitcherAction: null,
 	selectedFielderAction: null,
+	selectedRunnerAction: null,
 
 	// What state the ball is in
 	ballState: BALL_DEAD,
@@ -47,12 +48,20 @@ var gameState = {
 	// The fielder with control of the ball
 	activeFielder: null,
 
+	// The runner with priority for a counter-fielder action.
+	// Batter gets this off the bat, after that dependent on the situation.
+	activeRunner: null,
+
 	// Game state
 	iCurrentInning: 0,
 	bIsTopOfInning: true,
 
 	aHomeInnings: [0, 0, 0, 0, 0, 0, 0, 0, 0],
 	aAwayInnings: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+	// Since the batter-runner can reach base before a fly ball is caught,
+	// need to cache until there's a fielding result
+	batterRunnerWaitingResult: null,
 
 	// Inning state
 	iInningOuts: 0,
@@ -78,6 +87,8 @@ var gameState = {
 	bGlobalUIPause: false,
 	currentDialog: null,
 	
+	randomizer: null,
+	
 	init: function(homeTeam, awayTeam) {
 		if (homeTeam != undefined || awayTeam != undefined) {
 			this.setTeams(homeTeam, awayTeam);
@@ -96,6 +107,7 @@ var gameState = {
 		actionManager.parseActions();
 		lineManager.parse();
 		gameField.DrawField(game);
+		this.randomizer = new Phaser.RandomDataGenerator();
 
 		if (this.homeTeam == null) {
 			this.homeTeam = new Team();
@@ -227,6 +239,7 @@ var gameState = {
 	beginAtBat: function(batter, pitcher) {
 		this.iBatterStrikes = 0;
 		this.iBatterBalls = 0;
+		this.countHUD.resetCount();
 
 		this.doPitch();
 	},
@@ -264,6 +277,23 @@ var gameState = {
 				batter.consumeAP(action.getCost());
 				gameState.selectedBatterAction = action;
 
+				//gameState.throwPitch();
+				gameState.showPitcherAction();
+			});
+	},
+
+	showPitcherAction: function() {
+		var pitcher = this.fieldingTeam.getPitcher();
+		this.showPlayerDialog(pitcher, true, pitcher.getName() + " (Pitcher)\n" + this.selectedPitcherAction.getRandomColor(), 
+			function() {
+				gameState.showBatterAction();
+			});
+	},
+
+	showBatterAction: function() {
+		var batter = this.aRunnerLocations[HOME];
+		this.showPlayerDialog(batter, true, batter.getName() + " (Batter)\n" + this.selectedBatterAction.getRandomColor(), 
+			function() {
 				gameState.throwPitch();
 			});
 	},
@@ -299,7 +329,7 @@ var gameState = {
 		battingSkill = this.selectedPitcherAction.modStat(STAT_BATTING, battingSkill);
 		battingPower = this.selectedPitcherAction.modStat(STAT_POWER, battingPower);
 		
-		var roll = Math.random();
+		var roll = this.randomizer.frac(); //Math.random();
 		var bInStrikeZone = roll <= pitchSkill / 10;
 
 		// Unopposed pitch strike chance: pskill / 10
@@ -328,7 +358,7 @@ var gameState = {
 			var delta = pitchTotal - battingSkill + 10;
 			var pitchPct = .2 + .6 * (delta / 25);
 			var batPct = .8 - .6 * (delta / 25);
-			var batRoll = Math.random();
+			var batRoll = this.randomizer.frac(); //Math.random();
 
 			// Made contact
 			if (batRoll <= batPct) {
@@ -367,8 +397,14 @@ var gameState = {
 				gameState.walkBatter();
 			});
 		} else {
-			this.showUmpireDialog(lineManager.getBallLine().text, function() {
-				gameState.doPitch();
+			var line = lineManager.getBallLine();
+			this.showUmpireDialog(line.text, function() {
+				
+				if (line.special != 1) {
+					gameState.doPitch();	
+				} else {
+					gameState.showBellyRubs();
+				}
 			});
 		}
 	},
@@ -408,7 +444,7 @@ var gameState = {
 		}
 
 		this.countHUD.addRun();
-		this.sendBatterToDugout(runner, false);
+		this.sendBatterToDugout(player, false);
 	},
 
 	// Call dead ball after a ball put into play is resolved
@@ -472,9 +508,9 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [3, 7, 0];
+		var weights = [3, 7, 5];
 		//var weights = [0, 1, 0];
-		var weightTotal = 10;
+		var weightTotal = 15;
 		var hitType = 1;
 		var roll = Math.floor(Math.random() * weightTotal);
 
@@ -487,7 +523,7 @@ var gameState = {
 			}
 		} 
 
-		//hitType = FLY_BALL; //GROUND_BALL;
+		//hitType = GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -546,7 +582,7 @@ var gameState = {
 
 				console.log("Ground ball, normalized distance: " + distance);
 
-				targetFielder = THIRD_BASE;
+				//targetFielder = THIRD_BASE;
 				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
@@ -588,7 +624,8 @@ var gameState = {
 				}
 
 				if (distance >= gameField.backWallLength) {
-					switch (Math.round(Math.random() * 3)) {
+					//switch (Math.round(Math.random() * 3)) {
+					switch (this.randomizer.integerInRange(0, 3)) {
 						case 0:
 							goingToWall = " It's going to the wall!";
 							break;
@@ -623,6 +660,7 @@ var gameState = {
 	// startPos and endPos are the range of fielders to get, inclusive
 	getRandomFielder: function(startPos, endPos, bExcludeCatcher) {
 		var targetFielder = startPos + Math.floor(Math.random() * (endPos - startPos + 1));
+		//var targetFielder = this.randomizer.integerInRange(startPos, endPos);
 
 		if (targetFielder >= endPos + 1) {
 			targetFielder = endPos;
@@ -647,6 +685,8 @@ var gameState = {
 		var bIsForced = true;
 		this.bIsBallInPlay = true;
 		this.ballState = BALL_UNCONTROLLED;
+		this.hitType = hitType;
+		this.activeRunner = this.aRunnerLocations[HOME];
 		
 		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
@@ -685,6 +725,8 @@ var gameState = {
 		// Pitcher backs up first
 		if (targetFielder == FIRST_BASE) {
 			this.fieldingTeam.getFielderForPosition(PITCHER).runToFieldingPosition(FIRST_BASE);
+		} else if (targetFielder == THIRD_BASE) {
+			this.fieldingTeam.getFielderForPosition(PITCHER).runToFieldingPosition(THIRD_BASE);
 		}
 	},
 
@@ -693,20 +735,68 @@ var gameState = {
 		this.selectedFielderAction = action;
 		this.activeFielder = fielder;
 
-		this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+		var runner = this.activeRunner;
+
+		// See if a runner can counter
+		if (runner == null) {
+
+		}
+
+		this.activeRunner = null;
+
+		if (runner != null) {
+			var target = this.getTargetForRunner(runner);
+			var baseName = this.getBaseName(target);
+
+			this.showChoiceDialog(runner, runner.getName() + " (" + this.getBaseStatus(runner) + ")", actionManager.getAvailableRunnerActions(runner, runner.getAP()),
+				function(choice) {
+					gameState.selectedRunnerAction = choice;
+					//gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+					gameState.showFielderAction(fielder, runner, hitType, difficulty, distance);
+				});	
+		} else {
+			//this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+			this.showFielderAction(fielder, runner, hitType, difficulty, distance);
+		}
+	},
+
+	showFielderAction: function(fielder, runner, hitType, difficulty, distance) {
+		this.showPlayerDialog(fielder, true, fielder.getName() + " (Fielder)\n" + this.selectedFielderAction.getRandomColor(), 
+			function() {
+				if (gameState.selectedRunnerAction != null) {
+					gameState.showRunnerAction(fielder, runner, hitType, difficulty, distance);
+				} else {
+					gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+				}
+			});
+	},
+
+	showRunnerAction: function(fielder, runner, hitType, difficulty, distance) {
+		this.showPlayerDialog(runner, true, runner.getName() + " (" + this.getBaseStatus(runner) + ")\n" + this.selectedRunnerAction.getRandomColor(), 
+			function() {
+				gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+			});
 	},
 
 	// Resolve the result of the fielder attempting to get the ball
 	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
 		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder) - 1;
 
+		// Make fielding a little less strong
+		difficulty += 1;
+
 		if (fieldingPos >= LEFT_FIELD) {
 			difficulty /= 2;
 		}
 
 		var fieldingSkill = this.selectedFielderAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
+
+		if (this.selectedRunnerAction != null) {
+			fieldingSkill = this.selectedRunnerAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
+		}
+
 		var delta = fieldingSkill - difficulty;
-		var roll = Math.random();
+		var roll = this.randomizer.frac(); //Math.random();
 		var bSuccess = false;
 		var hitter = this.aRunnerTargets[FIRST];
 
@@ -740,7 +830,7 @@ var gameState = {
 								}
 
 								// Throw options
-								gameState.fielderGathersBall(fielder);
+								gameState.fielderGathersBall(fielder, true);
 							}
 						});
 					//}
@@ -783,10 +873,12 @@ var gameState = {
 
 			case GROUND_BALL:
 				if (bSuccess) {
-					this.fielderGathersBall(this.activeFielder);
+					this.showUmpireDialog("Fielder pounces on the ball!", function() {
+						gameState.fielderGathersBall(gameState.activeFielder, false);
+					});
 				} else {
 					this.showUmpireDialog("It gets past the fielder!", function() {
-						gameState.delayFielderGather(gameState.activeFielder, 2000);
+						gameState.delayFielderGather(gameState.activeFielder, 3000);
 					});
 				}
 				break;
@@ -796,9 +888,25 @@ var gameState = {
 				if (bSuccess) {
 					this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
 						
+						// Batter-runner waiting for the catch
+						if (gameState.batterRunnerWaitingResult != null) {
+							hitter = gameState.batterRunnerWaitingResult;
+							gameState.batterRunnerWaitingResult = null;
+						}
+
+						for (base in gameState.aRunnerLocations) {
+							if (gameState.aRunnerLocations[base] == hitter) {
+								gameState.aRunnerLocations[base] = null;
+							}
+
+							if (gameState.aRunnerTargets[base] == hitter) {
+								gameState.aRunnerTargets[base] = null;
+							}
+						}
+
 						// Ball is still in play, make another play?
 						if (gameState.recordOut(hitter)) {
-
+							gameState.fielderGathersBall(this.activeFielder, true);
 						}
 					});
 				}
@@ -811,6 +919,9 @@ var gameState = {
 				}
 				break;
 		}
+
+		this.selectedFielderAction = null;
+		this.selectedRunnerAction = null;
 	},
 
 	// Delay the fielder from gathering the ball
@@ -827,20 +938,28 @@ var gameState = {
 
 		this.gatherTimer = gatherTimer;
 		this.ballState = BALL_FUMBLED;
+		fielder.ballFumbled(delay);
 	},
 
 	completeDelayFielderGather: function(fielder) {
-		this.fielderGathersBall(fielder);
+		this.fielderGathersBall(fielder, false);
 	},
 
 	// Called when the fielder has gathered the ball and can make a play
-	fielderGathersBall: function(fielder) {
+	fielderGathersBall: function(fielder, bCatch) {
+		console.log(fielder.getName() + " gathers ball (in play? " + this.bIsBallInPlay + ")");
+		
 		if (!this.bIsBallInPlay) {
 			return;
 		}
 
+		// Dropped fly ball with nobody running?
+		if (!this.areRunnersRunning()) {
+			this.callDeadBall();
+		}
+		
 		this.ballState = BALL_CONTROLLED;
-		this.onBallFielded(fielder, this.fieldingTeam.getFielderPosition(fielder));
+		this.onBallFielded(fielder, this.fieldingTeam.getFielderPosition(fielder), bCatch);
 
 		this.showBaseOptions(fielder, function(choice) {
 			var position = gameState.fieldingTeam.getFielderPosition(fielder);
@@ -864,10 +983,12 @@ var gameState = {
 	},
 
 	// Notify all runners that a fielder has aquired the ball
-	onBallFielded: function(fielder, position) {
+	onBallFielded: function(fielder, position, bCatch) {
+		console.log(fielder.getName() + " fields the ball");
+		
 		for (base in this.aRunnerTargets) {
 			if (this.aRunnerTargets[base] != null) {
-				this.aRunnerTargets[base].fielderHasBall(fielder, position);
+				this.aRunnerTargets[base].fielderHasBall(fielder, position, bCatch);
 			}
 		}
 	},
@@ -964,14 +1085,19 @@ var gameState = {
 	// Called by the runner if they decided to run
 	runnerAcceptRun: function(runner, targetBase) {
 		console.log("Runner " + runner.getName() + " is running");
-		this.aRunnerTargets[targetBase] = runner;
-		this.iRunningRunners++;
+		
+		for (base in this.aRunnerLocations) {
+			if (this.aRunnerLocations[base] == runner) {
+				this.aRunnerLocations[base] = null;
+			}
 
-		for (var i = 0; i < this.aRunnerLocations.length; i++) {
-			if (this.aRunnerLocations[i] == runner) {
-				this.aRunnerLocations[i] = null;
+			if (this.aRunnerTargets[base] == runner) {
+				this.aRunnerTargets[base] = null;
 			}
 		}
+
+		this.aRunnerTargets[targetBase] = runner;
+		this.iRunningRunners++;
 	},
 
 	// Called by the runner if they declined to run
@@ -986,6 +1112,8 @@ var gameState = {
 	// Called by runner when it's done, either when run complete or intercepted early
 	// bAtBase true if reached base on its own
 	runnerReportComplete: function(runner, targetBase, bAtBase) {
+		console.log(runner.getName() + " reports run complete");
+		
 		this.iRunningRunners--;
 		this.aRunnerTargets[targetBase] = null;
 
@@ -995,13 +1123,17 @@ var gameState = {
 			this.aRunnerLocations[targetBase] = runner;
 		}
 
-		if (!this.areRunnersRunning()) {
+		if (this.hitType == FLY_BALL && this.ballState == BALL_UNCONTROLLED) {
+			this.batterRunnerWaitingResult = runner;
+		} else if (!this.areRunnersRunning()) {
 			this.callDeadBall();
 		}
 	},
 
 	// A runner has decided to change where it's running to 
 	runnerChangeRunTarget: function(runner, targetBase) {	
+		console.log(runner.getName() + " has changed to running to " + targetBase);
+		
 		for (base in this.aRunnerTargets) {
 			if (this.aRunnerTargets[base] == runner) { 
 				this.aRunnerTargets[base] = null;
@@ -1014,7 +1146,7 @@ var gameState = {
 
 	// Returns information about the ball's current status 
 	getBallStatus: function() {
-		return {"state": this.ballState, "target": this.targetFielderPos};
+		return {"hit": this.hitType, "state": this.ballState, "target": this.targetFielderPos};
 	},
 
 	// Returns if the base can be run to. A base can be run to if it's empty
@@ -1082,6 +1214,35 @@ var gameState = {
 		var dialog = new InningsChangeScreen(this.aHomeInnings, this.aAwayInnings, this.iCurrentInning, this.bIsTopOfInning,
 												batting, fielding);
 	},
+	
+	// Tempt the batter with the danger of belly rubs
+	showBellyRubs: function() {
+		var player = this.aRunnerLocations[HOME];
+		var choices = [];
+		choices.push({"id": 0, "text": "Rub dat tummy"});
+		choices.push({"id": 1, "text": "Oh hell no"});
+
+		var dialog = new ChoiceDialog(player, true, function(choice) {
+			if (choice.id == 0) {
+				var roll = game.rnd.frac();
+				console.log("Batter rubs dat tummy: " + roll);
+				
+				if (roll >= 0.75) {
+					gameState.showUmpireDialog("(Hisses and claws) You're outta here!", function() {
+						gameState.recordOut(gameState.aRunnerLocations[HOME]);
+					});
+				} else {
+					gameState.showUmpireDialog("(Purrrrrrrrrr) Huh, what? Oh, uh... ball four!", function() {
+						gameState.walkBatter();
+					});
+				}
+			} else {
+				gameState.doPitch();
+			}
+		});
+		dialog.setupCustomChoices(player.getName() + " (Batter)", choices);
+		dialog.setY(30);
+	},
 
 	closeInningsChangeScreen: function() {
 		this.startInning();
@@ -1133,6 +1294,54 @@ var gameState = {
 			player.retireBatter(dugoutPos);
 		} else {
 			player.returnToDugout(dugoutPos);
+		}
+	},
+
+	getTargetForRunner: function(runner) {
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] == runner) {
+				return parseInt(base);
+			}
+		}
+
+		return null;
+	},
+
+	getLocationForRunner: function(runner) {
+		for (base in this.aRunnerLocations) {
+			if (this.aRunnerLocations[base] == runner) {
+				return parseInt(base);
+			}
+		}
+
+		return null;
+	},
+
+	getBaseName: function(base) {
+		switch (base) {
+			case HOME:
+				return "Home Base";
+
+			case FIRST:
+				return "First Base";
+
+			case SECOND:
+				return "Second Base";
+
+			case THIRD:
+				return "Third Base";
+		}
+	},
+
+	getBaseStatus: function(runner) {
+		var target = this.getTargetForRunner(runner);
+
+		if (target != null) {
+			return "Running to " + this.getBaseName(target);
+		} else {
+			var base = this.getLocationForRunner(runner);
+
+			return "At " + this.getBaseName(base);
 		}
 	},
 

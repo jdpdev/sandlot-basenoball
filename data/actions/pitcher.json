@@ -1,55 +1,112 @@
 {
-	"actions": [
-		{
-			"text": "Just lob it somewhere",
-			"type": 7,
-			"cost": 0,
-			"requires": [ ],
-			"mods": [ 
-				{
-					"stat": "ppow",
-					"amount": -2
-				},
-				{
-					"stat": "pit",
-					"amount": -2
-				}
-			]
-		},
-		{
-			"text": "(Fastball)",
-			"type": 4,
-			"cost": 4,
-			"requires": [ ],
-			"mods": [ 
-				{
-					"stat": "ppow",
-					"amount": 1
-				}
-			]
-		},
-		{
-			"text": "(Change-up)",
-			"type": 5,
-			"cost": 2,
-			"requires": [ ],
-			"mods": [ ]
-		},
-		{
-			"text": "(Breaking Ball)",
-			"type": 6,
-			"cost": 2,
-			"requires": [ ],
-			"mods": [ 
-				{
-					"stat": "ppow",
-					"amount": -2
-				},
-				{
-					"stat": "pit",
-					"amount": 1
-				}
-			]
-		}
-	]
+    "actions": [
+        {
+            "text": "Just lob it somewhere",
+            "type": 7,
+            "cost": 0,
+            "requires": [
+                
+            ],
+            "mods": [
+                {
+                    "stat": "ppow",
+                    "amount": -2
+                },
+                {
+                    "stat": "pit",
+                    "amount": -2
+                }
+            ],
+            "color": [
+                {
+                    "text": "I'll just throw it somewhere, I dunno"
+                },
+                {
+                    "text": "I'm tired, just do something with it"
+                },
+                {
+                    "text": "I just want to go home"
+                }
+            ]
+        },
+        {
+            "text": "(Fastball)",
+            "type": 4,
+            "cost": 4,
+            "requires": [
+                
+            ],
+            "mods": [
+                {
+                    "stat": "ppow",
+                    "amount": 1
+                }
+            ],
+            "color": [
+                {
+                    "text": "A searing fastball!"
+                },
+                {
+                    "text": "So fast it scorches the air!"
+                },
+                {
+                    "text": "A fireball down the middle!"
+                },
+                {
+                    "text": "Sonic's got nothing on this pitch!"
+                }
+            ]
+        },
+        {
+            "text": "(Change-up)",
+            "type": 5,
+            "cost": 2,
+            "requires": [
+                
+            ],
+            "mods": [
+                
+            ],
+            "color": [
+                {
+                    "text": "I'll fool him with something off-speed"
+                },
+                {
+                    "text": "Looks like a fastball, moves like a turtle!"
+                },
+                {
+                    "text": "You won't guess this one!"
+                }
+            ]
+        },
+        {
+            "text": "(Breaking Ball)",
+            "type": 6,
+            "cost": 2,
+            "requires": [
+                
+            ],
+            "mods": [
+                {
+                    "stat": "ppow",
+                    "amount": -2
+                },
+                {
+                    "stat": "pit",
+                    "amount": 1
+                }
+            ],
+            "color": [
+                {
+                    "text": "A wicked breaking ball"
+                },
+                {
+                    "text": "Movement like this is illegal!"
+                },
+                {
+                    "text": "A knuckler that destroys physics!"
+                }
+            ]
+        }
+    ]
 }

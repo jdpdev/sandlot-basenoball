@@ -10,9 +10,12 @@ var actionManager = {
 
 	// Called by game on statup
 	loadActions: function() {
-		game.load.json("batterActions", './data/actions/batter.json');
-		game.load.json("pitcherActions", './data/actions/pitcher.json');
-		game.load.json("fielderActions", './data/actions/fielding.json');
+		var stamp = "?" + new Date().getTime();
+
+		game.load.json("batterActions", './data/actions/batter.json' + stamp);
+		game.load.json("pitcherActions", './data/actions/pitcher.json' + stamp);
+		game.load.json("fielderActions", './data/actions/fielding.json' + stamp);
+		game.load.json("runnerActions", './data/actions/running.json' + stamp);
 	},
 
 	parseActions: function() {
@@ -39,6 +42,14 @@ var actionManager = {
 		for (var i = 0; i < actions.length; i++) {
 			this.fielderActions.push(new Action(actions[i]));
 		}
+
+		// Running
+		actions = game.cache.getJSON("runnerActions")["actions"];
+		this.runnerActions = [];
+
+		for (var i = 0; i < actions.length; i++) {
+			this.runnerActions.push(new Action(actions[i]));
+		}
 	},
 
 	// Returns a list of batter actions that are available to the given player with an amount of ap to spend
@@ -54,6 +65,11 @@ var actionManager = {
 	// Returns a list of pitcher actions that are available to the given player with an amount of ap to spend
 	getAvailableFielderActions: function(playerInfo, ap) {
 		return this.getAvailableActions(this.fielderActions, playerInfo, ap);
+	},
+
+	// Returns a list of pitcher actions that are available to the given player with an amount of ap to spend
+	getAvailableRunnerActions: function(playerInfo, ap) {
+		return this.getAvailableActions(this.runnerActions, playerInfo, ap);
 	},
 
 	getAvailableActions: function(actions, playerInfo, ap) {
@@ -115,6 +131,7 @@ var STAT_SPEED = "spe";
 var STAT_FIELDING = "fie";
 var STAT_IMAGINATION = "ima";
 var STAT_ARGUING = "arg";
+var STAT_FAT = "fat";
 
 // Result stats, modifying how results are calculated
 var STAT_LINE_DRIVE = "ldr";
@@ -125,11 +142,13 @@ var STAT_FLY_BALL = "fly";
 //	Wrapper for an action described in json
 // *****************************************************************************
 var Action = function(json) {
+	this.id = json.id;
 	this.text = json.text;
 	this.actionType = json.type;
 	this.cost = json.cost;
 	this.requirements = json.requires;
 	this.mods = json.mods;
+	this.color = json.color;
 
 	for (var i = 0; i < this.requirements.length; i++) {
 		if (this.requirements[i].min == undefined) {
@@ -155,11 +174,16 @@ Action.prototype.isAffordable = function(playerInfo, ap) {
 	return this.cost <= ap;
 }
 
-// Returns if the action is usable by the given player
-Action.prototype.isUsable = function(playerInfo) {
-	var bUsable = true;
+Action.prototype.getRandomColor = function() {
+	return game.rnd.pick(this.color).text;
+}
 
-	for (var i = 0; i < this.requirements; i++) {
+// Returns if the action is usable by the given player
+Action.prototype.isUsable = function(player) {
+	var bUsable = true;
+	var playerInfo = player.getInfo();
+
+	for (var i = 0; i < this.requirements.length; i++) {
 		switch (this.requirements[i].stat) {
 			case STAT_POWER:
 				if (!this.isValueInRange(playerInfo.power, this.requirements[i].min, this.requirements[i].max)) {
@@ -205,6 +229,12 @@ Action.prototype.isUsable = function(playerInfo) {
 
 			case STAT_ARGUING:
 				if (!this.isValueInRange(playerInfo.arguing, this.requirements[i].min, this.requirements[i].max)) {
+					return false;
+				} 
+				break;
+
+			case STAT_FAT:
+				if (!this.isValueInRange(playerInfo.fat, this.requirements[i].min, this.requirements[i].max)) {
 					return false;
 				} 
 				break;

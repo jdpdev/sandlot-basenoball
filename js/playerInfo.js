@@ -17,6 +17,14 @@ function PlayerInfo(json) {
 		this.fielding = json.fielding;
 		this.imagination = json.imagination;
 		this.arguing = 0; //json.arguing;
+		this.fat = 5; //json.arguing;
+
+		if (iconGenerator.isFat(this.icon)) {
+			this.fat = 10;
+		} else if (iconGenerator.isSkinny(this.icon)) {
+			this.fat = 0;
+		}
+
 	} else {
 		this.power = 0;
 		this.batting = 0;
@@ -25,7 +33,7 @@ function PlayerInfo(json) {
 		this.speed = 0;
 		this.fielding = 0;
 		this.imagination = 0;
-		this.arguing = 0;
+		this.fat = 5;
 	}
 
 	// Return a simple representation of this object built for json output
@@ -45,6 +53,16 @@ function PlayerInfo(json) {
 		json.arguing = 0;
 
 		return json;
+	}
+
+	this.setIcon = function(icon) {
+		this.icon = icon;
+
+		if (iconGenerator.isFat(this.icon)) {
+			this.fat = 10;
+		} else if (iconGenerator.isSkinny(this.icon)) {
+			this.fat = 0;
+		}
 	}
 
 	this.getValueForSkill = function(skill, amount) {
@@ -72,6 +90,9 @@ function PlayerInfo(json) {
 				
 			case STAT_ARGUING:
 				return this.arguing;
+				
+			case STAT_FAT:
+				return this.fat;
 				
 		}
 	}
@@ -148,6 +169,9 @@ function GetSkillName(skill) {
 		case STAT_ARGUING:
 			return "Arguing";
 			
+		case STAT_FAT:
+			return "Fat";
+			
 	}
 }
 
@@ -169,7 +193,7 @@ function GenerateRandomPlayerInfo(name, points) {
 	
 	info.name = name;
 	info.handedness = Math.random() >= 0.5;
-	info.icon = iconGenerator.generateRandomIcon();
+	info.setIcon(iconGenerator.generateRandomIcon());
 	
 	return info;
 }

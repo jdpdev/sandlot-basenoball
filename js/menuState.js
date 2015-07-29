@@ -7,6 +7,9 @@ var menuState = {
     preload: function() {
 		game.load.json('mutineers', './data/teams/mutineers.json');
 		game.load.json('spacebutts', './data/teams/spacebutts.json');
+		
+		game.load.image("sagdc", "./images/sagdc.png");
+		game.load.image("phaser", "./images/Phaser-Logo-Small.png");
 	},
 
 	create: function() {

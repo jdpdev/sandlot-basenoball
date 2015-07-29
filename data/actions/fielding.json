@@ -1,23 +1,22 @@
 {
 	"actions": [
 		{
+			"id": 0,
 			"text": "I got it!",
 			"type": 0,
 			"cost": 0,
 			"requires": [ ],
-			"mods": [ ]
+			"mods": [ ],
+			"color": [
+				{ "text" : "I got it!" },
+				{ "text" : "Oh shit oh shit oh shit" }
+			]
 		},
-		{
-			"text": "I got it!",
-			"type": 0,
-			"cost": 0,
-			"requires": [ ],
-			"mods": [ ]
-		},
-		{
+		{	
+			"id": 1,
 			"text": "MIIIINEEE!!",
 			"type": 0,
-			"cost": 10,
+			"cost": 15,
 			"requires": [
 				{ 
 					"stat": "fie",
@@ -29,16 +28,22 @@
 					"stat": "fie",
 					"amount": 2
 				}
-			]
+			],
+			"color": [
+				{ "text" : "MIIIINEEE!!!" },
+				{ "text" : "What a stop!" },
+				{ "text" : "This is for the highlight reels!" }
+			]	
 		},
 		{
+			"id": 2,
 			"text": "Gotta go fast!",
 			"type": 0,
 			"cost": 20,
 			"requires": [
 				{ 
-					"stat": "fie",
-					"min": 8
+					"stat": "spe",
+					"min": 6
 				}
 			],
 			"mods": [ 
@@ -46,12 +51,18 @@
 					"stat": "fie",
 					"amount": 3
 				}
-			]
+			],
+			"color": [
+				{ "text" : "Gotta go fast!" },
+				{ "text" : "Like a bolt of lightning!" },
+				{ "text" : "WOOOOOOOOOO" }
+			]	
 		},
 		{
+			"id": 3,
 			"text": "Angels lift me!",
 			"type": 0,
-			"cost": 15,
+			"cost": 25,
 			"requires": [
 				{ 
 					"stat": "fie",
@@ -63,7 +74,12 @@
 					"stat": "fie",
 					"amount": 3
 				}
-			]
+			],
+			"color": [
+				{ "text" : "Angels lift me!" },
+				{ "text" : "This fielder is amazing!" },
+				{ "text" : "Like playing basketnoball!" }
+			]	
 		}
 	]
 }

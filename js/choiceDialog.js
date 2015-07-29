@@ -37,7 +37,7 @@ ChoiceDialog.prototype.setupWindow = function() {
 ChoiceDialog.prototype.drawAPBar = function(subtract) {
 	var totalWidth = iconGenerator.iconWidth;
 	var height = 15;
-	var showAPAmount = this.player.getAP() - subtract;
+	var showAPAmount = game.math.clamp(this.player.getAP() - subtract, 0, this.player.getMaxAP());
 	var fullAPWidth = (totalWidth - 2) * (this.player.getAP() / this.player.getMaxAP());
 	var apWidth = (totalWidth - 2) * (showAPAmount / this.player.getMaxAP());
 
@@ -108,7 +108,11 @@ ChoiceDialog.prototype.addChoice = function(action, x, y, text, cost) {
 		displayString = text;
 
 		if (cost != undefined) {
-			displayString += " (" + cost + " AP)";
+			if (cost > 0) {
+				displayString += " (+" + cost + " AP)";
+			} else {
+				displayString += " (" + cost + " AP)";
+			}
 		}
 	}
 

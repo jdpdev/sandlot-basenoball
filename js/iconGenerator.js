@@ -38,6 +38,21 @@ var iconGenerator = {
         
         return icon;
     },
+
+    getSlotValue: function(iconString, slot) {
+        var codes = iconString.split(".");
+        return parseInt(codes[slot]);
+    },
+
+    isFat: function(iconString) {
+        var face = this.getSlotValue(iconString, FACE_SHAPE);
+        return face == 0x04 || face == 0x05;
+    },
+
+    isSkinny: function(iconString) {
+        var face = this.getSlotValue(iconString, FACE_SHAPE);
+        return face == 0x02 || face == 0x03;
+    },
     
     generateRandomIcon: function(teamColor) {
         var face = this.getFaceKeys();
