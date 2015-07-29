@@ -33,6 +33,8 @@ var gameState = {
 	fieldingTeam: null,
 
 	umpire: null,
+	
+	numberOfInnings: 5,
 
 	selectedBatterAction: null,
 	selectedPitcherAction: null,
@@ -197,13 +199,20 @@ var gameState = {
 
 	endInning: function() {
 		// Check for end of game
-		if (this.iCurrentInning >= 8 || (this.iCurrentInning == 7 && this.bIsTopOfInning)) {
-
+		if (this.iCurrentInning == this.numberOfInnings && this.bIsTopOfInning) {
+			if (this.countScore(this.aHomeInnings) > this.countScore(this.aAwayInnings)) {
+				this.endGame();
+			}
+		} else if (this.iCurrentInning >= this.numberOfInnings) {
+			this.endGame();
 		}
 
 		if (!this.bIsTopOfInning) {
 			this.iCurrentInning++;
 		}
+		
+		this.aRunnerLocations = [null, null, null, null];
+		this.aRunnerTargets = [null, null, null, null];
 
 		this.bIsTopOfInning = !this.bIsTopOfInning;
 		//this.startInning();
@@ -541,13 +550,20 @@ var gameState = {
 		// TODO what range should difficulty be normalized to?
 		//
 		// Distance is literal distance the ball travels
+		var targetFielder; //= this.getFielderByDistance(distance, hitType);
+		
 		switch (hitType) {
 			// Line drive
 			case 0:
 				// Select target fielder
-				var targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
+				//var targetFielder = this.getFielderByDistance(distance, hitType); //this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
 				var difficulty = 0;
-				var distance = 0;
+				var distance = (battingSkill * margin + battingPower * margin) / 7;
+				
+				console.log("Line drive, normalized distance: " + distance);
+				distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * (gameField.backWallLength + 20 - gameField.infieldRadius);
+				
+				targetFielder = this.getFielderByDistance(distance, hitType);
 
 				// Infield and outfield use different math
 				if (targetFielder < LEFT_FIELD) {
@@ -561,12 +577,6 @@ var gameState = {
 					difficulty = battingSkill * margin * 2 + battingPower;
 				}
 
-				distance = (battingSkill * margin + battingPower * margin) / 7;
-
-				console.log("Line drive, normalized distance: " + distance);
-
-				distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * (gameField.backWallLength + 20 - gameField.infieldRadius);
-
 				console.log("Line drive to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 
 				this.showUmpireDialog("Fe-line drive to " + GetPlayerPositionName(targetFielder) + "!", function() {
@@ -576,7 +586,7 @@ var gameState = {
 
 			// Ground ball
 			case 1:
-				var targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, true);
+				//var targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, true);
 				var difficulty = battingSkill + battingPower * margin;
 				var distance = (battingPower * margin) / 8;
 
@@ -584,6 +594,7 @@ var gameState = {
 
 				//targetFielder = THIRD_BASE;
 				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
+				targetFielder = this.getFielderByDistance(distance, hitType);
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 				
@@ -596,7 +607,7 @@ var gameState = {
 			// Fly ball
 			default:
 			case 2:
-				var targetFielder = 0;
+				//var targetFielder = 0;
 				var difficulty = 0;
 				var distance = (battingPower * margin) / 7;
 				var goingToWall = "";
@@ -604,23 +615,27 @@ var gameState = {
 				console.log("Fly ball, normalized distance: " + distance);
 				
 				if (margin >= 0.6) {
-					targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
+					//targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
 					difficulty = battingSkill * margin + battingPower * margin;
 					distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
+					targetFielder = this.getFielderByDistance(distance, hitType);
 				} else if (margin >= 0.3) {
-					targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
+					//targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
 					difficulty = battingSkill * margin + battingPower * margin * 0.5;
 
-					if (targetFielder >= LEFT_FIELD) {
+					if (game.rnd.integerInRange(0,1) == 1) {
 						distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
 					} else {
 						distance = this.adjustBySinCurve(distance) * gameField.infieldRadius + 30;
 					}
+					
+					targetFielder = this.getFielderByDistance(distance, hitType);
 
 				} else {
-					targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, false);
+					//targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, false);
 					difficulty = 1;
 					distance = this.adjustBySinCurve(distance) * gameField.infieldRadius - 20;
+					targetFielder = this.getFielderByDistance(distance, hitType);
 				}
 
 				if (distance >= gameField.backWallLength) {
@@ -676,6 +691,34 @@ var gameState = {
 		}
 		
 		return targetFielder;
+	},
+	
+	// Draw the random fielder with access to a ball of a certain distance
+	getFielderByDistance: function(distance, hitType) {
+		
+		// Close enough for the catcher
+		if (distance <= 50) {
+			return CATCHER;
+		}
+		
+		// Far enough for outfielders only 
+		if (distance >= 350) {
+			return game.rnd.integerInRange(LEFT_FIELD, RIGHT_FIELD);
+		}
+		
+		// Infield only
+		if (distance > 50 && distance <= 300) {
+			var roll = game.rnd.integerInRange(PITCHER, THIRD_BASE);
+			
+			if (roll == 1) {
+				roll = PITCHER;
+			}
+			
+			return roll;
+		}
+		
+		// Infield or outfield
+		return game.rnd.integerInRange(FIRST_BASE, RIGHT_FIELD);
 	},
 	
 	// Tell the runners that the ball is in play
@@ -1164,6 +1207,17 @@ var gameState = {
 		}
 
 		return false;
+	},
+	
+	// Given an array of inning scores, return the total score
+	countScore: function(innings) {
+		var count = 0;
+		
+		for (var i = 0; i < innings.length; i++) {
+			count += innings[i];
+		}
+		
+		return count;
 	},
 
 // ****************************************************

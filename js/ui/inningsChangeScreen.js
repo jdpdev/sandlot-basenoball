@@ -59,10 +59,10 @@ var InningsChangeScreen = function(homeScore, awayScore, currentInning, bTop, ba
     // Boxscore Innings
     var inningWidth = 40;
 	var inningX = boxScoreX + 150;
-	var runsX = inningX + (9 * inningWidth);
-	var hitsX = inningX + (10 * inningWidth);
+	var runsX = inningX + (gameState.numberOfInnings * inningWidth);
+	var hitsX = inningX + ((gameState.numberOfInnings + 1) * inningWidth);
 
-    for (var i = 0; i < 9; i++) {
+    for (var i = 0; i < gameState.numberOfInnings; i++) {
 	    this.addPlainText(this.graphics, (i + 1) + "", smallStencilStyle, inningX + (i * inningWidth), boxScoreY);
 	}
 
@@ -90,7 +90,7 @@ var InningsChangeScreen = function(homeScore, awayScore, currentInning, bTop, ba
     var homeRuns = 0;
     var awayRuns = 0;
 
-    for (var i = 0; i < 9; i++) {
+    for (var i = 0; i < gameState.numberOfInnings; i++) {
     	if (i > currentInning) {
     		break;
     	}

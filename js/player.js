@@ -108,6 +108,7 @@ function Player(id, playerInfo, teamColor) {
 
 	// ** Methods **************************************************************
 	this.setAsFielder = function(position) {
+		this.interruptRun();
 		this.fieldingPosition = position;
 
 		if (this.worldIcon == null) {
@@ -140,6 +141,8 @@ function Player(id, playerInfo, teamColor) {
 		if (this.worldIcon == null) {
 			this.drawFielder();
 		}
+		
+		this.interruptRun();
 
 		//if (!bRun) {
 			this.setPosition(position);
@@ -388,10 +391,19 @@ function Player(id, playerInfo, teamColor) {
 				break;
 
 			case BALL_FUMBLED:
+				if (status.target < LEFT_FIELD) {
+					this.completeRun();
+					break;
+				}
+				
 				switch (nextBase) {
 					default:
 					case SECOND:
-						this.startRun(nextBase, false);
+						if (status.target >= LEFT_FIELD) {
+							this.startRun(nextBase, false);
+						} else {
+							this.completeRun();
+						}
 						break;
 
 					case THIRD:
@@ -590,7 +602,7 @@ function Player(id, playerInfo, teamColor) {
 
 	// ** Fielding ******************************************************
 	this.fieldBall = function(hitType, difficulty, distance) {
-		var myDist = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY).getMagnitude();
+		var myDelta = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY);
 		var fieldTime = 0; 
 
 		switch (hitType) {
@@ -614,8 +626,17 @@ function Player(id, playerInfo, teamColor) {
 				}
 				break;
 		}
-
-
+		
+		// Move to some point distance away from home
+		if (this.fieldingPosition == PITCHER && hitType == LINE_DRIVE) {
+			
+		} else {
+			myDelta.setMagnitude(distance);
+			var movePos = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.realInRange(-10, 10), true);
+			var tween = game.add.tween(this.worldIcon).to({x: movePos.x + gameField.homePlateX, y: movePos.y + gameField.homePlateY}, 
+										fieldTime, Phaser.Easing.Default, true);
+		}
+	
 		// Simulate running to the point
 		var runTimer = game.time.create(true);
 		runTimer.add(fieldTime, this.runToFieldFinished, this, hitType, difficulty, distance);

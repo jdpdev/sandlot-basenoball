@@ -28,7 +28,7 @@ var CountHUD = function(away, home) {
 	this.homeScoreLabel = this.addPlainText(this.graphics, "0", font, 50, homeTeamY);
 
 	// Inning
-	this.inningLabel = this.addPlainText(this.graphics, " ", fontBig, 80, 10);
+	this.inningLabel = this.addPlainText(this.graphics, " ", fontBig, 80, 5);
 }
 
 CountHUD.prototype.setPosition = function(x, y) {
@@ -97,7 +97,7 @@ CountHUD.prototype.drawBalls = function() {
 	if (this.ballCount > 0) {
 		this.graphics.beginFill(0x00aaFF, 1);
 	} else {
-		this.graphics.beginFill(0x005aae, 1);
+		this.graphics.beginFill(0x003262, 1);
 	}
 
 	this.graphics.drawCircle(25, 70, 15);
@@ -107,7 +107,7 @@ CountHUD.prototype.drawBalls = function() {
 	if (this.ballCount > 1) {
 		this.graphics.beginFill(0x00aaFF, 1);
 	} else {
-		this.graphics.beginFill(0x005aae, 1);
+		this.graphics.beginFill(0x003262, 1);
 	}
 
 	this.graphics.drawCircle(45, 70, 15);
@@ -117,7 +117,7 @@ CountHUD.prototype.drawBalls = function() {
 	if (this.ballCount > 2) {
 		this.graphics.beginFill(0x00aaFF, 1);
 	} else {
-		this.graphics.beginFill(0x005aae, 1);
+		this.graphics.beginFill(0x003262, 1);
 	}
 
 	this.graphics.drawCircle(65, 70, 15);
@@ -137,7 +137,7 @@ CountHUD.prototype.drawOuts = function() {
 		this.graphics.beginFill(0x880000, 1);
 	}
 
-	this.graphics.drawCircle(95, 45, 15);
+	this.graphics.drawCircle(95, 40, 15);
 	this.graphics.endFill();
 
 	// Second out
@@ -147,7 +147,7 @@ CountHUD.prototype.drawOuts = function() {
 		this.graphics.beginFill(0x880000, 1);
 	}
 
-	this.graphics.drawCircle(115, 45, 15);
+	this.graphics.drawCircle(115, 40, 15);
 	this.graphics.endFill();
 }
 
