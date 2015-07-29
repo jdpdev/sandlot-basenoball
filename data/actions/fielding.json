@@ -6,7 +6,11 @@
 			"type": 0,
 			"cost": 0,
 			"requires": [ ],
-			"mods": [ ]
+			"mods": [ ],
+			"color": [
+				{ "text" : "I got it!" },
+				{ "text" : "Oh shit oh shit oh shit" }
+			]
 		},
 		{	
 			"id": 1,

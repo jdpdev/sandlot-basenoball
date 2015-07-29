@@ -745,27 +745,26 @@ var gameState = {
 		this.activeRunner = null;
 
 		if (runner != null) {
-			this.showChoiceDialog(runner, runner.getName() + " (Running to )", actionManager.getAvailableRunnerActions(runner, runner.getAP()),
+			var target = this.getTargetForRunner(runner);
+			var baseName = this.getBaseName(target);
+
+			this.showChoiceDialog(runner, runner.getName() + " (" + this.getBaseStatus(runner) + ")", actionManager.getAvailableRunnerActions(runner, runner.getAP()),
 				function(choice) {
 					gameState.selectedRunnerAction = choice;
-					gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
-					//gameState.showFielderAction(fielder, runner, hitType, difficulty, distance);
+					//gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+					gameState.showFielderAction(fielder, runner, hitType, difficulty, distance);
 				});	
 		} else {
-			this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
-			//this.showFielderAction(fielder, runner, hitType, difficulty, distance);
+			//this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+			this.showFielderAction(fielder, runner, hitType, difficulty, distance);
 		}
 	},
 
 	showFielderAction: function(fielder, runner, hitType, difficulty, distance) {
 		this.showPlayerDialog(fielder, true, fielder.getName() + " (Fielder)\n" + this.selectedFielderAction.getRandomColor(), 
 			function() {
-				if (this.selectedRunnerAction != null) {
-					try {
-						gameState.showRunnerAction(fielder, runner, hitType, difficulty, distance);
-					} catch (error) {
-						console.log("caught error");
-					}
+				if (gameState.selectedRunnerAction != null) {
+					gameState.showRunnerAction(fielder, runner, hitType, difficulty, distance);
 				} else {
 					gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
 				}
@@ -773,7 +772,7 @@ var gameState = {
 	},
 
 	showRunnerAction: function(fielder, runner, hitType, difficulty, distance) {
-		this.showPlayerDialog(runner, true, runner.getName() + " (Running to )\n" + this.selectedRunnerAction.getRandomColor(), 
+		this.showPlayerDialog(runner, true, runner.getName() + " (" + this.getBaseStatus(runner) + ")\n" + this.selectedRunnerAction.getRandomColor(), 
 			function() {
 				gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
 			});
@@ -874,7 +873,9 @@ var gameState = {
 
 			case GROUND_BALL:
 				if (bSuccess) {
-					this.fielderGathersBall(this.activeFielder, false);
+					this.showUmpireDialog("Fielder pounces on the ball!", function() {
+						gameState.fielderGathersBall(gameState.activeFielder, false);
+					});
 				} else {
 					this.showUmpireDialog("It gets past the fielder!", function() {
 						gameState.delayFielderGather(gameState.activeFielder, 3000);
@@ -950,6 +951,11 @@ var gameState = {
 		
 		if (!this.bIsBallInPlay) {
 			return;
+		}
+
+		// Dropped fly ball with nobody running?
+		if (!this.areRunnersRunning()) {
+			this.callDeadBall();
 		}
 		
 		this.ballState = BALL_CONTROLLED;
@@ -1288,6 +1294,54 @@ var gameState = {
 			player.retireBatter(dugoutPos);
 		} else {
 			player.returnToDugout(dugoutPos);
+		}
+	},
+
+	getTargetForRunner: function(runner) {
+		for (base in this.aRunnerTargets) {
+			if (this.aRunnerTargets[base] == runner) {
+				return parseInt(base);
+			}
+		}
+
+		return null;
+	},
+
+	getLocationForRunner: function(runner) {
+		for (base in this.aRunnerLocations) {
+			if (this.aRunnerLocations[base] == runner) {
+				return parseInt(base);
+			}
+		}
+
+		return null;
+	},
+
+	getBaseName: function(base) {
+		switch (base) {
+			case HOME:
+				return "Home Base";
+
+			case FIRST:
+				return "First Base";
+
+			case SECOND:
+				return "Second Base";
+
+			case THIRD:
+				return "Third Base";
+		}
+	},
+
+	getBaseStatus: function(runner) {
+		var target = this.getTargetForRunner(runner);
+
+		if (target != null) {
+			return "Running to " + this.getBaseName(target);
+		} else {
+			var base = this.getLocationForRunner(runner);
+
+			return "At " + this.getBaseName(base);
 		}
 	},
 
