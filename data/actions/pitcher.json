@@ -14,7 +14,11 @@
 					"stat": "pit",
 					"amount": -2
 				}
-			]
+			],
+			"color": [
+				{ "text" : "I'll just throw it somewhere, I dunno" },
+				{ "text" : "I'm tired, just do something with it" },
+			]	
 		},
 		{
 			"text": "(Fastball)",
@@ -26,14 +30,25 @@
 					"stat": "ppow",
 					"amount": 1
 				}
-			]
+			],
+			"color": [
+				{ "text" : "A searing fastball!" },
+				{ "text" : "So fast it scorches the air!" },
+				{ "text" : "A fireball down the middle!" },
+				{ "text" : "Sonic's got nothing on this pitch!" },
+			]	
 		},
 		{
 			"text": "(Change-up)",
 			"type": 5,
 			"cost": 2,
 			"requires": [ ],
-			"mods": [ ]
+			"mods": [ ],
+			"color": [
+				{ "text" : "I'll fool him with something off-speed" },
+				{ "text" : "Looks like a fastball, moves like a turtle!" },
+				{ "text" : "You won't guess this one!" },
+			]	
 		},
 		{
 			"text": "(Breaking Ball)",
@@ -49,7 +64,12 @@
 					"stat": "pit",
 					"amount": 1
 				}
-			]
+			],
+			"color": [
+				{ "text" : "A wicked breaking ball" },
+				{ "text" : "Movement like this is illegal!" },
+				{ "text" : "A knuckler that destroys physics!" },
+			]	
 		}
 	]
 }

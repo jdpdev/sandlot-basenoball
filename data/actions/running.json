@@ -1,0 +1,136 @@
+{
+	"actions": [
+		{
+			"id": 0,
+			"text": "I've got nothing.'",
+			"type": 0,
+			"cost": 0,
+			"requires": [ ],
+			"mods": [ ],
+			"color": [
+				{ "text" : "(Pant huff) Unnnngh" },
+				{ "text" : "Run run run" },
+				{ "text" : "I'm too old for this" },
+			]	
+		},
+		{
+			"id": 1,
+			"text": "OOGA BOOGA BALOOEY!",
+			"type": 0,
+			"cost": 10,
+			"requires": [
+				{ 
+					"stat": "bat",
+					"min": 2
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": -1
+				}
+			],
+			"color": [
+				{ "text" : "OOGA BOOGA BALOOEY!!!" },
+				{ "text" : "BOO!" },
+				{ "text" : "YOU CAN'T CATCH IT YOU CAN'T CATCH IT" },
+			]	
+		},
+		{
+			"id": 2,
+			"text": "Gotta go fast!",
+			"type": 0,
+			"cost": 20,
+			"requires": [
+				{ 
+					"stat": "spe",
+					"min": 4
+				},
+				{ 
+					"stat": "fat",
+					"max": 5
+				},
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": -2
+				}
+			],
+			"color": [
+				{ "text" : "Gotta go fast!" },
+				{ "text" : "Speed like a bolt of lightning!" },
+				{ "text" : "That's not a cheetah, it's a kid!" },
+			]	
+		},
+		{
+			"id": 3,
+			"text": "Dude! You're too fat to run that fast!",
+			"type": 0,
+			"cost": -10,
+			"requires": [
+				{ 
+					"stat": "fat",
+					"min": 6
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": 2
+				}
+			],
+			"color": [
+				{ "text" : "Dude! You're too fat to run that fast!" },
+				{ "text" : "That's not running, that's rolling!" },
+				{ "text" : "I can't tell if that's him or his mom." },
+			]	
+		},
+		{
+			"id": 4,
+			"text": "(Clothes go out of style)",
+			"type": 0,
+			"cost": 20,
+			"requires": [
+				{ 
+					"stat": "ima",
+					"min": 6
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": -3
+				}
+			],
+			"color": [
+				{ "text" : "(Clothes go out of style)" },
+				{ "text" : "Watch it flap in the breeze, bitches!" },
+				{ "text" : "Get an eyeload of this!" },
+			]	
+		},
+		{
+			"id": 5,
+			"text": "I saw your mom naked!",
+			"type": 0,
+			"cost": 15,
+			"requires": [
+				{ 
+					"stat": "ima",
+					"min": 8
+				}
+			],
+			"mods": [ 
+				{
+					"stat": "fie",
+					"amount": -4
+				}
+			],
+			"color": [
+				{ "text" : "I saw your mom naked!" },
+				{ "text" : "This guy's mom has the best tits" },
+				{ "text" : "oooooOOoooohh she's watching!" },
+			]	
+		}
+	]
+}

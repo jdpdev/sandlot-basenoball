@@ -37,6 +37,7 @@ var gameState = {
 	selectedBatterAction: null,
 	selectedPitcherAction: null,
 	selectedFielderAction: null,
+	selectedRunnerAction: null,
 
 	// What state the ball is in
 	ballState: BALL_DEAD,
@@ -46,6 +47,10 @@ var gameState = {
 
 	// The fielder with control of the ball
 	activeFielder: null,
+
+	// The runner with priority for a counter-fielder action.
+	// Batter gets this off the bat, after that dependent on the situation.
+	activeRunner: null,
 
 	// Game state
 	iCurrentInning: 0,
@@ -664,6 +669,7 @@ var gameState = {
 		this.bIsBallInPlay = true;
 		this.ballState = BALL_UNCONTROLLED;
 		this.hitType = hitType;
+		this.activeRunner = this.aRunnerLocations[HOME];
 		
 		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
@@ -712,18 +718,43 @@ var gameState = {
 		this.selectedFielderAction = action;
 		this.activeFielder = fielder;
 
-		this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+		var runner = this.activeRunner;
+
+		// See if a runner can counter
+		if (runner == null) {
+
+		}
+
+		this.activeRunner = null;
+
+		if (runner != null) {
+			this.showChoiceDialog(runner, runner.getName() + " (Running to )", actionManager.getAvailableRunnerActions(runner, runner.getAP()),
+				function(choice) {
+					gameState.selectedRunnerAction = choice;
+					gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+				});	
+		} else {
+			this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+		}
 	},
 
 	// Resolve the result of the fielder attempting to get the ball
 	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
 		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder) - 1;
 
+		// Make fielding a little less strong
+		difficulty += 1;
+
 		if (fieldingPos >= LEFT_FIELD) {
 			difficulty /= 2;
 		}
 
 		var fieldingSkill = this.selectedFielderAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
+
+		if (this.selectedRunnerAction != null) {
+			fieldingSkill = this.selectedRunnerAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
+		}
+
 		var delta = fieldingSkill - difficulty;
 		var roll = this.randomizer.frac(); //Math.random();
 		var bSuccess = false;
@@ -846,6 +877,9 @@ var gameState = {
 				}
 				break;
 		}
+
+		this.selectedFielderAction = null;
+		this.selectedRunnerAction = null;
 	},
 
 	// Delay the fielder from gathering the ball
@@ -1159,7 +1193,7 @@ var gameState = {
 				gameState.doPitch();
 			}
 		});
-		dialog.setupCustomChoices(player.getName() + " (" + GetPlayerPositionAbbr(player.fieldingPosition) + ")", choices);
+		dialog.setupCustomChoices(player.getName() + " (Batter)", choices);
 		dialog.setY(30);
 	},
 
