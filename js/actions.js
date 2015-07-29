@@ -10,10 +10,12 @@ var actionManager = {
 
 	// Called by game on statup
 	loadActions: function() {
-		game.load.json("batterActions", './data/actions/batter.json');
-		game.load.json("pitcherActions", './data/actions/pitcher.json');
-		game.load.json("fielderActions", './data/actions/fielding.json');
-		game.load.json("runnerActions", './data/actions/running.json');
+		var stamp = "?" + new Date().getTime();
+
+		game.load.json("batterActions", './data/actions/batter.json' + stamp);
+		game.load.json("pitcherActions", './data/actions/pitcher.json' + stamp);
+		game.load.json("fielderActions", './data/actions/fielding.json' + stamp);
+		game.load.json("runnerActions", './data/actions/running.json' + stamp);
 	},
 
 	parseActions: function() {
@@ -173,7 +175,7 @@ Action.prototype.isAffordable = function(playerInfo, ap) {
 }
 
 Action.prototype.getRandomColor = function() {
-	return game.rnd.pick(this.color);
+	return game.rnd.pick(this.color).text;
 }
 
 // Returns if the action is usable by the given player

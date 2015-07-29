@@ -277,6 +277,23 @@ var gameState = {
 				batter.consumeAP(action.getCost());
 				gameState.selectedBatterAction = action;
 
+				//gameState.throwPitch();
+				gameState.showPitcherAction();
+			});
+	},
+
+	showPitcherAction: function() {
+		var pitcher = this.fieldingTeam.getPitcher();
+		this.showPlayerDialog(pitcher, true, pitcher.getName() + " (Pitcher)\n" + this.selectedPitcherAction.getRandomColor(), 
+			function() {
+				gameState.showBatterAction();
+			});
+	},
+
+	showBatterAction: function() {
+		var batter = this.aRunnerLocations[HOME];
+		this.showPlayerDialog(batter, true, batter.getName() + " (Batter)\n" + this.selectedBatterAction.getRandomColor(), 
+			function() {
 				gameState.throwPitch();
 			});
 	},
@@ -642,8 +659,8 @@ var gameState = {
 	// Pick a random fielder
 	// startPos and endPos are the range of fielders to get, inclusive
 	getRandomFielder: function(startPos, endPos, bExcludeCatcher) {
-		//var targetFielder = startPos + Math.floor(Math.random() * (endPos - startPos + 1));
-		var targetFielder = this.randomizer.integerInRange(startPos, endPos);
+		var targetFielder = startPos + Math.floor(Math.random() * (endPos - startPos + 1));
+		//var targetFielder = this.randomizer.integerInRange(startPos, endPos);
 
 		if (targetFielder >= endPos + 1) {
 			targetFielder = endPos;
@@ -732,10 +749,34 @@ var gameState = {
 				function(choice) {
 					gameState.selectedRunnerAction = choice;
 					gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+					//gameState.showFielderAction(fielder, runner, hitType, difficulty, distance);
 				});	
 		} else {
 			this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+			//this.showFielderAction(fielder, runner, hitType, difficulty, distance);
 		}
+	},
+
+	showFielderAction: function(fielder, runner, hitType, difficulty, distance) {
+		this.showPlayerDialog(fielder, true, fielder.getName() + " (Fielder)\n" + this.selectedFielderAction.getRandomColor(), 
+			function() {
+				if (this.selectedRunnerAction != null) {
+					try {
+						gameState.showRunnerAction(fielder, runner, hitType, difficulty, distance);
+					} catch (error) {
+						console.log("caught error");
+					}
+				} else {
+					gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+				}
+			});
+	},
+
+	showRunnerAction: function(fielder, runner, hitType, difficulty, distance) {
+		this.showPlayerDialog(runner, true, runner.getName() + " (Running to )\n" + this.selectedRunnerAction.getRandomColor(), 
+			function() {
+				gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+			});
 	},
 
 	// Resolve the result of the fielder attempting to get the ball

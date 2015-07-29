@@ -625,7 +625,7 @@ function Player(id, playerInfo, teamColor) {
 	// Fielder did not successfully field the ball, so pick a direction to run in while waiting
 	this.ballFumbled = function(time) {
 		// Pick random direction
-		var roll = game.rng.realInRange(game.math.PI2 / -8, game.math.PI2 / 8);
+		var roll = game.rnd.realInRange(game.math.PI2 / -8, game.math.PI2 / 8);
 		var normal = new Phaser.Point(0, -1);
 		normal = Phaser.Point.rotate(normal, 0, 0, roll);
 		normal.setMagnitude(70);

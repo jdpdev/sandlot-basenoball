@@ -1,83 +1,105 @@
 {
-	"actions": [
-		{
-			"id": 0,
-			"text": "(Watch the ball go by)",
-			"type": 0,
-			"cost": 0,
-			"requires": [ ],
-			"mods": [ ],
-			"color": [
-				{ "text" : "I'll let the ball go by" },
-				{ "text" : "(Yawn)" },
-			]	
-		},
-		{
-			"id": 1,
-			"text": "(Take a swing)",
-			"type": 1,
-			"cost": 2,
-			"requires": [ ],
-			"mods": [ ],
-			"color": [
-				{ "text" : "I take a swing!" },
-				{ "text" : "A swing like a pro!" }
-			]	
-		},
-		{
-			"id": 2,
-			"text": "I watch it go by for a ball",
-			"type": 0,
-			"cost": 10,
-			"requires": [
-				{
-					"stat": "bat",
-					"min": 4
-				}
-			],
-			"mods": [ 
-				{
-					"stat": "pit",
-					"amount": -2
-				}
-			],
-			"color": [
-				{ "text" : "I watch it go by for a ball" },
-				{ "text" : "You can't hit the strike zone" },
-				{ "text" : "This isn't cricket!" },
-				{ "text" : "In the dirt!" }
-			]	
-		},
-		{
-			"id": 3,
-			"text": "Swing hard for a home run!",
-			"type": 1,
-			"cost": 20,
-			"requires": [
-				{
-					"stat": "bat",
-					"min": 5
-				},
-				{
-					"stat": "pow",
-					"min": 4
-				}
-			],
-			"mods": [
-				{
-					"stat": "pow",
-					"amount": 2
-				},
-				{
-					"stat": "bat",
-					"amount": -2
-				}
-			],
-			"color": [
-				{ "text" : "I swing hard for a home run!" },
-				{ "text" : "I swing for the wall!" },
-				{ "text" : "The ball will explode with my power!" },
-			]	
-		}
-	]
+    "actions": [
+        {
+            "id": 0,
+            "text": "(Watch the ball go by)",
+            "type": 0,
+            "cost": 0,
+            "requires": [],
+            "mods": [],
+            "color": [
+                {
+                    "text": "I'll let the ball go by"
+                },
+                {
+                    "text": "(Yawn)"
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "text": "(Take a swing)",
+            "type": 1,
+            "cost": 2,
+            "requires": [],
+            "mods": [],
+            "color": [
+                {
+                    "text": "I take a swing!"
+                },
+                {
+                    "text": "A swing like a pro!"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "text": "I watch it go by for a ball",
+            "type": 0,
+            "cost": 10,
+            "requires": [
+                {
+                    "stat": "bat",
+                    "min": 4
+                }
+            ],
+            "mods": [
+                {
+                    "stat": "pit",
+                    "amount": -2
+                }
+            ],
+            "color": [
+                {
+                    "text": "I watch it go by for a ball"
+                },
+                {
+                    "text": "You can't hit the strike zone"
+                },
+                {
+                    "text": "This isn't cricket!"
+                },
+                {
+                    "text": "In the dirt!"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "text": "Swing hard for a home run!",
+            "type": 1,
+            "cost": 20,
+            "requires": [
+                {
+                    "stat": "bat",
+                    "min": 5
+                },
+                {
+                    "stat": "pow",
+                    "min": 4
+                }
+            ],
+            "mods": [
+                {
+                    "stat": "pow",
+                    "amount": 2
+                },
+                {
+                    "stat": "bat",
+                    "amount": -2
+                }
+            ],
+            "color": [
+                {
+                    "text": "I swing hard for a home run!"
+                },
+                {
+                    "text": "I swing for the wall!"
+                },
+                {
+                    "text": "The ball will explode with my power!"
+                }
+            ]
+        }
+    ]
 }
