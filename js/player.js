@@ -603,14 +603,35 @@ function Player(id, playerInfo, teamColor) {
 	// ** Fielding ******************************************************
 	this.fieldBall = function(hitType, difficulty, distance) {
 		var myDelta = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY);
+		var distance = distance - myDelta.getMagnitude();
+		var runSpeed = this.getRunSpeed();
 		var fieldTime = 0; 
+		var tweenPos = new Phaser.Point(this.worldIcon.x, this.worldIcon.y);
+		var tweenTime;
 
 		switch (hitType) {
 			case LINE_DRIVE:
 				if (this.fieldingPosition < LEFT_FIELD) {
 					fieldTime = 750;
+					tweenTime = fieldTime * game.rnd.frac();
+					
+					var direction = Phaser.Point.normalRightHand(myDelta);
+
+					if (this.fieldingPosition == FIRST_BASE) {
+						direction = Phaser.Point.negative(direction);
+					}
+
+					direction.setMagnitude(runSpeed * tweenTime / 1000);
+					tweenPos = Phaser.Point.add(tweenPos, direction);
+					difficulty += 3;
 				} else {
 					fieldTime = 1250;
+					tweenTime = fieldTime * game.rnd.frac();
+
+					myDelta.setMagnitude(distance);
+					myDelta = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.integerInRange(-15, 15), true);
+
+					tweenPos = Phaser.Point.add(myDelta, new Phaser.Point(this.worldIcon.x, this.worldIcon.y));
 				}
 				break;
 
@@ -627,15 +648,12 @@ function Player(id, playerInfo, teamColor) {
 				break;
 		}
 		
-		// Move to some point distance away from home
-		if (this.fieldingPosition == PITCHER && hitType == LINE_DRIVE) {
-			
-		} else {
-			myDelta.setMagnitude(distance);
-			var movePos = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.realInRange(-10, 10), true);
-			var tween = game.add.tween(this.worldIcon).to({x: movePos.x + gameField.homePlateX, y: movePos.y + gameField.homePlateY}, 
-										fieldTime, Phaser.Easing.Default, true);
-		}
+		console.log("distance from fielder: " + distance);
+		
+		myDelta.setMagnitude(distance);
+		var movePos = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.realInRange(-10, 10), true);
+		var tween = game.add.tween(this.worldIcon).to({x: tweenPos.x, y: tweenPos.y}, 
+									tweenTime, Phaser.Easing.Default, true);
 	
 		// Simulate running to the point
 		var runTimer = game.time.create(true);

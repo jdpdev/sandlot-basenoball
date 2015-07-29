@@ -532,7 +532,7 @@ var gameState = {
 			}
 		} 
 
-		//hitType = GROUND_BALL;
+		hitType = LINE_DRIVE;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -558,10 +558,10 @@ var gameState = {
 				// Select target fielder
 				//var targetFielder = this.getFielderByDistance(distance, hitType); //this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
 				var difficulty = 0;
-				var distance = (battingSkill * margin + battingPower * margin) / 7;
+				var distance = (battingPower / 10) * (gameField.homeRunInfluence + 25 - gameField.infieldRadius);
 				
-				console.log("Line drive, normalized distance: " + distance);
-				distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * (gameField.backWallLength + 20 - gameField.infieldRadius);
+				console.log("Line drive, base distance: " + distance + " (" + (margin * 2) + ")");
+				distance = gameField.infieldRadius + distance * this.adjustBySinCurve(margin * 2);
 				
 				targetFielder = this.getFielderByDistance(distance, hitType);
 
@@ -697,17 +697,17 @@ var gameState = {
 	getFielderByDistance: function(distance, hitType) {
 		
 		// Close enough for the catcher
-		if (distance <= 50) {
+		if (distance <= gameField.catcherInfluence) {
 			return CATCHER;
 		}
 		
 		// Far enough for outfielders only 
-		if (distance >= 350) {
+		if (distance >= gameField.outfieldInfluence) {
 			return game.rnd.integerInRange(LEFT_FIELD, RIGHT_FIELD);
 		}
 		
 		// Infield only
-		if (distance > 50 && distance <= 300) {
+		if (distance > gameField.catcherInfluence && distance <= gameField.infieldInfluence) {
 			var roll = game.rnd.integerInRange(PITCHER, THIRD_BASE);
 			
 			if (roll == 1) {
