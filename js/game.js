@@ -532,7 +532,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = FLY_BALL;
+		//hitType = FLY_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -924,7 +924,7 @@ var gameState = {
 						}
 
 						this.showUmpireDialog("It screams past the fielder!", function() {
-							gameState.delayFielderGather(outfielder, 3000);
+							gameState.delayFielderGather(outfielder, 3000, true);
 						});
 					}
 				}
@@ -984,7 +984,11 @@ var gameState = {
 	},
 
 	// Delay the fielder from gathering the ball
-	delayFielderGather: function(fielder, delay) {
+	delayFielderGather: function(fielder, delay, bAlternate) {
+		if (bAlternate == undefined) {
+			bAlternate = false;
+		}
+		
 		console.log("Fielder delayed " + delay);
 
 		if (this.gatherTimer != undefined) {
@@ -997,7 +1001,7 @@ var gameState = {
 
 		this.gatherTimer = gatherTimer;
 		this.ballState = BALL_FUMBLED;
-		fielder.ballFumbled(delay);
+		fielder.ballFumbled(delay, bAlternate);
 	},
 
 	completeDelayFielderGather: function(fielder) {

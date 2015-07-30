@@ -244,6 +244,9 @@ ManageTeam.prototype.displayTeam = function(team) {
     var selectButton = this.createButton(320, 350, "Select", function(event) {
         this.selectCurrentTeam();
     }, this.teamGroup);
+    
+    var instruction = this.addPlainText(this.teamGroup, "(Click us to customize!)", smallText,
+                                        180, 325);
 }
 
 // Update the display for a player

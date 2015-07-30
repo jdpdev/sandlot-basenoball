@@ -698,18 +698,29 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	// Fielder did not successfully field the ball, so pick a direction to run in while waiting
-	this.ballFumbled = function(time) {
+	this.ballFumbled = function(time, bAlternate) {
 		// Pick random direction
 		var roll = game.rnd.realInRange(game.math.PI2 / -8, game.math.PI2 / 8);
 		var normal = new Phaser.Point(0, -1);
+		
+		if (bAlternate) {
+			normal = Phaser.point.negative(normal);
+		}
+		
 		normal = Phaser.Point.rotate(normal, 0, 0, roll);
 		normal.setMagnitude(70);
 
 		var position = this.getPosition();
 		position = Phaser.Point.add(position, normal);
+		
+		position.x -= this.playerWidth * 0.5;
+		position.y -= this.playerHeight;
+		
+		var tween = game.add.tween(this.worldIcon).to({x: position.x, y: position.y}, 
+									time, Phaser.Easing.Default, true);
 
-		this.worldIcon.x = position.x;
-		this.worldIcon.y = position.y;
+		//this.worldIcon.x = position.x;
+		//this.worldIcon.y = position.y;
 	}
 
 	// Present fielding choices
