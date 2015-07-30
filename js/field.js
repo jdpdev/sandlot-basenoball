@@ -189,14 +189,14 @@ var gameField = {
 
 	GetLeftBattingBoxPos: function() {
 		var point = this.GetHomePlatePos();
-		point.x -= 32;
+		point.x -= 24;
 
 		return point;
 	},
 
 	GetRightBattingBoxPos: function() {
 		var point = this.GetHomePlatePos();
-		point.x += 16;
+		point.x += 24;
 
 		return point;
 	}

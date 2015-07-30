@@ -255,6 +255,8 @@ var gameState = {
 
 	// Do a pitch for the current at-bat
 	doPitch: function() {
+		this.aRunnerLocations[HOME].showBattingStance();
+		
 		this.selectedBatterAction = null;
 		this.selectedPitcherAction = null;
 
@@ -301,6 +303,11 @@ var gameState = {
 
 	showBatterAction: function() {
 		var batter = this.aRunnerLocations[HOME];
+		
+		if (this.selectedBatterAction.getActionType() != ACTION_START_BATTER_LEAVE) {
+			batter.showSwing();
+		}
+		
 		this.showPlayerDialog(batter, true, batter.getName() + " (Batter)\n" + this.selectedBatterAction.getRandomColor(), 
 			function() {
 				gameState.throwPitch();
@@ -1094,11 +1101,14 @@ var gameState = {
 		this.targetFielderPos = targetBase;
 
 		target = gameState.fieldingTeam.getFielderForPosition(targetBase);
+		
 
 		var fielderPos = fielder.getPosition();
 		var targetPos = target.getPosition();
 		var distance = Phaser.Point.distance(fielderPos, targetPos);
 		var delay = distance / fielder.getThrowSpeed();
+
+		target.showCatch(fielderPos);
 
 		// TODO calculate skill
 

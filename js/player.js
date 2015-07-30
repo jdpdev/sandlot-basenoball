@@ -115,11 +115,13 @@ function Player(id, playerInfo, teamColor) {
 			this.drawFielder();
 		}
 
+		this.showWaitingFielder();
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
 	this.returnToFieldingPosition = function() {
 		this.worldIcon.update = function() { };
+		this.showWaitingFielder();
 		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
 	}
 
@@ -132,8 +134,10 @@ function Player(id, playerInfo, teamColor) {
 		} else {
 			pos = gameField.GetRightBattingBoxPos();
 		}
+		
+		this.showBattingStance();
 
-		pos.y -= this.playerHeight;
+		//pos.y -= this.playerHeight;
 		this.setPosition(pos);
 	}
 
@@ -143,6 +147,7 @@ function Player(id, playerInfo, teamColor) {
 		}
 		
 		this.interruptRun();
+		this.showWaitingFielder();
 
 		//if (!bRun) {
 			this.setPosition(position);
@@ -203,8 +208,8 @@ function Player(id, playerInfo, teamColor) {
 				break;
 		}
 
-		point.x -= this.playerWidth * 0.5;
-		point.y -= this.playerHeight;
+		/*point.x -= this.playerWidth * 0.5;
+		point.y -= this.playerHeight;*/
 
 		return point;
 	}
@@ -231,12 +236,59 @@ function Player(id, playerInfo, teamColor) {
 		this.teamNumber.y = 0;
 	}
 
+	// Change the world icon to a new pose
+	this.changePose = function(pose) {
+		if (pose == this.currentPose) {
+			return;
+		}
+		
+		var position = new Phaser.Point(0, 0);
+		
+		if (this.worldIcon != null) {
+			position.x = this.worldIcon.x;
+			position.y = this.worldIcon.y;
+			this.worldIcon.destroy(true);
+		}
+		
+		this.currentPose = pose;
+		
+		this.worldIcon = PlayerGenerator.generateWorldIcon(this.playerInfo.icon, pose, this.teamColor, this.playerInfo.handedness);
+		this.worldIcon.x = position.x;
+		this.worldIcon.y = position.y;
+	}
+	
+	this.showBattingStance = function() {
+		this.changePose(this.playerInfo.handedness ? POSE_BATTER_RIGHT : POSE_BATTER_LEFT);
+	}
 
+	// Change to the swing pose
+	this.showSwing = function() {
+		this.changePose(this.playerInfo.handedness ? POSE_BATTER_SWING_RIGHT : POSE_BATTER_SWING_LEFT);
+	}
 
-
-
-
-
+	this.showWaitingFielder = function() {
+		if (this.fieldingPosition == CATCHER) {
+			this.changePose(POSE_FIELDER_CATCHER);
+		} else {
+			this.changePose(POSE_FIELDER_WAITING);
+		}
+	}
+	
+	this.showHighCatch = function() {
+		this.changePose(POSE_FIELDER_CATCH_UP);
+	}
+	
+	this.showLowCatch = function() {
+		this.changePose(POSE_FIELDER_CATCH_DOWN);
+	}
+	
+	this.showCatch = function(fromPos) {
+		if (fromPos.x <= this.worldIcon.x) {
+			this.changePose(POSE_FIELDER_CATCH_RIGHT);	
+		} else {
+			this.changePose(POSE_FIELDER_CATCH_LEFT);	
+		}
+	}
 
 	// ** Batter ******************************************************
 	
@@ -488,8 +540,8 @@ function Player(id, playerInfo, teamColor) {
 				break;
 		}
 
-		basePos.x -= this.playerWidth * 0.5;
-		basePos.y -= this.playerHeight;
+		/*basePos.x -= this.playerWidth * 0.5;
+		basePos.y -= this.playerHeight;*/
 
 		return basePos;
 	}
@@ -611,6 +663,8 @@ function Player(id, playerInfo, teamColor) {
 
 		switch (hitType) {
 			case LINE_DRIVE:
+				this.showHighCatch();
+				
 				if (this.fieldingPosition < LEFT_FIELD) {
 					fieldTime = 750;
 					tweenTime = fieldTime * game.rnd.realInRange(0.5, 0.75);
@@ -636,6 +690,8 @@ function Player(id, playerInfo, teamColor) {
 				break;
 
 			case GROUND_BALL:
+				this.showLowCatch();
+				
 				fieldTime = 1250;
 				tweenTime = fieldTime * game.rnd.realInRange(0.75, 1);
 					
@@ -669,6 +725,8 @@ function Player(id, playerInfo, teamColor) {
 				break;
 
 			case FLY_BALL:
+				this.showHighCatch();
+				
 				if (this.fieldingPosition < LEFT_FIELD) {
 					fieldTime = 3000;
 				} else {
@@ -699,12 +757,14 @@ function Player(id, playerInfo, teamColor) {
 
 	// Fielder did not successfully field the ball, so pick a direction to run in while waiting
 	this.ballFumbled = function(time, bAlternate) {
+		this.showLowCatch();
+		
 		// Pick random direction
 		var roll = game.rnd.realInRange(game.math.PI2 / -8, game.math.PI2 / 8);
 		var normal = new Phaser.Point(0, -1);
 		
 		if (bAlternate) {
-			normal = Phaser.point.negative(normal);
+			normal = Phaser.Point.negative(normal);
 		}
 		
 		normal = Phaser.Point.rotate(normal, 0, 0, roll);
