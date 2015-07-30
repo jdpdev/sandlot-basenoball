@@ -4,8 +4,10 @@ var gameField = {
 	fieldHeight: 800,
 	backWallLength: 385,
 	infieldRadius: 250,
-    basesRadius: 150,
     outfieldRadius: 420,
+
+    // Distance from home plate to mound
+    basesRadius: 150,
 
     catcherInfluence: 125,
     infieldInfluence: 375,

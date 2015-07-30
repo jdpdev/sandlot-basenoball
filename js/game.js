@@ -532,7 +532,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = LINE_DRIVE;
+		hitType = GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -571,7 +571,7 @@ var gameState = {
 
 					// Make it harder for the pitcher
 					if (targetFielder == PITCHER && battingPower * margin >= 5) {
-						difficulty *= 1.5;
+						difficulty += 2;
 					}
 				} else {
 					difficulty = battingSkill * margin * 2 + battingPower;
@@ -588,17 +588,24 @@ var gameState = {
 			case 1:
 				//var targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, true);
 				var difficulty = battingSkill + battingPower * margin;
-				var distance = (battingPower * margin) / 8;
+				var distance = game.math.clamp(battingPower / 8, 0, 1) * gameField.infieldInfluence;
 
-				console.log("Ground ball, normalized distance: " + distance);
+				console.log("Ground ball, base distance: " + distance + " (" + (margin * 3) + ")");
 
 				//targetFielder = THIRD_BASE;
-				distance = this.adjustBySinCurve(distance) * (gameField.infieldRadius + 20);
+				distance = this.adjustBySinCurve(margin * 3) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
+
+				if (targetFielder == CATCHER) {
+					difficulty = game.math.clamp(difficulty - 3, 0, 10);
+				} else if (targetFielder == PITCHER) {
+					if (distance > gameField.basesRadius) {
+						difficulty = game.math.clamp(difficulty + 1, 0, 10);
+					}
+				}
 				
 				console.log("Ground ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
 				
-				console.log("Ground ball");
 				this.showUmpireDialog("Ground ball to " + GetPlayerPositionName(targetFielder) + "!", function() {
 					gameState.putBallInPlay(GROUND_BALL, targetFielder, difficulty, distance);
 				});
@@ -1005,7 +1012,7 @@ var gameState = {
 		this.onBallFielded(fielder, this.fieldingTeam.getFielderPosition(fielder), bCatch);
 
 		this.showBaseOptions(fielder, function(choice) {
-			var position = gameState.fieldingTeam.getFielderPosition(fielder);
+			var position = gameState.fieldingTeam.getFielderPosition(fielder) - 1;
 
 			console.log("Fielder throwing to: " + choice.text + " (" + position + ", " + choice.id + ")");
 
@@ -1067,6 +1074,7 @@ var gameState = {
 
 		if (targetBase == null) {
 			this.callDeadBall();
+			return;
 		}
 
 		this.ballState = BALL_THROWN;
@@ -1081,7 +1089,7 @@ var gameState = {
 
 		// TODO calculate skill
 
-		console.log("Throw takes " + delay + " seconds");
+		console.log("Throw takes " + delay + " seconds to (" + targetBase + ")");
 
 		if (this.throwTimer != undefined) {
 			this.throwTimer.destroy();

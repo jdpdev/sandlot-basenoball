@@ -613,7 +613,7 @@ function Player(id, playerInfo, teamColor) {
 			case LINE_DRIVE:
 				if (this.fieldingPosition < LEFT_FIELD) {
 					fieldTime = 750;
-					tweenTime = fieldTime * game.rnd.frac();
+					tweenTime = fieldTime * game.rnd.realInRange(0.5, 0.75);
 					
 					var direction = Phaser.Point.normalRightHand(myDelta);
 
@@ -637,6 +637,28 @@ function Player(id, playerInfo, teamColor) {
 
 			case GROUND_BALL:
 				fieldTime = 1250;
+				tweenTime = fieldTime * game.rnd.realInRange(0.75, 1);
+					
+				var direction;
+
+				// Catcher always charges in front
+				if (this.fieldingPosition == CATCHER) {
+					direction = new Phaser.Point(0, -1);
+					direction = Phaser.Point.rotate(direction, 0, 0, game.rnd.integerInRange(-40, 40), true);
+					tweenPos = new Phaser.Point(gameField.homePlateX, gameField.homePlateY);
+				} 
+
+				// Cut off if behind, charge in front
+				else {
+					direction = Phaser.Point.normalRightHand(myDelta);
+
+					if (this.fieldingPosition == FIRST_BASE) {
+						direction = Phaser.Point.negative(direction);
+					}
+				}
+
+				direction.setMagnitude(runSpeed * tweenTime / 1000);
+				tweenPos = Phaser.Point.add(tweenPos, direction);
 				break;
 
 			case FLY_BALL:
@@ -649,9 +671,11 @@ function Player(id, playerInfo, teamColor) {
 		}
 		
 		console.log("distance from fielder: " + distance);
+
+		// Translate to stand on point
+		tweenPos.x -= this.playerWidth * 0.5;
+		tweenPos.y -= this.playerHeight;
 		
-		myDelta.setMagnitude(distance);
-		var movePos = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.realInRange(-10, 10), true);
 		var tween = game.add.tween(this.worldIcon).to({x: tweenPos.x, y: tweenPos.y}, 
 									tweenTime, Phaser.Easing.Default, true);
 	
