@@ -650,10 +650,17 @@ function Player(id, playerInfo, teamColor) {
 
 				// Cut off if behind, charge in front
 				else {
-					direction = Phaser.Point.normalRightHand(myDelta);
+					if (distance > 0) {
+						direction = Phaser.Point.normalRightHand(myDelta);
+						tweenTime *= 0.5;
 
-					if (this.fieldingPosition == FIRST_BASE) {
-						direction = Phaser.Point.negative(direction);
+						if (this.fieldingPosition == FIRST_BASE) {
+							direction = Phaser.Point.negative(direction);
+						}
+					} else {
+						myDelta = Phaser.Point.negative(myDelta);
+						myDelta = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.integerInRange(-15, 15), true);
+						direction = myDelta;
 					}
 				}
 
@@ -663,10 +670,15 @@ function Player(id, playerInfo, teamColor) {
 
 			case FLY_BALL:
 				if (this.fieldingPosition < LEFT_FIELD) {
-					fieldTime = 4000;
-				} else {
 					fieldTime = 3000;
+				} else {
+					fieldTime = 4000;
 				}
+
+				tweenTime = fieldTime * game.rnd.realInRange(0.25, 0.5);
+				myDelta = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.angle(), true);
+				direction = myDelta;
+
 				break;
 		}
 		

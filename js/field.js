@@ -12,7 +12,8 @@ var gameField = {
     catcherInfluence: 125,
     infieldInfluence: 375,
     outfieldInfluence: 425,
-    homeRunInfluence: 550,
+    backWallInfluence: 0,
+    homeRunInfluence: 650,
     
     // The distance between the infield and the fence
     outfieldGap: 0,
@@ -24,6 +25,7 @@ var gameField = {
 
 	DrawField: function(game) {
 		this.outfieldGap = this.backWallLength - this.infieldRadius;
+		this.backWallInfluence = new Phaser.Point(this.backWallLength, this.backWallLength).getMagnitude();
 
 		this.fieldGraphics = game.add.graphics(0, 0);
 		var graphics = this.fieldGraphics;
@@ -69,7 +71,7 @@ var gameField = {
 	    graphics.lineTo(this.homePlateX + this.fieldWidth * 0.5, this.homePlateY - this.fieldWidth * 0.5);
 	    
 	    // Back wall
-	    graphics.arc(this.homePlateX, this.homePlateY, new Phaser.Point(this.backWallLength, this.backWallLength).getMagnitude(), game.math.degToRad(225), game.math.degToRad(315));
+	    graphics.arc(this.homePlateX, this.homePlateY, this.backWallInfluence, game.math.degToRad(225), game.math.degToRad(315));
 
 	    /*graphics.lineStyle(1, 0xff00ff, 1);
 	    graphics.arc(this.homePlateX, this.homePlateY, this.catcherInfluence, 0, 360);

@@ -532,7 +532,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = GROUND_BALL;
+		hitType = FLY_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -558,7 +558,7 @@ var gameState = {
 				// Select target fielder
 				//var targetFielder = this.getFielderByDistance(distance, hitType); //this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
 				var difficulty = 0;
-				var distance = (battingPower / 10) * (gameField.homeRunInfluence + 25 - gameField.infieldRadius);
+				var distance = (battingPower / 10) * (gameField.homeRunInfluence - gameField.infieldRadius);
 				
 				console.log("Line drive, base distance: " + distance + " (" + (margin * 2) + ")");
 				distance = gameField.infieldRadius + distance * this.adjustBySinCurve(margin * 2);
@@ -616,12 +616,19 @@ var gameState = {
 			case 2:
 				//var targetFielder = 0;
 				var difficulty = 0;
-				var distance = (battingPower * margin) / 7;
+				var distance = game.math.clamp(battingPower / 8, 0, 1) * gameField.homeRunInfluence;
 				var goingToWall = "";
 
-				console.log("Fly ball, normalized distance: " + distance);
+				// TODO make this a curve that gets adjusted by batting power?
+				var roll = game.rnd.frac();
+
+				console.log("Fly ball, base distance: " + distance + " (margin: " + roll + ")");
 				
-				if (margin >= 0.6) {
+				difficulty = battingSkill * margin + battingPower * margin;
+				distance = this.adjustBySinCurve(roll) * distance;
+				targetFielder = this.getFielderByDistance(distance, hitType);
+
+				/*if (margin >= 0.6) {
 					//targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
 					difficulty = battingSkill * margin + battingPower * margin;
 					distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
@@ -643,9 +650,9 @@ var gameState = {
 					difficulty = 1;
 					distance = this.adjustBySinCurve(distance) * gameField.infieldRadius - 20;
 					targetFielder = this.getFielderByDistance(distance, hitType);
-				}
+				}*/
 
-				if (distance >= gameField.backWallLength) {
+				if (distance >= gameField.backWallInfluence) {
 					//switch (Math.round(Math.random() * 3)) {
 					switch (this.randomizer.integerInRange(0, 3)) {
 						case 0:
@@ -664,6 +671,8 @@ var gameState = {
 							goingToWall = " Back! Back! Back!";
 							break;
 					}
+
+					difficulty += 3;
 				}
 				
 				console.log("Fly ball to " + targetFielder + " (difficulty: " + difficulty + "), distance: " + distance);
@@ -1409,7 +1418,7 @@ var gameState = {
 
 	// Given a value normalized [0,1], return a normalized version modified by a sin curve
 	adjustBySinCurve: function(pct) {
-		pct = Math.min(Math.max(pct, 0), 1);
+		pct = game.math.clamp(pct, 0, 1);
 		pct = Math.sin(pct * Math.PI - Math.PI / 2) / 2 + .5;
 		return pct;
 	},
