@@ -1009,13 +1009,12 @@ var gameState = {
 					if (this.bIsBallInPlay) {
 						if (distance >= gameField.backWallInfluence) {
 							this.showUmpireDialog("It's out of the park! Home run!", function() {
-								var runs = 0;
-
-								for (id in this.aRunnersInField) {
-									this.recordRun(this.aRunnersInField[id]);
+								for (id in gameState.aRunnersInField) {
+									gameState.recordRun(gameState.aRunnersInField[id]);
 								}
 
-								this.aRunnersInField = [];
+								gameState.aRunnersInField = [];
+								gameState.callDeadBall();
 							});
 						} else {
 							this.showUmpireDialog("Ball drops safely!", function() {

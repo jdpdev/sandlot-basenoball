@@ -772,6 +772,7 @@ function Player(id, playerInfo, teamColor) {
 	// ** Fielding ******************************************************
 	this.fieldBall = function(hitType, difficulty, distance) {
 		var myDelta = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY);
+		var totalDistance = distance;
 		var distance = distance - myDelta.getMagnitude();
 		var runSpeed = this.getRunSpeed();
 		var fieldTime = 0; 
@@ -868,7 +869,7 @@ function Player(id, playerInfo, teamColor) {
 	
 		// Simulate running to the point
 		var runTimer = game.time.create(true);
-		runTimer.add(fieldTime, this.runToFieldFinished, this, hitType, difficulty, distance);
+		runTimer.add(fieldTime, this.runToFieldFinished, this, hitType, difficulty, totalDistance);
 		runTimer.start();
 	}
 
