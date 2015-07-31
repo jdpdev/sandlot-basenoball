@@ -256,6 +256,11 @@ function Player(id, playerInfo, teamColor) {
 		this.worldIcon = PlayerGenerator.generateWorldIcon(this.playerInfo.icon, pose, this.teamColor, this.playerInfo.handedness);
 		this.worldIcon.x = position.x;
 		this.worldIcon.y = position.y;
+		
+		if (this.bIsRunning) {
+			this.worldIcon.player = this;
+			this.worldIcon.update = this.runnerOnUpdate;
+		}
 	}
 	
 	this.showBattingStance = function() {
@@ -379,22 +384,18 @@ function Player(id, playerInfo, teamColor) {
 			return;
 		}
 		
-		if (!gameState.canRunToBase(target)) {
-			this.completeRun();
-		} else {
-			console.log(this.getName() + " is starting run to " + target);
+		console.log(this.getName() + " is starting run to " + target);
 	
-			this.bIsForcedRun = bForced;
-			this.targetBasePos = this.getBasePosition(target);
-			this.runTarget = target;
-	
-			this.showRunning(this.getPosition(), this.targetBasePos);
-			gameState.runnerAcceptRun(this, this.runTarget);
-	
-			this.bIsRunning = true;
-			this.worldIcon.player = this;
-			this.worldIcon.update = this.runnerOnUpdate;
-		}
+		this.bIsForcedRun = bForced;
+		this.targetBasePos = this.getBasePosition(target);
+		this.runTarget = target;
+
+		this.showRunning(this.getPosition(), this.targetBasePos);
+		gameState.runnerAcceptRun(this, this.runTarget);
+
+		this.bIsRunning = true;
+		this.worldIcon.player = this;
+		this.worldIcon.update = this.runnerOnUpdate;
 	}
 
 	// Move some distance to the next base, but hold up for result of the fielder.

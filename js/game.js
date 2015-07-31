@@ -146,6 +146,8 @@ var gameState = {
 	},
 
 	startGame: function() {
+		game.rnd.sow(new Date());
+		
 		var umpireInfo = {name: "Umpire Cat", icon: "FFF.FF.20.FF.AA0.FF.0F.FF"};
 		this.umpire = new Player(0, umpireInfo, 0x222299);
 
@@ -347,7 +349,7 @@ var gameState = {
 		battingSkill = this.selectedPitcherAction.modStat(STAT_BATTING, battingSkill);
 		battingPower = this.selectedPitcherAction.modStat(STAT_POWER, battingPower);
 		
-		var roll = this.randomizer.frac(); //Math.random();
+		var roll = game.rnd.frac(); //this.randomizer.frac(); //Math.random();
 		var bInStrikeZone = roll <= pitchSkill / 10;
 
 		// Unopposed pitch strike chance: pskill / 10
@@ -376,7 +378,7 @@ var gameState = {
 			var delta = pitchTotal - battingSkill + 10;
 			var pitchPct = .2 + .6 * (delta / 25);
 			var batPct = .8 - .6 * (delta / 25);
-			var batRoll = this.randomizer.frac(); //Math.random();
+			var batRoll = game.rnd.frac(); //this.randomizer.frac(); //Math.random();
 
 			// Made contact
 			if (batRoll <= batPct) {
@@ -541,7 +543,7 @@ var gameState = {
 			}
 		} 
 
-		//hitType = FLY_BALL;
+		hitType = LINE_DRIVE;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -665,7 +667,7 @@ var gameState = {
 
 				if (distance >= gameField.backWallInfluence) {
 					//switch (Math.round(Math.random() * 3)) {
-					switch (this.randomizer.integerInRange(0, 3)) {
+					switch (game.rnd.integerInRange(0, 3)) {
 						case 0:
 							goingToWall = " It's going to the wall!";
 							break;
@@ -868,7 +870,7 @@ var gameState = {
 		}
 
 		var delta = fieldingSkill - difficulty;
-		var roll = this.randomizer.frac(); //Math.random();
+		var roll = game.rnd.frac(); //Math.random();
 		var bSuccess = false;
 		var hitter = this.aRunnerTargets[FIRST];
 
