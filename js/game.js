@@ -524,11 +524,11 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [3, 7, 5];
+		var weights = [5, 7, 4];
 		//var weights = [0, 1, 0];
-		var weightTotal = 15;
+		var weightTotal = 16;
 		var hitType = 1;
-		var roll = Math.floor(Math.random() * weightTotal);
+		var roll = game.rnd.integerInRange(0, weightTotal); //Math.floor(Math.random() * weightTotal);
 
 		for (var i = 0; i < weights.length; i++) {
 			roll -= weights[i];
@@ -849,7 +849,7 @@ var gameState = {
 		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder) - 1;
 
 		// Make fielding a little less strong
-		difficulty += 1;
+		difficulty += 2;
 
 		if (fieldingPos >= LEFT_FIELD) {
 			difficulty /= 2;

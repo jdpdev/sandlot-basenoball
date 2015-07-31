@@ -289,6 +289,18 @@ function Player(id, playerInfo, teamColor) {
 			this.changePose(POSE_FIELDER_CATCH_LEFT);	
 		}
 	}
+	
+	this.showRunning = function(from, to) {
+		if (from.x <= to.x) {
+			this.changePose(POSE_RUNNING_RIGHT);	
+		} else {
+			this.changePose(POSE_RUNNING_LEFT);	
+		}
+	}
+	
+	this.showRunnerWaiting = function() {
+		this.changePose(POSE_RUNNING_WAITING);	
+	}
 
 	// ** Batter ******************************************************
 	
@@ -318,6 +330,7 @@ function Player(id, playerInfo, teamColor) {
 		this.runTarget = base;
 		this.runTween.onComplete.add(this.onAdvanceCompleted, this);
 		
+		this.showRunning(this.getPosition(), basePos);
 		gameState.runnerAcceptRun(this, base);
 	}
 
@@ -371,9 +384,11 @@ function Player(id, playerInfo, teamColor) {
 		this.targetBasePos = this.getBasePosition(target);
 		this.runTarget = target;
 
+		this.showRunning(this.getPosition(), this.targetBasePos);
 		gameState.runnerAcceptRun(this, this.runTarget);
 
 		this.bIsRunning = true;
+		this.worldIcon.player = this;
 		this.worldIcon.update = this.runnerOnUpdate;
 	}
 
@@ -391,6 +406,7 @@ function Player(id, playerInfo, teamColor) {
 			return;
 		}
 
+		this.showRunnerWaiting();
 		this.worldIcon.update = function() { };
 		this.bIsRunning = false;
 	}
@@ -574,6 +590,7 @@ function Player(id, playerInfo, teamColor) {
 
 		var target = this.getBasePosition(this.runTarget);
 		this.targetBasePos = target;
+		this.showRunning(this.getPosition(), target);
 		gameState.runnerChangeRunTarget(this, this.runTarget);
 	}
 
