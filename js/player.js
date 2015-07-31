@@ -332,12 +332,13 @@ function Player(id, playerInfo, teamColor) {
 	this.advanceToBase = function(base) {
 		var basePos = this.getBasePosition(base);
 
+		this.showRunning(this.getPosition(), basePos);
+		gameState.runnerAcceptRun(this, base);
+		
+		this.worldIcon.myPlayer = this;
 		this.runTween = game.add.tween(this.worldIcon).to({x: basePos.x, y: basePos.y}, 3000, Phaser.Easing.Default, true);
 		this.runTarget = base;
 		this.runTween.onComplete.add(this.onAdvanceCompleted, this);
-		
-		this.showRunning(this.getPosition(), basePos);
-		gameState.runnerAcceptRun(this, base);
 	}
 
 	// Runner has advanced to their base
@@ -364,12 +365,21 @@ function Player(id, playerInfo, teamColor) {
 		this.targetFielder = targetFielder;
 
 		// If a fly ball, hold on running immediately
-		if (bForced) {
+		if (hitType == FLY_BALL && targetBase != FIRST) {
+			
+			// Hold up
+			if (targetBase == SECOND && targetFielder >= LEFT_FIELD) {
+				this.startHoldUpRun(targetBase, bForced);
+			} 
+			
+			// Stay on bag ready to tag up
+			else {
+				this.bIsForcedRun = bForced;
+			}
+		} else if (bForced) {
 			this.startRun(targetBase, bForced);
-		} else if (hitType == FLY_BALL) {
-			console.log("Runner " + this.getName() + " holding at base");
-			this.bIsRunning = false;
 		} else {
+			// TODO get smarter here?
 			this.startRun(targetBase, bForced);
 		}
 
@@ -402,8 +412,15 @@ function Player(id, playerInfo, teamColor) {
 	// Used for fly balls.
 	this.startHoldUpRun = function(target, bForced) {
 		this.bIsHoldingShort = true;
+		this.bIsForcedRun = bForced;
+		this.targetBasePos = this.getBasePosition(target);
+		this.runTarget = target;
+		
+		console.log(this.getName() + " is holding on run to " + target);
+		
+		gameState.runnerAcceptRun(this, this.runTarget);
 
-		this.startRun(target, bForced);
+		//this.startRun(target, bForced);
 	}
 
 	// Stop the player from running
@@ -424,6 +441,11 @@ function Player(id, playerInfo, teamColor) {
 		
 		this.worldIcon.update = function() { };
 		this.bIsRunning = false;
+		
+		// If holding, we're done for now
+		if (this.bIsHoldingShort) {
+			return;
+		}
 
 		// Done no matter what
 		if (this.runTarget == HOME) {
@@ -590,7 +612,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.abortRun = function() {
-		if (!this.bIsRunning || this.runTarget == FIRST) {
+		if ((!this.bIsRunning && !this.bIsHoldingShort) || this.runTarget == FIRST) {
 			return;
 		}
 		
@@ -604,6 +626,13 @@ function Player(id, playerInfo, teamColor) {
 
 		var target = this.getBasePosition(this.runTarget);
 		this.targetBasePos = target;
+		
+		// If we're holding, these have been unset
+		if (this.bIsHoldingShort) {
+			this.bIsRunning = true;
+			this.worldIcon.update = this.runnerOnUpdate;
+		}
+		
 		this.showRunning(this.getPosition(), target);
 		gameState.runnerChangeRunTarget(this, this.runTarget);
 	}
@@ -613,12 +642,18 @@ function Player(id, playerInfo, teamColor) {
 	// Global notification that a fielder has obtained the ball
 	// 
 	this.fielderHasBall = function(fielder, position, bOnCatch) {
-		console.log(this.getName() + " >> fielder " + fielder.getName() + " has the ball");
+		console.log(this.getName() + " >> fielder " + fielder.getName() + " has the ball (caught? " + bOnCatch + ")");
 		
 		// Have to return to base
 		if (this.bIsHoldingShort && bOnCatch) {
+			console.log(this.getName() + " is tagging up");
 			this.abortRun();
 		} 
+		
+		// Just continue on
+		else if (this.bIsForcedRun) {
+			return;
+		}
 
 		// Decide if we want to abort
 		else if (this.bIsRunning) {
@@ -633,6 +668,7 @@ function Player(id, playerInfo, teamColor) {
 				console.log("!!! caught error");
 			}
 
+			// Not forced
 			if (!this.bIsForcedRun) {
 
 				// Whether we want to continue is based on where we're going and where the
@@ -657,17 +693,51 @@ function Player(id, playerInfo, teamColor) {
 						}
 						break;
 				}
-			}			
+				
+			// forced run
+			} else {
+				this.startRun(this.runTarget, true);
+			}		
 		} else {
+
+			// Have to run
+			if (this.bIsForcedRun) {
+				this.startRun(this.runTarget, true);
+			}
 
 			// Assume that we're waiting for a fly ball catch?
 			// If on second or third, try to advance
-			if (this.runTarget > SECOND) {
-				this.startRun();
+			else if (position >= LEFT_FIELD && 
+				((this.runTarget == THIRD && this.playerInfo.speed >= 7) || 
+				(this.runTarget == HOME && this.playerInfo.speed >= 4)))
+			{
+				this.startRun(this.runTarget, false);
+			} else {
+				this.completeRun();
 			}
 		}
 
 		this.bIsHoldingShort = false;
+	}
+
+	// Notification that a fielder has fumbled the ball
+	this.fielderFumblesBall = function(fielder, position) {
+		console.log(this.getName() + " >> fielder fumbles ball at " + position);
+		
+		if (this.isRunForced()) {
+			this.startRun(this.runTarget, true);
+		}
+		
+		else if (position >= LEFT_FIELD && this.runTarget > SECOND) {
+			
+			if (this.runTarget > SECOND || this.playerInfo.speed >= 7) {
+				this.startRun(this.runTarget, false);	
+			}
+		}
+		
+		else {
+			this.completeRun();
+		}
 	}
 
 	// Global notification that the ball has been thrown to a base
@@ -677,7 +747,7 @@ function Player(id, playerInfo, teamColor) {
 
 		// On a throw to home, sneak to second, maybe third?
 		if (to == HOME && from >= LEFT_FIELD && this.runTarget == SECOND) {
-			this.startRun();
+			this.startRun(this.runTarget, false);
 		}
 	}
 

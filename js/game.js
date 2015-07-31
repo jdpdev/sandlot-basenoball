@@ -73,6 +73,9 @@ var gameState = {
 	// Player object that occupies each base: home, first, second, third
 	aRunnerLocations: [null, null, null, null],
 	aRunnerTargets: [null, null, null, null],
+	
+	// List of runners out in the field, without regards to where they are on it
+	aRunnersInField: [],
 
 	// Number of runners currently in motion
 	iRunningRunners: 0,
@@ -146,7 +149,7 @@ var gameState = {
 	},
 
 	startGame: function() {
-		game.rnd.sow(new Date());
+		//game.rnd.sow(new Date());
 		
 		var umpireInfo = {name: "Umpire Cat", icon: "FFF.FF.20.FF.AA0.FF.0F.FF"};
 		this.umpire = new Player(0, umpireInfo, 0x222299);
@@ -159,6 +162,8 @@ var gameState = {
 	},
 
 	startInning: function() {
+		this.aRunnersInField = [];
+		
 		if (this.bIsTopOfInning) {
 			this.homeTeam.fieldTeam();
 			this.awayTeam.batTeam(this.bIsTopOfInning);	
@@ -231,10 +236,23 @@ var gameState = {
 	callNewBatter: function() {
 		this.aRunnerLocations[HOME] = this.battingTeam.presentNextBatter();
 		this.batterInfoHUD.setPlayer(this.aRunnerLocations[HOME]);
+		this.registerRunner(this.aRunnerLocations[HOME]);
 
 		this.showPlayerDialog(this.aRunnerLocations[HOME], true, "New Batter\n" + this.aRunnerLocations[HOME].getName(), function() {
 			gameState.beginAtBat(gameState.aRunnerLocations[HOME], gameState.fieldingTeam.getPitcher());	
 		});
+	},
+	
+	registerRunner: function(runner) {	
+		this.aRunnersInField.push(runner);
+	},
+	
+	unregisterRunner: function(runner) {
+		var index = this.aRunnersInField.indexOf(runner);
+		
+		if (index > -1) {
+			this.aRunnersInField.splice(index, 1);
+		}
 	},
 
 	/* *** Game Logic *****************************************************************
@@ -443,7 +461,7 @@ var gameState = {
 			this.callDeadBall();
 			return false;
 		}
-
+		
 		for (var i = 0; i < this.aRunnerTargets.length; i++) {
 			if (this.aRunnerTargets[i] == player) {
 				this.aRunnerTargets[i] = null;
@@ -528,9 +546,9 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [5, 7, 4];
+		var weights = [4, 5, 4];
 		//var weights = [0, 1, 0];
-		var weightTotal = 16;
+		var weightTotal = 13;
 		var hitType = 1;
 		var roll = game.rnd.integerInRange(0, weightTotal); //Math.floor(Math.random() * weightTotal);
 
@@ -543,7 +561,7 @@ var gameState = {
 			}
 		} 
 
-		hitType = LINE_DRIVE;
+		//hitType = FLY_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -855,6 +873,7 @@ var gameState = {
 	// Resolve the result of the fielder attempting to get the ball
 	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
 		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder) - 1;
+		this.activeFielder = fielder;
 
 		// Make fielding a little less strong
 		difficulty += 2;
@@ -917,11 +936,11 @@ var gameState = {
 
 					if (fieldingPos == LEFT_FIELD || fieldingPos == RIGHT_FIELD) {
 						this.showUmpireDialog("Blasted into the corner!", function() {
-							gameState.delayFielderGather(gameState.activeFielder, 4000);
+							gameState.delayFielderGather(fielder, 4000);
 						});
 					} else if (fieldingPos == CENTER_FIELD) {
 						this.showUmpireDialog("Sails past to the wall!", function() {
-							gameState.delayFielderGather(gameState.activeFielder, 4000);
+							gameState.delayFielderGather(fielder, 4000);
 						});
 					} else if (fieldingPos < LEFT_FIELD) {
 						// Outfield collects
@@ -948,11 +967,11 @@ var gameState = {
 			case GROUND_BALL:
 				if (bSuccess) {
 					this.showUmpireDialog("Fielder pounces on the ball!", function() {
-						gameState.fielderGathersBall(gameState.activeFielder, false);
+						gameState.fielderGathersBall(fielder, false);
 					});
 				} else {
 					this.showUmpireDialog("It gets past the fielder!", function() {
-						gameState.delayFielderGather(gameState.activeFielder, 3000);
+						gameState.delayFielderGather(fielder, 3000);
 					});
 				}
 				break;
@@ -980,7 +999,7 @@ var gameState = {
 
 						// Ball is still in play, make another play?
 						if (gameState.recordOut(hitter)) {
-							gameState.fielderGathersBall(this.activeFielder, true);
+							gameState.fielderGathersBall(fielder, true);
 						}
 					});
 				}
@@ -989,7 +1008,7 @@ var gameState = {
 				else {
 					if (this.bIsBallInPlay) {
 						this.showUmpireDialog("Ball drops safely!", function() {
-							gameState.delayFielderGather(gameState.activeFielder, 2000);
+							gameState.delayFielderGather(fielder, 2000);
 						});
 					}
 				}
@@ -1019,6 +1038,10 @@ var gameState = {
 		this.gatherTimer = gatherTimer;
 		this.ballState = BALL_FUMBLED;
 		fielder.ballFumbled(delay, bAlternate);
+		
+		for (i in this.aRunnersInField) {
+			this.aRunnersInField[i].fielderFumblesBall(fielder, this.fieldingTeam.getFielderPosition(fielder));
+		}
 	},
 
 	completeDelayFielderGather: function(fielder) {
@@ -1027,6 +1050,10 @@ var gameState = {
 
 	// Called when the fielder has gathered the ball and can make a play
 	fielderGathersBall: function(fielder, bCatch) {
+		if (fielder == undefined || fielder == null) {
+			console.log("caught problem");
+		}
+		
 		console.log(fielder.getName() + " gathers ball (in play? " + this.bIsBallInPlay + ")");
 		
 		if (!this.bIsBallInPlay) {
@@ -1036,6 +1063,7 @@ var gameState = {
 		// Dropped fly ball with nobody running?
 		if (!this.areRunnersRunning()) {
 			this.callDeadBall();
+			return;
 		}
 		
 		this.ballState = BALL_CONTROLLED;
@@ -1369,6 +1397,8 @@ var gameState = {
 		if (player == null) {
 			return;
 		}
+		
+		this.unregisterRunner(player);
 
 		// Clear run targets
 		for (base in this.aRunnerTargets) {
