@@ -354,6 +354,7 @@ function Player(id, playerInfo, teamColor) {
 	//	targetFielder is the fielder it's going to
 	//	bForced is if the run is forced
 	this.ballInPlay = function(targetBase, hitType, difficulty, targetFielder, bForced) {
+		console.log(this.getName() +  ", ball is in play (forced? " + bForced + " to " + targetBase + ")");
 
 		// Not forced, decide if we really want to run
 		if (!bForced) {
@@ -374,7 +375,7 @@ function Player(id, playerInfo, teamColor) {
 			
 			// Stay on bag ready to tag up
 			else {
-				this.bIsForcedRun = bForced;
+				this.startTagUpRun(targetBase, bForced);
 			}
 		} else if (bForced) {
 			this.startRun(targetBase, bForced);
@@ -417,6 +418,21 @@ function Player(id, playerInfo, teamColor) {
 		this.runTarget = target;
 		
 		console.log(this.getName() + " is holding on run to " + target);
+		
+		gameState.runnerAcceptRun(this, this.runTarget);
+
+		//this.startRun(target, bForced);
+	}
+
+	// Move some distance to the next base, but hold up for result of the fielder.
+	// Used for fly balls.
+	this.startTagUpRun = function(target, bForced) {
+		this.bIsHoldingShort = true;
+		this.bIsForcedRun = bForced;
+		this.targetBasePos = this.getBasePosition(target);
+		this.runTarget = target;
+		
+		console.log(this.getName() + " is hold on run to tag up from " + target);
 		
 		gameState.runnerAcceptRun(this, this.runTarget);
 

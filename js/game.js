@@ -657,7 +657,7 @@ var gameState = {
 				distance = this.adjustByHalfSinCurve(roll) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
 				
-				//targetFielder = LEFT_FIELD;
+				//targetFielder = THIRD_BASE;
 
 				/*if (margin >= 0.6) {
 					//targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
