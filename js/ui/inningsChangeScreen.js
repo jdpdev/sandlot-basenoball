@@ -67,7 +67,7 @@ var InningsChangeScreen = function(homeScore, awayScore, currentInning, bTop, ba
 	}
 
 	this.addPlainText(this.graphics, "R", smallStencilStyle, runsX, boxScoreY);
-	this.addPlainText(this.graphics, "H", smallStencilStyle, hitsX, boxScoreY);
+	//this.addPlainText(this.graphics, "H", smallStencilStyle, hitsX, boxScoreY);
 
     // Boxscore Teams
     var homeName;
@@ -109,8 +109,8 @@ var InningsChangeScreen = function(homeScore, awayScore, currentInning, bTop, ba
     
     this.addPlainText(this.graphics, homeRuns.toString(), writingStyle, runsX, homeY);
     this.addPlainText(this.graphics, awayRuns.toString(), writingStyle, runsX, awayY);
-	this.addPlainText(this.graphics, "0", writingStyle, hitsX, homeY);
-	this.addPlainText(this.graphics, "0", writingStyle, hitsX, awayY);
+	//this.addPlainText(this.graphics, "0", writingStyle, hitsX, homeY);
+	//this.addPlainText(this.graphics, "0", writingStyle, hitsX, awayY);
 
     // *******************************************************************
     // Next up

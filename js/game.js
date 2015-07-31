@@ -198,17 +198,19 @@ var gameState = {
 	},
 
 	endInning: function() {
+		if (!this.bIsTopOfInning) {
+			this.iCurrentInning++;
+		}
+		
 		// Check for end of game
-		if (this.iCurrentInning == this.numberOfInnings && this.bIsTopOfInning) {
+		if (this.iCurrentInning == this.numberOfInnings - 1 && this.bIsTopOfInning) {
 			if (this.countScore(this.aHomeInnings) > this.countScore(this.aAwayInnings)) {
 				this.endGame();
+				return;
 			}
 		} else if (this.iCurrentInning >= this.numberOfInnings) {
 			this.endGame();
-		}
-
-		if (!this.bIsTopOfInning) {
-			this.iCurrentInning++;
+			return;
 		}
 		
 		this.aRunnerLocations = [null, null, null, null];
@@ -631,9 +633,11 @@ var gameState = {
 
 				console.log("Fly ball, base distance: " + distance + " (margin: " + roll + ")");
 				
-				difficulty = battingSkill * margin + battingPower * margin;
-				distance = this.adjustBySinCurve(roll) * distance;
+				difficulty = battingSkill + battingPower * roll;
+				distance = this.adjustByHalfSinCurve(roll) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
+				
+				//targetFielder = LEFT_FIELD;
 
 				/*if (margin >= 0.6) {
 					//targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
@@ -731,10 +735,10 @@ var gameState = {
 		
 		// Infield only
 		if (distance > gameField.catcherInfluence && distance <= gameField.infieldInfluence) {
-			var roll = game.rnd.integerInRange(PITCHER, THIRD_BASE);
+			var roll = game.rnd.integerInRange(FIRST_BASE, THIRD_BASE);
 			
 			if (roll == 1) {
-				roll = PITCHER;
+				roll = FIRST_BASE;
 			}
 			
 			return roll;
@@ -800,6 +804,8 @@ var gameState = {
 	fielderSelectAction: function(fielder, action, hitType, difficulty, distance) {
 		this.selectedFielderAction = action;
 		this.activeFielder = fielder;
+		
+		console.log("Setting active fielder to: " + fielder.getName());
 
 		var runner = this.activeRunner;
 
@@ -979,9 +985,11 @@ var gameState = {
 
 				// Can't make it. Calculate how much time the runner gets
 				else {
-					this.showUmpireDialog("Ball drops safely!", function() {
-						gameState.delayFielderGather(gameState.activeFielder, 2000);
-					});
+					if (this.bIsBallInPlay) {
+						this.showUmpireDialog("Ball drops safely!", function() {
+							gameState.delayFielderGather(gameState.activeFielder, 2000);
+						});
+					}
 				}
 				break;
 		}
@@ -1159,6 +1167,10 @@ var gameState = {
 	// Called by the runner if they decided to run
 	runnerAcceptRun: function(runner, targetBase) {
 		console.log("Runner " + runner.getName() + " is running");
+		
+		if (this.aRunnerTargets[FIRST] == runner && this.hitType == FLY_BALL && this.ballState == BALL_UNCONTROLLED) {
+			this.batterRunnerWaitingResult = runner;
+		}
 		
 		for (base in this.aRunnerLocations) {
 			if (this.aRunnerLocations[base] == runner) {
@@ -1434,6 +1446,13 @@ var gameState = {
 	adjustBySinCurve: function(pct) {
 		pct = game.math.clamp(pct, 0, 1);
 		pct = Math.sin(pct * Math.PI - Math.PI / 2) / 2 + .5;
+		return pct;
+	},
+
+	// Given a value normalized [0,1], return a normalized version modified by a sin curve
+	adjustByHalfSinCurve: function(pct) {
+		pct = game.math.clamp(pct, 0, 1);
+		pct = Math.sin(pct * Math.PI - Math.PI / 2 + 0.4) / 2 + .5;
 		return pct;
 	},
 	

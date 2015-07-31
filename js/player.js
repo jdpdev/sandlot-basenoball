@@ -120,6 +120,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.returnToFieldingPosition = function() {
+		console.log(this.getName() + " returning to fielding position");
 		this.worldIcon.update = function() { };
 		this.showWaitingFielder();
 		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
@@ -377,19 +378,23 @@ function Player(id, playerInfo, teamColor) {
 		if (this.bIsRunning) {
 			return;
 		}
-
-		console.log(this.getName() + " is starting run to " + target);
-
-		this.bIsForcedRun = bForced;
-		this.targetBasePos = this.getBasePosition(target);
-		this.runTarget = target;
-
-		this.showRunning(this.getPosition(), this.targetBasePos);
-		gameState.runnerAcceptRun(this, this.runTarget);
-
-		this.bIsRunning = true;
-		this.worldIcon.player = this;
-		this.worldIcon.update = this.runnerOnUpdate;
+		
+		if (!gameState.canRunToBase(target)) {
+			this.completeRun();
+		} else {
+			console.log(this.getName() + " is starting run to " + target);
+	
+			this.bIsForcedRun = bForced;
+			this.targetBasePos = this.getBasePosition(target);
+			this.runTarget = target;
+	
+			this.showRunning(this.getPosition(), this.targetBasePos);
+			gameState.runnerAcceptRun(this, this.runTarget);
+	
+			this.bIsRunning = true;
+			this.worldIcon.player = this;
+			this.worldIcon.update = this.runnerOnUpdate;
+		}
 	}
 
 	// Move some distance to the next base, but hold up for result of the fielder.
@@ -405,6 +410,8 @@ function Player(id, playerInfo, teamColor) {
 		if (!this.bIsRunning) {
 			return;
 		}
+		
+		console.log(this.getName() + " run interrupted");
 
 		this.showRunnerWaiting();
 		this.worldIcon.update = function() { };
@@ -412,6 +419,8 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.onRunCompleted = function() {
+		console.log(this.getName() + " run completed");
+		
 		this.worldIcon.update = function() { };
 		this.bIsRunning = false;
 
@@ -448,7 +457,11 @@ function Player(id, playerInfo, teamColor) {
 				switch (nextBase) {
 					default:
 					case SECOND:
-						this.completeRun();
+						if (status.hit == FLY_BALL && this.playerInfo.speed >= 7) {
+							this.startRun(nextBase, false);
+						} else {
+							this.completeRun();
+						}
 						break;
 
 					case THIRD:
@@ -852,6 +865,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.onFieldingRunCompleted = function() {
+		console.log(this.getName() + " fielding run completed");
 		this.worldIcon.update = function() { };
 		this.bIsRunning = false;
 	}
