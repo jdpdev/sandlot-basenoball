@@ -34,7 +34,7 @@ var gameState = {
 
 	umpire: null,
 	
-	numberOfInnings: 1,
+	numberOfInnings: 5,
 
 	selectedBatterAction: null,
 	selectedPitcherAction: null,
@@ -546,9 +546,9 @@ var gameState = {
 		// Margin caps at .8
 
 		// Line drive, ground ball, fly ball
-		var weights = [4, 5, 4];
+		var weights = [4, 5, 3];
 		//var weights = [0, 1, 0];
-		var weightTotal = 13;
+		var weightTotal = 12;
 		var hitType = 1;
 		var roll = game.rnd.integerInRange(0, weightTotal); //Math.floor(Math.random() * weightTotal);
 
@@ -653,7 +653,7 @@ var gameState = {
 
 				console.log("Fly ball, base distance: " + distance + " (margin: " + roll + ")");
 				
-				difficulty = battingSkill * 0.5 + battingPower * roll;
+				difficulty = battingSkill * 0.75 + battingPower * roll;
 				distance = this.adjustByHalfSinCurve(roll) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
 				
@@ -1007,9 +1007,21 @@ var gameState = {
 				// Can't make it. Calculate how much time the runner gets
 				else {
 					if (this.bIsBallInPlay) {
-						this.showUmpireDialog("Ball drops safely!", function() {
-							gameState.delayFielderGather(fielder, 2000);
-						});
+						if (distance >= gameField.backWallInfluence) {
+							this.showUmpireDialog("It's out of the park! Home run!", function() {
+								var runs = 0;
+
+								for (id in this.aRunnersInField) {
+									this.recordRun(this.aRunnersInField[id]);
+								}
+
+								this.aRunnersInField = [];
+							});
+						} else {
+							this.showUmpireDialog("Ball drops safely!", function() {
+								gameState.delayFielderGather(fielder, 2000);
+							});
+						}
 					}
 				}
 				break;

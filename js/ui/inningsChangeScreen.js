@@ -211,6 +211,7 @@ InningsChangeScreen.prototype.drawGameOver = function(homeTeam, awayTeam, boxSco
                 minorText = "Guys, it's getting pretty dark.";
                 break;
                 
+            default:
             case 2:
                 minorText = "That creepy guy with that van's back.";
                 break;
@@ -237,18 +238,58 @@ InningsChangeScreen.prototype.drawGameOver = function(homeTeam, awayTeam, boxSco
         }
         
         this.graphics.addChild(icon);
-        icon.x = boxScoreX + 90;
-        icon.y = boxScoreY + 40;
+        icon.x = boxScoreX + 40;
+        icon.y = boxScoreY + 120;
         icon.width = 75;
         icon.height = 75;
         
-        this.addPlainText(this.graphics, "It's a tie!", bigStencilStyle, boxScoreX + 190, boxScoreY + 90);
-        this.addPlainText(this.graphics, minorText, writingStyle, boxScoreX + 200, boxScoreY + 130);
+        this.addPlainText(this.graphics, "It's a tie!", bigStencilStyle, boxScoreX + 130, boxScoreY + 120);
+        this.addPlainText(this.graphics, minorText, writingStyle, boxScoreX + 140, boxScoreY + 160);
     } 
     
     // Result
     else {
+        var text = "";
+        var minorText = "";
+        var icon = gameState.umpire.getPortrait();
+
+        if (this.awayRuns > this.homeRuns) {
+            text = awayTeam.name + " wins the game!";
+        } else {
+            text = homeTeam.name + " wins the game!";
+        }
+
+        switch (game.rnd.integerInRange(0, 4)) {
+            case 0:
+                minorText = "Everykitten performed to expectations.";
+                break;
+
+            case 1:
+                minorText = "Here's a trophy mouse.";
+                break;
+
+            default:
+            case 2:
+                minorText = "Now feed me.";
+                break;
+
+            case 3:
+                minorText = "You may choose one representative\nto rub my belly.";
+                break;
+
+            case 4:
+                minorText = "Loser cleans my litter box.";
+                break;
+        }
+
+        this.graphics.addChild(icon);
+        icon.x = boxScoreX + 40;
+        icon.y = boxScoreY + 120;
+        icon.width = 75;
+        icon.height = 75;
         
+        this.addPlainText(this.graphics, text, bigStencilStyle, boxScoreX + 130, boxScoreY + 120);
+        this.addPlainText(this.graphics, minorText, writingStyle, boxScoreX + 140, boxScoreY + 160);
     }
 }
 
