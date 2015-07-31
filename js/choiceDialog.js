@@ -1,8 +1,8 @@
 // player - is the Player that the dialog is open for
 // bLeft - Whether to put the player icon on the left (true) or right (false)
 // onClose - function(action) called when dialog is closed
-function ChoiceDialog(player, bLeft, onClose) {
-	DialogBox.call(this, player, bLeft, onClose, 175);
+function ChoiceDialog(player, bLeft, onClose, bShadowTop) {
+	DialogBox.call(this, player, bLeft, onClose, 175, bShadowTop);
 
 	this.surface.inputEnabled = false;
 	this.choiceList = [];

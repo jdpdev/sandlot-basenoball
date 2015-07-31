@@ -1,7 +1,7 @@
 // player - is the Player that the dialog is open for
 // bLeft - Whether to put the player icon on the left (true) or right (false)
 // onClose - function(option) called when dialog is closed
-var DialogBox = function(player, bLeft, onClose, height) {
+var DialogBox = function(player, bLeft, onClose, height, bShadowTop) {
 	dialogCloseCallback = onClose;
 
 	this.surface = game.add.graphics(0, 0);
@@ -18,13 +18,50 @@ var DialogBox = function(player, bLeft, onClose, height) {
 	this.windowWidth = game.width - 100;
 	this.windowHeight = height;
 
-	this.setupWindow();
+	this.setupWindow(bShadowTop);
 }
 
-DialogBox.prototype.setupWindow = function() {
+DialogBox.prototype.setupWindow = function(bShadowTop) {
 	this.surface.beginFill(0xD2B48C, 1);
 	this.surface.drawRect(0, 0, this.windowWidth, this.windowHeight);
 	this.surface.endFill();
+	
+	// Shadow
+	this.surface.beginFill(0x6e531e, 1);
+	
+	if (!bShadowTop) {
+		this.surface.drawPolygon(
+				new Phaser.Point(0, 0),
+				new Phaser.Point(this.windowWidth, 0),
+				new Phaser.Point(this.windowWidth - 20, -20),
+				new Phaser.Point(20, -20)
+			);
+	} else {
+		this.surface.drawPolygon(
+				new Phaser.Point(0, this.windowHeight),
+				new Phaser.Point(this.windowWidth, this.windowHeight),
+				new Phaser.Point(this.windowWidth - 20, this.windowHeight + 20),
+				new Phaser.Point(20, this.windowHeight + 20)
+			);
+	}
+	
+	this.surface.endFill();
+	
+	// Post
+	if (!bShadowTop) {
+		this.surface.beginFill(0xD2B48C, 1);
+		this.surface.drawRect(this.windowWidth * 0.5 - 20, -105, 40, 100);
+		this.surface.endFill();
+	} else {
+		this.surface.beginFill(0xD2B48C, 1);
+		this.surface.drawRect(this.windowWidth * 0.5 - 20, this.windowHeight + 5, 40, 100);
+		this.surface.endFill();
+	}
+	
+	this.surface.pivot.x = this.windowWidth * 0.5;
+	this.surface.pivot.y = this.windowHeight * 0.5;
+	
+	this.surface.rotation = -0.01; //game.rnd.realInRange(-0.02, 0.02);
 
 	this.icon.x = 15;
 	this.icon.y = 10;
@@ -54,8 +91,8 @@ DialogBox.prototype.clearDialog = function() {
 }
 
 DialogBox.prototype.setY = function(y) {
-	this.surface.x = 50;
-	this.surface.y = y;
+	this.surface.x = 50 + this.windowWidth * 0.5;
+	this.surface.y = y + this.windowHeight * 0.5;
 }
 
 DialogBox.prototype.createText = function() {

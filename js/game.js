@@ -186,17 +186,17 @@ var gameState = {
 		// HUD
 		if (this.pitcherInfoHUD == null) {
 			this.pitcherInfoHUD = new PitcherInfoHUD();
-			this.pitcherInfoHUD.setPosition(5, 510);
+			this.pitcherInfoHUD.setPosition(5, 910);
 		}
 
 		if (this.batterInfoHUD == null) {
 			this.batterInfoHUD = new BatterInfoHUD();
-			this.batterInfoHUD.setPosition(325, 510);
+			this.batterInfoHUD.setPosition(325, 910);
 		}
 
 		if (this.countHUD == null) {
 			this.countHUD = new CountHUD(this.awayTeam, this.homeTeam);
-			this.countHUD.setPosition(625, 510);
+			this.countHUD.setPosition(635, 300);
 		}
 
 		this.pitcherInfoHUD.setPlayer(this.fieldingTeam.getPitcher());
@@ -1268,7 +1268,7 @@ var gameState = {
 	// Returns if the base can be run to. A base can be run to if it's empty
 	// and no other runner has claimed it as a target
 	canRunToBase: function(base) {
-		return this.aRunnerTargets[base] == null && this.aRunnerLocations[base] == null;
+		return base == HOME || (this.aRunnerTargets[base] == null && this.aRunnerLocations[base] == null);
 	},
 
 	// Returns if there are any runners active
@@ -1299,7 +1299,7 @@ var gameState = {
 
 	// Show the umpire's dialog box
 	showUmpireDialog: function(text, onClose) {
-		var dialog = new DialogBox(this.umpire, true, onClose);
+		var dialog = new DialogBox(this.umpire, true, onClose, undefined, true);
 
 		dialog.setText(text);
 		dialog.setY(420);
@@ -1307,17 +1307,17 @@ var gameState = {
 	
 	// Shows a generic dialog for a specific player
 	showPlayerDialog: function(player, bLeft, text, onClose) {
-		var dialog = new DialogBox(player, bLeft, onClose);
+		var dialog = new DialogBox(player, bLeft, onClose, undefined, false);
 
 		dialog.setText(text);
-		dialog.setY(30);
+		dialog.setY(50);
 	},
 
 	// Show a choice dialog for a player
 	showChoiceDialog: function(player, text, choices, callback) {
-		var dialog = new ChoiceDialog(player, true, callback);
+		var dialog = new ChoiceDialog(player, true, callback, undefined, false);
 		dialog.setupChoices(text, choices);
-		dialog.setY(30);
+		dialog.setY(50);
 	},
 
 	// Shows options for bases a fielder can throw to, based on runners
@@ -1329,9 +1329,9 @@ var gameState = {
 		bases.push({"id": HOME, "text": "Throw to home"});
 		bases.push({"id": -1, "text": "Hold the ball"});
 
-		var dialog = new ChoiceDialog(player, true, callback);
+		var dialog = new ChoiceDialog(player, true, callback, undefined, false);
 		dialog.setupCustomChoices(player.getName() + " (" + GetPlayerPositionAbbr(player.fieldingPosition) + ")", bases);
-		dialog.setY(30);
+		dialog.setY(50);
 	},
 
 	showInningsChangeScreen: function() {
@@ -1366,9 +1366,9 @@ var gameState = {
 			} else {
 				gameState.doPitch();
 			}
-		});
+		}, undefined, false);
 		dialog.setupCustomChoices(player.getName() + " (Batter)", choices);
-		dialog.setY(30);
+		dialog.setY(50);
 	},
 
 	closeInningsChangeScreen: function() {
