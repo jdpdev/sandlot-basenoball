@@ -34,7 +34,7 @@ var gameState = {
 
 	umpire: null,
 	
-	numberOfInnings: 5,
+	numberOfInnings: 1,
 
 	selectedBatterAction: null,
 	selectedPitcherAction: null,
@@ -230,7 +230,7 @@ var gameState = {
 	},
 
 	endGame: function() {
-
+		this.showInningsChangeScreen(true);
 	},
 
 	callNewBatter: function() {
@@ -653,7 +653,7 @@ var gameState = {
 
 				console.log("Fly ball, base distance: " + distance + " (margin: " + roll + ")");
 				
-				difficulty = battingSkill + battingPower * roll;
+				difficulty = battingSkill * 0.5 + battingPower * roll;
 				distance = this.adjustByHalfSinCurve(roll) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
 				
@@ -1334,12 +1334,12 @@ var gameState = {
 		dialog.setY(50);
 	},
 
-	showInningsChangeScreen: function() {
+	showInningsChangeScreen: function(bGameOver) {
 		var batting = this.bIsTopOfInning ? this.awayTeam : this.homeTeam;
 		var fielding = this.bIsTopOfInning ? this.homeTeam : this.awayTeam;
 
 		var dialog = new InningsChangeScreen(this.aHomeInnings, this.aAwayInnings, this.iCurrentInning, this.bIsTopOfInning,
-												batting, fielding);
+												batting, fielding, bGameOver);
 	},
 	
 	// Tempt the batter with the danger of belly rubs

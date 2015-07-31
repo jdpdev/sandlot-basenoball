@@ -86,6 +86,7 @@ DialogBox.prototype.close = function() {
 DialogBox.prototype.clearDialog = function() {
 	if (this.surface.parent != undefined) {
 		this.surface.parent.removeChild(this.surface);
+		this.surface.destroy();
 		gameState.dialogClosed(this);
 	}
 }

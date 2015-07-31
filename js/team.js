@@ -162,6 +162,10 @@ function Team() {
 
 		return -1;
 	}
+	
+	this.getRandomMember = function() {
+		return this.players[game.rnd.pick(this.battingOrder)];
+	}
 }
 
 
