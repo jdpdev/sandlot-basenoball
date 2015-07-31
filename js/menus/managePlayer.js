@@ -157,7 +157,7 @@ ManagePlayer.prototype.cycleSlot = function(slot, direction) {
 ManagePlayer.prototype.addSkillBar = function(parent, name, skill, x, y) {
     var title = this.addPlainText(parent, name, { font: "15px elliotsixregular", fill: "#ffffff", align: "left"}, x, y);
     var leftButton = this.drawLeftArrow(parent, x + 100, y);
-    var rightButton = this.drawLeftArrow(parent, x + 270, y);
+    var rightButton = this.drawRightArrow(parent, x + 270, y);
 
     var stat = this.myPlayer.getInfo().getValueForSkill(skill);
     this.drawSkillGradient(stat, 10, x + 130, y);
@@ -191,9 +191,12 @@ ManagePlayer.prototype.drawSkillGradient = function(value, max, x, y) {
 ManagePlayer.prototype.drawLeftArrow = function(parent, x, y) {
     var leftButton = game.add.graphics(x, y);
     parent.addChild(leftButton);
-    leftButton.beginFill(0xffffff, 1);
+    leftButton.beginFill(0xffffff, 0.01);
     leftButton.drawRect(0, 0, 20, 20);
     leftButton.endFill();
+
+    var text = this.addPlainText(parent, "-", { font: "24px hvd_peaceregular", fill: "#ffffff", align: "left"}, 6, -2);
+    leftButton.addChild(text);
 
     return leftButton;
 }
@@ -201,9 +204,12 @@ ManagePlayer.prototype.drawLeftArrow = function(parent, x, y) {
 ManagePlayer.prototype.drawRightArrow = function(parent, x, y) {
     var rightButton = game.add.graphics(x, y);
     parent.addChild(rightButton);
-    rightButton.beginFill(0xffffff, 1);
+    rightButton.beginFill(0xffffff, 0.01);
     rightButton.drawRect(-20, 0, 20, 20);
     rightButton.endFill();
+
+    var text = this.addPlainText(parent, "+", { font: "24px hvd_peaceregular", fill: "#ffffff", align: "left"}, 6, -2);
+    rightButton.addChild(text);
 
     return rightButton;
 }
