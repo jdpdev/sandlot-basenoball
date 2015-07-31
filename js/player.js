@@ -108,17 +108,20 @@ function Player(id, playerInfo, teamColor) {
 
 	// ** Methods **************************************************************
 	this.setAsFielder = function(position) {
+		this.interruptRun();
 		this.fieldingPosition = position;
 
 		if (this.worldIcon == null) {
 			this.drawFielder();
 		}
 
+		this.showWaitingFielder();
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
 	this.returnToFieldingPosition = function() {
 		this.worldIcon.update = function() { };
+		this.showWaitingFielder();
 		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
 	}
 
@@ -131,8 +134,10 @@ function Player(id, playerInfo, teamColor) {
 		} else {
 			pos = gameField.GetRightBattingBoxPos();
 		}
+		
+		this.showBattingStance();
 
-		pos.y -= this.playerHeight;
+		//pos.y -= this.playerHeight;
 		this.setPosition(pos);
 	}
 
@@ -140,6 +145,9 @@ function Player(id, playerInfo, teamColor) {
 		if (this.worldIcon == null) {
 			this.drawFielder();
 		}
+		
+		this.interruptRun();
+		this.showWaitingFielder();
 
 		//if (!bRun) {
 			this.setPosition(position);
@@ -200,8 +208,8 @@ function Player(id, playerInfo, teamColor) {
 				break;
 		}
 
-		point.x -= this.playerWidth * 0.5;
-		point.y -= this.playerHeight;
+		/*point.x -= this.playerWidth * 0.5;
+		point.y -= this.playerHeight;*/
 
 		return point;
 	}
@@ -228,12 +236,59 @@ function Player(id, playerInfo, teamColor) {
 		this.teamNumber.y = 0;
 	}
 
+	// Change the world icon to a new pose
+	this.changePose = function(pose) {
+		if (pose == this.currentPose) {
+			return;
+		}
+		
+		var position = new Phaser.Point(0, 0);
+		
+		if (this.worldIcon != null) {
+			position.x = this.worldIcon.x;
+			position.y = this.worldIcon.y;
+			this.worldIcon.destroy(true);
+		}
+		
+		this.currentPose = pose;
+		
+		this.worldIcon = PlayerGenerator.generateWorldIcon(this.playerInfo.icon, pose, this.teamColor, this.playerInfo.handedness);
+		this.worldIcon.x = position.x;
+		this.worldIcon.y = position.y;
+	}
+	
+	this.showBattingStance = function() {
+		this.changePose(this.playerInfo.handedness ? POSE_BATTER_RIGHT : POSE_BATTER_LEFT);
+	}
 
+	// Change to the swing pose
+	this.showSwing = function() {
+		this.changePose(this.playerInfo.handedness ? POSE_BATTER_SWING_RIGHT : POSE_BATTER_SWING_LEFT);
+	}
 
-
-
-
-
+	this.showWaitingFielder = function() {
+		if (this.fieldingPosition == CATCHER) {
+			this.changePose(POSE_FIELDER_CATCHER);
+		} else {
+			this.changePose(POSE_FIELDER_WAITING);
+		}
+	}
+	
+	this.showHighCatch = function() {
+		this.changePose(POSE_FIELDER_CATCH_UP);
+	}
+	
+	this.showLowCatch = function() {
+		this.changePose(POSE_FIELDER_CATCH_DOWN);
+	}
+	
+	this.showCatch = function(fromPos) {
+		if (fromPos.x <= this.worldIcon.x) {
+			this.changePose(POSE_FIELDER_CATCH_RIGHT);	
+		} else {
+			this.changePose(POSE_FIELDER_CATCH_LEFT);	
+		}
+	}
 
 	// ** Batter ******************************************************
 	
@@ -388,10 +443,19 @@ function Player(id, playerInfo, teamColor) {
 				break;
 
 			case BALL_FUMBLED:
+				if (status.target < LEFT_FIELD) {
+					this.completeRun();
+					break;
+				}
+				
 				switch (nextBase) {
 					default:
 					case SECOND:
-						this.startRun(nextBase, false);
+						if (status.target >= LEFT_FIELD) {
+							this.startRun(nextBase, false);
+						} else {
+							this.completeRun();
+						}
 						break;
 
 					case THIRD:
@@ -476,8 +540,8 @@ function Player(id, playerInfo, teamColor) {
 				break;
 		}
 
-		basePos.x -= this.playerWidth * 0.5;
-		basePos.y -= this.playerHeight;
+		/*basePos.x -= this.playerWidth * 0.5;
+		basePos.y -= this.playerHeight;*/
 
 		return basePos;
 	}
@@ -590,32 +654,101 @@ function Player(id, playerInfo, teamColor) {
 
 	// ** Fielding ******************************************************
 	this.fieldBall = function(hitType, difficulty, distance) {
-		var myDist = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY).getMagnitude();
+		var myDelta = new Phaser.Point(this.worldIcon.x - gameField.homePlateX, this.worldIcon.y - gameField.homePlateY);
+		var distance = distance - myDelta.getMagnitude();
+		var runSpeed = this.getRunSpeed();
 		var fieldTime = 0; 
+		var tweenPos = new Phaser.Point(this.worldIcon.x, this.worldIcon.y);
+		var tweenTime;
 
 		switch (hitType) {
 			case LINE_DRIVE:
+				this.showHighCatch();
+				
 				if (this.fieldingPosition < LEFT_FIELD) {
 					fieldTime = 750;
+					tweenTime = fieldTime * game.rnd.realInRange(0.5, 0.75);
+					
+					var direction = Phaser.Point.normalRightHand(myDelta);
+
+					if (this.fieldingPosition == FIRST_BASE) {
+						direction = Phaser.Point.negative(direction);
+					}
+
+					direction.setMagnitude(runSpeed * tweenTime / 1000);
+					tweenPos = Phaser.Point.add(tweenPos, direction);
+					difficulty += 3;
 				} else {
 					fieldTime = 1250;
+					tweenTime = fieldTime * game.rnd.frac();
+
+					myDelta.setMagnitude(distance);
+					myDelta = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.integerInRange(-15, 15), true);
+
+					tweenPos = Phaser.Point.add(myDelta, new Phaser.Point(this.worldIcon.x, this.worldIcon.y));
 				}
 				break;
 
 			case GROUND_BALL:
+				this.showLowCatch();
+				
 				fieldTime = 1250;
+				tweenTime = fieldTime * game.rnd.realInRange(0.75, 1);
+					
+				var direction;
+
+				// Catcher always charges in front
+				if (this.fieldingPosition == CATCHER) {
+					direction = new Phaser.Point(0, -1);
+					direction = Phaser.Point.rotate(direction, 0, 0, game.rnd.integerInRange(-40, 40), true);
+					tweenPos = new Phaser.Point(gameField.homePlateX, gameField.homePlateY);
+				} 
+
+				// Cut off if behind, charge in front
+				else {
+					if (distance > 0) {
+						direction = Phaser.Point.normalRightHand(myDelta);
+						tweenTime *= 0.5;
+
+						if (this.fieldingPosition == FIRST_BASE) {
+							direction = Phaser.Point.negative(direction);
+						}
+					} else {
+						myDelta = Phaser.Point.negative(myDelta);
+						myDelta = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.integerInRange(-15, 15), true);
+						direction = myDelta;
+					}
+				}
+
+				direction.setMagnitude(runSpeed * tweenTime / 1000);
+				tweenPos = Phaser.Point.add(tweenPos, direction);
 				break;
 
 			case FLY_BALL:
+				this.showHighCatch();
+				
 				if (this.fieldingPosition < LEFT_FIELD) {
-					fieldTime = 4000;
-				} else {
 					fieldTime = 3000;
+				} else {
+					fieldTime = 4000;
 				}
+
+				tweenTime = fieldTime * game.rnd.realInRange(0.25, 0.5);
+				myDelta = Phaser.Point.rotate(myDelta, 0, 0, game.rnd.angle(), true);
+				direction = myDelta;
+
 				break;
 		}
+		
+		console.log("distance from fielder: " + distance);
 
-
+		// Translate to stand on point
+		tweenPos.x -= this.playerWidth * 0.5;
+		tweenPos.y -= this.playerHeight;
+		
+		var tween = game.add.tween(this.worldIcon).to({x: tweenPos.x, y: tweenPos.y}, 
+									tweenTime, Phaser.Easing.Default, true);
+	
 		// Simulate running to the point
 		var runTimer = game.time.create(true);
 		runTimer.add(fieldTime, this.runToFieldFinished, this, hitType, difficulty, distance);
@@ -623,18 +756,31 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	// Fielder did not successfully field the ball, so pick a direction to run in while waiting
-	this.ballFumbled = function(time) {
+	this.ballFumbled = function(time, bAlternate) {
+		this.showLowCatch();
+		
 		// Pick random direction
 		var roll = game.rnd.realInRange(game.math.PI2 / -8, game.math.PI2 / 8);
 		var normal = new Phaser.Point(0, -1);
+		
+		if (bAlternate) {
+			normal = Phaser.Point.negative(normal);
+		}
+		
 		normal = Phaser.Point.rotate(normal, 0, 0, roll);
 		normal.setMagnitude(70);
 
 		var position = this.getPosition();
 		position = Phaser.Point.add(position, normal);
+		
+		position.x -= this.playerWidth * 0.5;
+		position.y -= this.playerHeight;
+		
+		var tween = game.add.tween(this.worldIcon).to({x: position.x, y: position.y}, 
+									time, Phaser.Easing.Default, true);
 
-		this.worldIcon.x = position.x;
-		this.worldIcon.y = position.y;
+		//this.worldIcon.x = position.x;
+		//this.worldIcon.y = position.y;
 	}
 
 	// Present fielding choices

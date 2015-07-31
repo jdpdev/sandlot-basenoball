@@ -141,6 +141,33 @@ var iconGenerator = {
         return newString.replace(pattern, ".");
     },
     
+    findSkinColor: function(desc) {
+        var code = desc.split(".")[SKIN_COLOR];
+        return this.getSkinColor(parseInt(code, 16));
+    },
+    
+    findShirtColor: function(desc) {
+        var code = desc.split(".")[SHIRT_COLOR];
+        return this.getShirtPrimaryColor(parseInt(code, 16));
+    },
+    
+    findHeadColor: function(desc) {
+        var code = desc.split(".")[HEAD_COLOR];
+        return this.getHeadDecoPrimaryColor(parseInt(code, 16));
+    },
+    
+    // Returns if the player has hair
+    hasHair: function(desc) {
+        var code = parseInt(desc.split(".")[HEAD_DECO], 16);
+        return code > 0x00 && code != 0x20;
+    },
+    
+    // Returns if the player has a hat
+    hasHat: function(desc) {
+        var code = parseInt(desc.split(".")[HEAD_DECO], 16);
+        return code >= 0x20;
+    },
+    
     // ******************************************************************************
     //  Head
     // ******************************************************************************

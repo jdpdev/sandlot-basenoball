@@ -17,6 +17,6 @@ function GotoMainMenu() {
 }
 
 function GotoGame(homeTeam, awayTeam) {
-	game.stage.backgroundColor = 0x00cc00;
+	game.stage.backgroundColor = 0x00aa00;
 	game.state.start(gameStateName, true, false, homeTeam, awayTeam);
 }
