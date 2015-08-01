@@ -60,6 +60,14 @@ function Team() {
 
 		return json;
 	}
+
+	this.getName = function() {
+		return this.name;
+	}
+
+	this.setName = function(name) {
+		this.name = name;
+	}
 	
 	this.setTeamColor = function(color) {
 		this.teamColor = color;

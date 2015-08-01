@@ -179,6 +179,26 @@ ManageTeam.prototype.displayTeam = function(team) {
     // ******** Team name
     this.teamNameLabel = this.addPlainText(this.teamGroup, team.name + " (" + team.totalTeamSkillPoints() + " pts)", bigText, 0, 10);
 
+    this.teamNameLabel.inputEnabled = false;
+    this.teamNameLabel.events.onInputUp.add(function() {
+        var dialog = $("#changeTeamNameDialog");
+        var thisClosure = this;
+        $(dialog).show();
+        $(dialog).find("input").val(team.getName());
+        $(dialog).find(".submitBtn").click(function() {
+            $(this).closest("div").hide();
+            
+            var newName = $(this).closest("div").find("input").val();
+            thisClosure.selectedTeam.setName(newName);
+            thisClosure.teamNameLabel.text = newName;
+            thisClosure.updateTeamPoints();
+        });
+
+        $(dialog).find(".cancelBtn").click(function() {
+            $(this).closest("div").hide();
+        });
+    }, this);
+
     // ******** Players
     var players = team.players;
     var group;
@@ -264,6 +284,17 @@ ManageTeam.prototype.updatePlayerDetails = function(player) {
     newIcon.y = group.icon.y;
     newIcon.width = group.icon.width;
     newIcon.height = group.icon.height;
+
+    newIcon.inputEnabled = true;
+    newIcon.menu = this;
+    newIcon.player = player;
+    newIcon.events.onInputUp.add(function() {
+        if (this.menu.isPlayerViewerOpen()) {
+            return;
+        }
+
+        this.menu.openPlayerViewer(this.player);
+    }, newIcon);
 
     group.removeChild(group.icon);
     group.addChild(newIcon);
