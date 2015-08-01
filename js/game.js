@@ -157,7 +157,8 @@ var gameState = {
 		//this.showInningsChangeScreen();
 
 		this.showUmpireDialog("Play ball!", function(option) {
-			gameState.startInning();
+			gameState.showInningsChangeScreen();
+			//gameState.startInning();
 		});
 	},
 

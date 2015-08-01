@@ -150,6 +150,16 @@ function Player(id, playerInfo, teamColor) {
 		this.interruptRun();
 		this.showWaitingFielder();
 
+		//position = gameField.GetHomeDugoutPos();
+
+		if (position.x < gameField.homePlateX) {
+			position.x += 20 * this.id;
+			position.y += 20 * this.id;
+		} else {
+			position.x -= 20 * this.id;
+			position.y += 20 * this.id;
+		}
+
 		//if (!bRun) {
 			this.setPosition(position);
 		//}
