@@ -10,9 +10,51 @@ var CountHUD = function(away, home) {
 	this.homeScore = 0;
 	this.awayScore = 0;
 
+	// Base
 	this.graphics.beginFill(0xD2B48C, 1);
 	this.graphics.drawRect(0, 0, this.hudWidth, this.hudHeight);
 	this.graphics.endFill();
+	
+	// Shadow
+	this.graphics.beginFill(0x6e531e, 1);
+	this.graphics.drawPolygon(
+					new Phaser.Point(0, this.hudHeight),
+					new Phaser.Point(this.hudWidth, this.hudHeight),
+					new Phaser.Point(this.hudWidth, 0),
+					new Phaser.Point(this.hudWidth + 10, 10),
+					new Phaser.Point(this.hudWidth + 10, this.hudHeight + 10),
+					new Phaser.Point(10, this.hudHeight + 10)
+				);
+	this.graphics.endFill();
+	
+	// Post
+	this.graphics.beginFill(0xD2B48C, 1);
+	this.graphics.drawRect(this.hudWidth + 5, this.hudHeight * 0.5 - 8, 100, 16);
+	this.graphics.endFill();
+	
+	this.graphics.beginFill(0x5f471a);
+	this.graphics.drawPolygon(
+				new Phaser.Point(this.hudWidth + 5, this.hudHeight * 0.5 + 8),
+				new Phaser.Point(this.hudWidth + 100, this.hudHeight * 0.5 + 8),
+				new Phaser.Point(this.hudWidth + 100, this.hudHeight * 0.5 + 12),
+				new Phaser.Point(this.hudWidth + 9, this.hudHeight * 0.5 + 12)
+			);
+	this.graphics.endFill();
+	
+	/*this.graphics.beginFill(0xD2B48C, 1);
+	this.graphics.drawRect(this.hudWidth * 0.5 - 10, this.hudHeight + 5, 20, 100);
+	this.graphics.endFill();
+	
+	this.graphics.beginFill(0x5f471a);
+	this.graphics.drawPolygon(
+				new Phaser.Point(this.hudWidth * 0.5 + 10, this.hudHeight + 5),
+				new Phaser.Point(this.hudWidth * 0.5 + 10, this.hudHeight + 100),
+				new Phaser.Point(this.hudWidth * 0.5 + 20, this.hudHeight + 100),
+				new Phaser.Point(this.hudWidth * 0.5 + 20, this.hudHeight + 15)
+			);
+	this.graphics.endFill();*/
+	
+	this.graphics.rotation = 0.01;
 
 	// Teams
 	var font = { font: "16px elliotsixregular", fill: "#ffffff", align: "left"};
