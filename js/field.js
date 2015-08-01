@@ -179,12 +179,12 @@ var gameField = {
 
 	GetHomeDugoutPos: function() {
 		var point = this.GetFirstBasePos();
-		return new Phaser.Point(point.x + 60, point.y + 60);
+		return new Phaser.Point(point.x + 220, point.y + 20);
 	},
 
 	GetAwayDugoutPos: function() {
 		var point = this.GetThirdBasePos();
-		return new Phaser.Point(point.x - 60, point.y + 60);
+		return new Phaser.Point(point.x - 220, point.y + 20);
 	},	
 
 	GetLeftBattingBoxPos: function() {
