@@ -105,15 +105,23 @@ var InningsChangeScreen = function(homeScore, awayScore, currentInning, bTop, ba
     		break;
     	}
 
-    	if (i < currentInning || !bTop) {
+    	if (i < currentInning) {
     		homeRuns += homeScore[i];
     		awayRuns += awayScore[i];
 
     		this.addPlainText(this.graphics, homeScore[i].toString(), writingStyle, inningX + (i * inningWidth), homeY);
     		this.addPlainText(this.graphics, awayScore[i].toString(), writingStyle, inningX + (i * inningWidth), awayY);
     	} else {
-    		awayRuns += awayScore[i];
-    		this.addPlainText(this.graphics, awayScore[i].toString(), writingStyle, inningX + (i * inningWidth), awayY);
+            if (bTop) {
+                awayRuns += awayScore[i];
+                this.addPlainText(this.graphics, "--", writingStyle, inningX + (i * inningWidth), awayY);
+            } else {
+                homeRuns += homeScore[i];
+                awayRuns += awayScore[i];
+
+                this.addPlainText(this.graphics, "--", writingStyle, inningX + (i * inningWidth), homeY);
+                this.addPlainText(this.graphics, awayScore[i].toString(), writingStyle, inningX + (i * inningWidth), awayY);
+            }
     	}
     }
     

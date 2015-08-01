@@ -208,12 +208,12 @@ PlayerGenerator.drawFieldingPose = function(graphics, desc, pose, teamColor, han
         case POSE_FIELDER_CATCH_UP:
             if (handedness) {
                 bodyWidth = PlayerGenerator.drawPlayerCore(graphics, desc, teamColor, false, true);
-                glovePos.x = bodyWidth * 0.5 + 5;
-                glovePos.y = -35;
+                glovePos.x = bodyWidth * 0.5;
+                glovePos.y = -30;
             } else {
                 bodyWidth = PlayerGenerator.drawPlayerCore(graphics, desc, teamColor, true, false);
-                glovePos.x = bodyWidth * -0.5 - 15;
-                glovePos.y = -35;
+                glovePos.x = bodyWidth * -0.5 - 10;
+                glovePos.y = -30;
             }
             break;
             

@@ -561,7 +561,7 @@ var gameState = {
 			}
 		} 
 
-		//hitType = FLY_BALL;
+		//hitType = GROUND_BALL;
 
 		// Based on the type of hit, pick a fielder to be the general vicinity.
 		// Difficulty for fielder is function of margin, batting skill and power.
@@ -625,6 +625,8 @@ var gameState = {
 				distance = this.adjustBySinCurve(margin * 3) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
 
+				//targetFielder = FIRST_BASE;
+
 				if (targetFielder == CATCHER) {
 					difficulty = game.math.clamp(difficulty - 3, 0, 10);
 				} else if (targetFielder == PITCHER) {
@@ -657,7 +659,7 @@ var gameState = {
 				distance = this.adjustByHalfSinCurve(roll) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
 				
-				//targetFielder = THIRD_BASE;
+				//targetFielder = FIRST_BASE;
 
 				/*if (margin >= 0.6) {
 					//targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
@@ -1091,6 +1093,7 @@ var gameState = {
 				// TODO Return to base, if needed
 				gameState.showUmpireDialog("Out at " + GetPlayerPositionName(position) + "!", function() {
 					gameState.recordOut(gameState.aRunnerTargets[choice.id]);
+					gameState.fielderGathersBall(fielder, false);
 				});
 			}
 
@@ -1117,6 +1120,8 @@ var gameState = {
 		var target = null;
 		var targetBase = null;
 		var position = gameState.fieldingTeam.getFielderPosition(fielder);
+
+		console.log(fielder.getName() + " wants to throw to " + base);
 
 		switch (base) {
 			case FIRST:
@@ -1168,7 +1173,7 @@ var gameState = {
 		}
 
 		var throwTimer = game.time.create(true);
-		throwTimer.add(delay * 1000, this.fielderThrowComplete, this, target, targetBase - 1);
+		throwTimer.add(delay * 1000, this.fielderThrowComplete, this, target, base);
 		throwTimer.start();
 
 		this.throwTimer = throwTimer;
@@ -1187,9 +1192,13 @@ var gameState = {
 	},
 
 	fielderThrowComplete: function(target, base) {
+		console.log("Throw complete to " + target.getName() + " at " + base + " (ball in play? " + this.bIsBallInPlay + ")");
+
 		if (!this.bIsBallInPlay) {
 			return;
 		}
+
+		console.log("...is there somebody there? " + (this.aRunnerTargets[base] != null ? this.aRunnerTargets[base].getName() : "no"));
 
 		if (this.aRunnerTargets[base] != null) {
 			// TODO make this a skill check

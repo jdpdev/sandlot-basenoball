@@ -120,7 +120,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.returnToFieldingPosition = function() {
-		console.log(this.getName() + " returning to fielding position");
+		//console.log(this.getName() + " returning to fielding position");
 		this.worldIcon.update = function() { };
 		this.showWaitingFielder();
 		this.setPosition(this.getFieldingPosition(this.fieldingPosition));	
@@ -551,6 +551,7 @@ function Player(id, playerInfo, teamColor) {
 	this.completeRun = function() {
 		gameState.runnerReportComplete(this, this.runTarget, true);
 		this.bIsRunning = false;
+		this.showRunnerWaiting();
 	}
 
 	this.runnerOnUpdate = function() {
@@ -785,7 +786,7 @@ function Player(id, playerInfo, teamColor) {
 				
 				if (this.fieldingPosition < LEFT_FIELD) {
 					fieldTime = 750;
-					tweenTime = fieldTime * game.rnd.realInRange(0.5, 0.75);
+					tweenTime = fieldTime * game.rnd.realInRange(1, 1.25);
 					
 					var direction = Phaser.Point.normalRightHand(myDelta);
 
@@ -811,7 +812,7 @@ function Player(id, playerInfo, teamColor) {
 				this.showLowCatch();
 				
 				fieldTime = 1250;
-				tweenTime = fieldTime * game.rnd.realInRange(0.75, 1);
+				tweenTime = fieldTime; //* game.rnd.realInRange(0.75, 1);
 					
 				var direction;
 
