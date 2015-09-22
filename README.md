@@ -1,2 +1,2 @@
 # sandlot-basenoball
-SAGDC 2015 entry
+Version submitted to SAGDC 2015 for judging.
