@@ -1,5 +1,6 @@
 var gameStateName = "Game";
 
+// The bases themselves, distinct from playing positions
 var HOME = 0;
 var FIRST = 1;
 var SECOND = 2;
@@ -23,12 +24,21 @@ var BALL_CONTROLLED = 3;
 // When the ball has been controlled and thrown to another fielder
 var BALL_THROWN = 4;
 
+/**
+ *	Core game state object. Need to refactor game logic out of this into encounter objects.
+ * 	This is used as a Phaser state object.
+ *
+ *	TODO Pare down to:
+ *		- State of the game (balls, strikes, where runners are, etc)
+ *		- Backstage managing of the game, not involving game logic or player decisions
+ */
 var gameState = {
 
 	// The teams
 	homeTeam: null,
 	awayTeam: null,
 
+	// What the teams are doing
 	battingTeam: null,
 	fieldingTeam: null,
 
@@ -114,6 +124,7 @@ var gameState = {
 		gameField.DrawField(game);
 		this.randomizer = new Phaser.RandomDataGenerator();
 
+		// Defaults
 		if (this.homeTeam == null) {
 			this.homeTeam = new Team();
 			this.homeTeam.loadTeam(game.cache.getJSON("mutineers"));	
@@ -162,6 +173,7 @@ var gameState = {
 		});
 	},
 
+	// Starts a new half-inning
 	startInning: function() {
 		this.aRunnersInField = [];
 		
@@ -205,6 +217,7 @@ var gameState = {
 		this.countHUD.resetInning(this.iCurrentInning, this.bIsTopOfInning);
 	},
 
+	// On the end of a half-inning
 	endInning: function() {
 		if (!this.bIsTopOfInning) {
 			this.iCurrentInning++;
@@ -244,10 +257,12 @@ var gameState = {
 		});
 	},
 	
+	// Called from a Player when it has left a base
 	registerRunner: function(runner) {	
 		this.aRunnersInField.push(runner);
 	},
 	
+	// Called from a Player when it has returned to a base
 	unregisterRunner: function(runner) {
 		var index = this.aRunnersInField.indexOf(runner);
 		
@@ -256,16 +271,7 @@ var gameState = {
 		}
 	},
 
-	/* *** Game Logic *****************************************************************
-		- Begin at-bat
-			1) Players make AP bets in secret
-			2) Highest bid choses first
-			3) Resolve base on stats and argument mods, have umpire announce
-			...and so on
-		- Ball in play
-			1) Umpire decides where ball is going and how
-
-	*/	
+	/***** Game Logic ******************************************************************/	
 
 	// Begin an at bat between a batter and a pitcher
 	beginAtBat: function(batter, pitcher) {
@@ -275,6 +281,8 @@ var gameState = {
 
 		this.doPitch();
 	},
+
+// vvv Move into at-bat encounter vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	// Do a pitch for the current at-bat
 	doPitch: function() {
@@ -316,6 +324,7 @@ var gameState = {
 			});
 	},
 
+	// Announce the pitcher's action
 	showPitcherAction: function() {
 		var pitcher = this.fieldingTeam.getPitcher();
 		this.showPlayerDialog(pitcher, true, pitcher.getName() + " (Pitcher)\n" + this.selectedPitcherAction.getRandomColor(), 
@@ -324,6 +333,7 @@ var gameState = {
 			});
 	},
 
+	// Announce the batter's faction
 	showBatterAction: function() {
 		var batter = this.aRunnerLocations[HOME];
 		
@@ -351,7 +361,6 @@ var gameState = {
 	// Resolve the current pitch
 	resolvePitch: function() {
 		this.pitchTimer.stop();
-		//this.showUmpireDialog("Strike one!", null);
 
 		var pitcher = this.fieldingTeam.getPitcher();
 		var batter = this.aRunnerLocations[HOME];
@@ -368,7 +377,7 @@ var gameState = {
 		battingSkill = this.selectedPitcherAction.modStat(STAT_BATTING, battingSkill);
 		battingPower = this.selectedPitcherAction.modStat(STAT_POWER, battingPower);
 		
-		var roll = game.rnd.frac(); //this.randomizer.frac(); //Math.random();
+		var roll = game.rnd.frac();
 		var bInStrikeZone = roll <= pitchSkill / 10;
 
 		// Unopposed pitch strike chance: pskill / 10
@@ -410,6 +419,8 @@ var gameState = {
 		}
 	},
 
+// ^^^^^ End at-bat encounter ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 	// Records a strike. Returns true on strike out.
 	recordStrike: function(bLooking) {
 		this.iBatterStrikes++;
@@ -421,6 +432,7 @@ var gameState = {
 			});
 		} else {
 			this.showUmpireDialog(lineManager.getStrikeLine(bLooking).text, function() {
+				// TODO Move to at-bat encounter
 				gameState.doPitch();
 			});
 		}
@@ -439,6 +451,8 @@ var gameState = {
 			var line = lineManager.getBallLine();
 			this.showUmpireDialog(line.text, function() {
 				
+				// TODO Move to at-bat encounter
+				// This is special umpire line
 				if (line.special != 1) {
 					gameState.doPitch();	
 				} else {
@@ -448,7 +462,7 @@ var gameState = {
 		}
 	},
 
-	// Records an out. Returns true on end-of-inning.
+	// Records an out
 	// Returns true if the ball is in play and is still alive
 	recordOut: function(player) {
 		this.iInningOuts++;
@@ -533,6 +547,8 @@ var gameState = {
 			bIsForced = true;
 		}
 	},
+
+// vvv Move into at-bat encounter vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	// Handle getting bat on ball
 	// margin is the difference between roll and what they were rolling for
@@ -659,33 +675,8 @@ var gameState = {
 				difficulty = battingSkill * 0.75 + battingPower * roll;
 				distance = this.adjustByHalfSinCurve(roll) * distance;
 				targetFielder = this.getFielderByDistance(distance, hitType);
-				
-				//targetFielder = FIRST_BASE;
 
-				/*if (margin >= 0.6) {
-					//targetFielder = this.getRandomFielder(LEFT_FIELD, RIGHT_FIELD, true);
-					difficulty = battingSkill * margin + battingPower * margin;
-					distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
-					targetFielder = this.getFielderByDistance(distance, hitType);
-				} else if (margin >= 0.3) {
-					//targetFielder = this.getRandomFielder(PITCHER, RIGHT_FIELD, true);
-					difficulty = battingSkill * margin + battingPower * margin * 0.5;
-
-					if (game.rnd.integerInRange(0,1) == 1) {
-						distance = gameField.infieldRadius + this.adjustBySinCurve(distance) * gameField.outfieldGap;
-					} else {
-						distance = this.adjustBySinCurve(distance) * gameField.infieldRadius + 30;
-					}
-					
-					targetFielder = this.getFielderByDistance(distance, hitType);
-
-				} else {
-					//targetFielder = this.getRandomFielder(PITCHER, SHORT_STOP, false);
-					difficulty = 1;
-					distance = this.adjustBySinCurve(distance) * gameField.infieldRadius - 20;
-					targetFielder = this.getFielderByDistance(distance, hitType);
-				}*/
-
+				// Home run
 				if (distance >= gameField.backWallInfluence) {
 					//switch (Math.round(Math.random() * 3)) {
 					switch (game.rnd.integerInRange(0, 3)) {
@@ -720,6 +711,8 @@ var gameState = {
 				break;
 		}
 	},
+
+// ^^^^^ End at-bat encounter ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	
 	// Pick a random fielder
 	// startPos and endPos are the range of fielders to get, inclusive
@@ -781,6 +774,7 @@ var gameState = {
 		this.hitType = hitType;
 		this.activeRunner = this.aRunnerLocations[HOME];
 		
+		// TODO have the fielders set their own AI state, including the covering calulcations done below
 		// Set the batters running
 		for (var i = startBase; i <= THIRD; i++) {
 			if (this.aRunnerLocations[i] == null) {
@@ -804,6 +798,7 @@ var gameState = {
 		fielder.fieldBall(hitType, difficulty, distance);
 		this.targetFielderPos = targetFielder;
 
+		// TODO Apply the covering base AI state
 		// Rest of the fielders move to back up
 		// ...shortstop to second
 		if (targetFielder == SECOND_BASE) {
@@ -823,7 +818,7 @@ var gameState = {
 		}
 	},
 
-	// Called by a fielder when they have selected their action
+	// Called by a fielding Player when they have selected their action
 	fielderSelectAction: function(fielder, action, hitType, difficulty, distance) {
 		this.selectedFielderAction = action;
 		this.activeFielder = fielder;
@@ -832,14 +827,17 @@ var gameState = {
 
 		var runner = this.activeRunner;
 
-		// See if a runner can counter
+		// TODO See if a runner can counter
 		if (runner == null) {
 
 		}
 
+		// The active runner loses their priority from this
 		this.activeRunner = null;
 
 		if (runner != null) {
+
+// vvvv TODO Move into fielder/runner encounter base class vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			var target = this.getTargetForRunner(runner);
 			var baseName = this.getBaseName(target);
 
@@ -849,12 +847,18 @@ var gameState = {
 					//gameState.resolveFielderGetBall(fielder, hitType, difficulty, distance);
 					gameState.showFielderAction(fielder, runner, hitType, difficulty, distance);
 				});	
+// ^^^^ End fielder/runner encounter ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		} else {
-			//this.resolveFielderGetBall(fielder, hitType, difficulty, distance);
+			
+			// this.selectedRunnerAction is null at this point, so this will directly resolve the action
 			this.showFielderAction(fielder, runner, hitType, difficulty, distance);
 		}
 	},
 
+// vvvv TODO Move into fielder/runner encounter base class vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+	// fielder selects their action
 	showFielderAction: function(fielder, runner, hitType, difficulty, distance) {
 		this.showPlayerDialog(fielder, true, fielder.getName() + " (Fielder)\n" + this.selectedFielderAction.getRandomColor(), 
 			function() {
@@ -866,6 +870,7 @@ var gameState = {
 			});
 	},
 
+	// Runner selects their action
 	showRunnerAction: function(fielder, runner, hitType, difficulty, distance) {
 		this.showPlayerDialog(runner, true, runner.getName() + " (" + this.getBaseStatus(runner) + ")\n" + this.selectedRunnerAction.getRandomColor(), 
 			function() {
@@ -874,6 +879,7 @@ var gameState = {
 	},
 
 	// Resolve the result of the fielder attempting to get the ball
+	// Difficulty is some arbitrary number about how hard the ball will be to field, depending on what the algorithm is
 	resolveFielderGetBall: function(fielder, hitType, difficulty, distance) {
 		var fieldingPos = this.fieldingTeam.getFielderPosition(fielder) - 1;
 		this.activeFielder = fielder;
@@ -887,12 +893,13 @@ var gameState = {
 
 		var fieldingSkill = this.selectedFielderAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
 
+		// Runner chance to nerf the fielder
 		if (this.selectedRunnerAction != null) {
 			fieldingSkill = this.selectedRunnerAction.modStat(STAT_FIELDING, fielder.getInfo().fielding);
 		}
 
 		var delta = fieldingSkill - difficulty;
-		var roll = game.rnd.frac(); //Math.random();
+		var roll = game.rnd.frac();
 		var bSuccess = false;
 		var hitter = this.aRunnerTargets[FIRST];
 
@@ -915,9 +922,10 @@ var gameState = {
 					//if (this.recordOut(hitter)) {
 						this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
 						
-							// Ball is still in play, make another play?
+							// Inning isn't over yet, alert other runners
 							if (gameState.recordOut(hitter)) {
 
+								// TODO let the runners know and deal with it
 								// If anybody's running, tell them go to back
 								for (var i = 0; i < gameState.aRunnerTargets.length; i++) {
 									if (gameState.aRunnerTargets[i] != null) {
@@ -984,7 +992,7 @@ var gameState = {
 				if (bSuccess) {
 					this.showUmpireDialog("Ball is caught! Yeerrrrrr meowt!", function() {
 						
-						// Batter-runner waiting for the catch
+						// Runner waiting for the catch
 						if (gameState.batterRunnerWaitingResult != null) {
 							hitter = gameState.batterRunnerWaitingResult;
 							gameState.batterRunnerWaitingResult = null;
@@ -1000,7 +1008,7 @@ var gameState = {
 							}
 						}
 
-						// Ball is still in play, make another play?
+						// Inning isn't over yet, alert the runners
 						if (gameState.recordOut(hitter)) {
 							gameState.fielderGathersBall(fielder, true);
 						}
@@ -1033,7 +1041,9 @@ var gameState = {
 		this.selectedRunnerAction = null;
 	},
 
-	// Delay the fielder from gathering the ball
+// ^^^^ End fielder/runner encounter ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	// Delay the fielder from gathering the ball, caused by them failing to gather the ball
 	delayFielderGather: function(fielder, delay, bAlternate) {
 		if (bAlternate == undefined) {
 			bAlternate = false;
@@ -1045,6 +1055,7 @@ var gameState = {
 			this.gatherTimer.destroy();
 		}
 
+		// TODO AI behavior state
 		var gatherTimer = game.time.create(true);
 		gatherTimer.add(delay, this.completeDelayFielderGather, this, fielder);
 		gatherTimer.start();
@@ -1106,6 +1117,8 @@ var gameState = {
 	},
 
 	// Notify all runners that a fielder has aquired the ball
+	//	position is the fielding position
+	//	bCatch is whether the ball was caught
 	onBallFielded: function(fielder, position, bCatch) {
 		console.log(fielder.getName() + " fields the ball");
 		
@@ -1117,6 +1130,8 @@ var gameState = {
 	},
 
 	// Fielder throws to a given base
+	// 	fielder is the active fielder
+	//	base is the base being thrown to
 	fielderThrowToBase: function(fielder, base) {
 		var target = null;
 		var targetBase = null;
@@ -1181,7 +1196,7 @@ var gameState = {
 		this.onBallThrown(position, this.targetFielderPos);
 	},
 
-	// Notify all runners that a fielder has aquired the ball
+	// Notify all runners that a fielder has aquired the ball. From and to are fielding positions.
 	onBallThrown: function(from, to) {
 		console.log("Ball is thrown from " + from + " to " + to);
 
@@ -1192,6 +1207,7 @@ var gameState = {
 		}
 	},
 
+	// Called by the throwTimer when it fires
 	fielderThrowComplete: function(target, base) {
 		console.log("Throw complete to " + target.getName() + " at " + base + " (ball in play? " + this.bIsBallInPlay + ")");
 
@@ -1215,7 +1231,7 @@ var gameState = {
 		}
 	},
 
-	// Called by the runner if they decided to run
+	// Called by the runner Player if they decided to run
 	runnerAcceptRun: function(runner, targetBase) {
 		console.log("Runner " + runner.getName() + " is running");
 		
@@ -1223,6 +1239,7 @@ var gameState = {
 			this.batterRunnerWaitingResult = runner;
 		}
 		
+		// Release claim to current base, claim target base
 		for (base in this.aRunnerLocations) {
 			if (this.aRunnerLocations[base] == runner) {
 				this.aRunnerLocations[base] = null;
@@ -1237,10 +1254,11 @@ var gameState = {
 		this.iRunningRunners++;
 	},
 
-	// Called by the runner if they declined to run
+	// Called by the runner Player if they declined to run
 	runnerDeclineRun: function(runner, targetBase) {
 		console.log("Runner " + runner.getName() + " declined to run");
 
+		// Release runner's claim on the base
 		if (this.aRunnerTargets[targetBase] == runner) {
 			this.aRunnerTargets[targetBase] = null;
 		}

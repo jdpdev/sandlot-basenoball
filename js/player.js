@@ -1,3 +1,4 @@
+// The playing positions
 var PITCHER = 0;
 var CATCHER = 1;
 var FIRST_BASE = 2;
@@ -8,6 +9,11 @@ var LEFT_FIELD = 6;
 var CENTER_FIELD = 7;
 var RIGHT_FIELD = 8;
 
+/**
+ * A participant in the game.
+ *
+ * TODO Add AI behavior state machine. Might properly prototype this, but may not really need it.
+ */
 function Player(id, playerInfo, teamColor) {
 	this.id = id;
 	this.playerInfo = playerInfo;
@@ -80,13 +86,6 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	this.getPortrait = function() {
-		/*if (this.portrait == null) {
-			this.portrait = iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
-			this.portrait.parent.removeChild(this.portrait);
-		}
-
-		return this.portrait;*/
-
 		return iconGenerator.generateIcon(this.getPortraitDesc(), this.teamColor);
 	}
 
@@ -107,6 +106,8 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	// ** Methods **************************************************************
+
+	// Team is now fielding, take up position
 	this.setAsFielder = function(position) {
 		this.interruptRun();
 		this.fieldingPosition = position;
@@ -119,6 +120,7 @@ function Player(id, playerInfo, teamColor) {
 		this.setPosition(this.getFieldingPosition(position));
 	}
 
+	// Reset for a new at-bat
 	this.returnToFieldingPosition = function() {
 		//console.log(this.getName() + " returning to fielding position");
 		this.worldIcon.update = function() { };
@@ -225,6 +227,7 @@ function Player(id, playerInfo, teamColor) {
 		return point;
 	}
 
+	// Depreciated
 	this.drawFielder = function() {
 		this.playerWidth = 16;
 		this.playerHeight = 30;
@@ -358,6 +361,7 @@ function Player(id, playerInfo, teamColor) {
 	}
 
 	// The ball has been put in play, the batter has to decide what to do.
+	// TODO ai behavior states
 	//	targetBase is the base the runner would run to, defined in game.js
 	//	hitType is defined in game.js
 	//	difficulty is how well it's hit
