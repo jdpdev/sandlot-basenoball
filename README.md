@@ -1,7 +1,7 @@
-# sandlot-basenoball
+# Sandlot Basenoball
 Entry to the SA GameDev Challege X game jam. Placed in the final-round top 12, won side-prize for "Best Use of Cats".
 
-Major versions of the game are pushed to play at http://dupersaurus.github.io/sandlot-basenoball/. Repo can be download to play locally.
+Major versions of the game are pushed to play at http://dupersaurus.github.io/sandlot-basenoball/. Repo can be downloaded to play locally.
 
 ####Immediate Tasks
 Game was submitted with code in "just make it work" quality. I am beginning a refactoring to improve the codebase, to be followed by changes to the game.
